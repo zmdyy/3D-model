@@ -169,7 +169,7 @@
 
   <div class="head">
     <h1>滑动变阻器 <span>· 3D 交互演示</span></h1>
-    <p>A、B 接电阻丝两端，C、D 接滑杆两端；滑片 P 把滑杆与电阻丝连通。<b>一上一下</b>接入才能改变电阻。选定接线柱后自动接上外接导线，用<b>红色动态箭头</b>显示电流方向。</p>
+    <p>A、B 接电阻丝两端，C、D 接滑杆两端；滑片 P 把滑杆与电阻丝连通。<b>一上一下</b>接入才能改变电阻。选定接线柱后自动接上外接导线，用<b>沿真实导体运动的红色光点</b>显示电流方向。</p>
   </div>
 
   <div class="panel" id="panel">
@@ -212,13 +212,13 @@
         <button data-dir="1" class="active">正 接</button>
         <button data-dir="-1">反 接</button>
       </div>
-      <div class="mini">接入的两个接线柱上各引出一根导线，红色箭头表示电流流向，箭头沿导线与内部通路动态流动；点「正接 / 反接」可切换方向。</div>
+      <div class="mini">接入的两个接线柱上各引出一根导线；红色光点只沿实际导电路径流动。点「正接 / 反接」可切换方向。</div>
     </div>
 
     <div class="grp">
       <div class="lbl">显示选项</div>
       <div class="toggles">
-        <button id="btnFlow" class="active">电流箭头</button>
+        <button id="btnFlow" class="active">电流流动</button>
         <button id="btnMarks" class="active">接线柱标记</button>
         <button id="btnAxis" class="active">装配轴线</button>
       </div>
@@ -238,8 +238,8 @@
       <b>接线原理</b>
       <span><i class="blue"></i>A、B＝电阻丝两端（下接线柱，柱身向盒外微倾）</span>
       <span><i class="gray"></i>C、D＝滑杆两端（上接线柱，等电位）</span>
-      <span><i class="amber"></i>滑片 P 把滑杆压到电阻丝上</span>
-      <span><i class="red"></i>红色箭头＝电流方向，沿外接导线与内部通路动态流动</span>
+      <span><i class="amber"></i>滑片 P 末端压在电阻丝表面的窄裸金属接触线上</span>
+      <span><i class="red"></i>红色光点＝电流方向，只沿真实导体路径动态流动</span>
       <span class="ok">✓ 一上一下：滑片移动 → 阻值连续变化</span>
       <span class="bad">✗ A+B：全部丝接入，滑片失效</span>
       <span class="bad">✗ C+D：只有滑杆，近似短路</span>
@@ -429,7 +429,8 @@
     handle: new THREE.MeshStandardMaterial({ color: 0xb9d6ea, roughness: 0.44, metalness: 0.05, envMapIntensity: 0.55 }),
     mark: new THREE.MeshStandardMaterial({ color: 0x6f7a88, roughness: 0.6, metalness: 0.05, envMapIntensity: 0.4 }),
     insul: new THREE.MeshStandardMaterial({ color: 0x31363e, roughness: 0.58, metalness: 0.04, envMapIntensity: 0.55 }),
-    insulOrange: new THREE.MeshStandardMaterial({ color: 0xdd6720, roughness: 0.52, metalness: 0.04, envMapIntensity: 0.6 })
+    insulOrange: new THREE.MeshStandardMaterial({ color: 0xdd6720, roughness: 0.52, metalness: 0.04, envMapIntensity: 0.6 }),
+    contactMetal: new THREE.MeshStandardMaterial({ color: 0xd7dce1, roughness: 0.20, metalness: 1.0, envMapIntensity: 1.18 })
   };
   const glowMat = new THREE.MeshBasicMaterial({ color: 0xff7a1f, transparent: true, opacity: 0.85 });
   const axisMat = new THREE.MeshBasicMaterial({ color: 0x4f8ee0, transparent: true, opacity: 0.0 });
@@ -643,18 +644,32 @@
   coil.instanceMatrix.needsUpdate = true;
   gCoil.add(coil);
 
-  // 电流路径发光层：套住接入的那一段线圈
-  // （金属材质直接改 instanceColor 会被高光/环境反射冲淡，改用自发光叠加层）
-  const hotGeo = new THREE.TorusGeometry(COIL_R + 0.020, WIRE_R * 1.24, 8, 44);
+  // 有效电阻段只做轻微暖色提亮，不再把整片线圈染成亮黄。
+  const hotGeo = new THREE.TorusGeometry(COIL_R + 0.006, WIRE_R * 1.035, 8, 44);
   hotGeo.rotateY(Math.PI / 2);
   const coilHot = new THREE.InstancedMesh(hotGeo, new THREE.MeshStandardMaterial({
-    color: 0xffa651, emissive: 0xff5c0a, emissiveIntensity: 1.0,
-    roughness: 0.46, metalness: 0.18, envMapIntensity: 0.4
+    color: 0xc98549, emissive: 0x3d1306, emissiveIntensity: 0.20,
+    roughness: 0.30, metalness: 0.74, envMapIntensity: 0.92,
+    transparent: true, opacity: 0.42
   }), TURNS);
   for (let i = 0; i < TURNS; i++) coilHot.setMatrixAt(i, _m4.makeTranslation(0, -999, 0));
   coilHot.instanceMatrix.needsUpdate = true;
   coilHot.frustumCulled = false;
   gCoil.add(coilHot);
+
+  // 滑片移动轨迹处的绝缘漆被磨去：不是一大片裸露，而是每一匝前表面
+  // 只有一个很窄的金属接触点。相邻匝的这些点视觉上连成一条细直线，
+  // 但几何上彼此不相连，避免错误暗示相邻电阻丝被短接。
+  const contactSpotGeo = new THREE.CylinderGeometry(WIRE_R * 1.025, WIRE_R * 1.025, 0.145, 10, 1);
+  const contactSpots = new THREE.InstancedMesh(contactSpotGeo, M.contactMetal, TURNS);
+  contactSpots.castShadow = true;
+  contactSpots.receiveShadow = true;
+  for (let i = 0; i < TURNS; i++) {
+    _m4.makeTranslation(coilXs[i], CORE_Y, WIRE_OUT + 0.010);
+    contactSpots.setMatrixAt(i, _m4);
+  }
+  contactSpots.instanceMatrix.needsUpdate = true;
+  gCoil.add(contactSpots);
 
   /* ================= 3. 滑杆组（爆炸：向上抬起） ================= */
   const gBar = new THREE.Group();
@@ -713,8 +728,8 @@
     const s = new THREE.Shape();
     s.moveTo(0.30, 0.34);
     s.lineTo(1.48, 0.08);
-    s.lineTo(1.48, -3.28);
-    s.lineTo(1.30, -3.28);
+    s.lineTo(1.48, -2.68);
+    s.lineTo(1.30, -2.68);
     s.lineTo(1.30, -0.10);
     s.lineTo(0.30, 0.16);
     s.closePath();
@@ -729,6 +744,10 @@
     g2.add(mesh);
     gSlider.add(g2);
   })();
+
+  // 滑片真正与窄裸金属线接触的压头；装配态时正好落在 z=WIRE_OUT 的接触线上。
+  put(gSlider, new THREE.BoxGeometry(0.34, 0.12, 0.14), M.contactMetal,
+    [0, CORE_Y - BAR_Y + 0.045, WIRE_OUT + 0.018]);
 
   // 两侧弹性压片
   [1, -1].forEach(function (s) {
@@ -785,12 +804,12 @@
   const leadMat = new THREE.MeshStandardMaterial({
     color: 0x3b424e, roughness: 0.66, metalness: 0.05, envMapIntensity: 0.45
   });
-  const arrowMat = new THREE.MeshStandardMaterial({
-    color: 0xe62a1d, emissive: 0xc8180c, emissiveIntensity: 0.92,
-    roughness: 0.44, metalness: 0.0, envMapIntensity: 0.25
+  const arrowMat = new THREE.MeshBasicMaterial({
+    color: 0xff3b30, transparent: true, opacity: 0.92,
+    depthTest: false, depthWrite: false
   });
-  const arrowGeo = new THREE.ConeGeometry(0.19, 0.56, 14, 1);
-  arrowGeo.rotateZ(-Math.PI / 2);            // 锥尖朝 +x
+  // 不再用大红三角。用尺寸很小的发光球沿导体移动，避免误读为“箭头指向某个零件”。
+  const arrowGeo = new THREE.SphereGeometry(0.105, 14, 10);
   const AXIS_X = new THREE.Vector3(1, 0, 0);
   const FLOW_SPEED = 4.6;                    // 箭头流速（cm/s）
   let travel = 0;
@@ -838,8 +857,9 @@
   // 按段长自动排布箭头（段长变化时增减数量；段太短就不画，避免箭头挤成一团）
   // f.want 存在时以它为准（绕线螺旋按“每匝 2 个箭头”计数）
   function syncArrows(f) {
-    const want = (f.want != null) ? f.want
-      : (f.length < 0.8 ? 0 : Math.max(2, Math.round(f.length / f.spacing)));
+    const wantRaw = (f.want != null) ? f.want
+      : (f.length < 0.8 ? 0 : Math.max(1, Math.round(f.length / f.spacing)));
+    const want = Math.min(5, wantRaw);
     while (f.arrows.length > want) f.group.remove(f.arrows.pop());
     while (f.arrows.length < want) {
       const m = new THREE.Mesh(arrowGeo, arrowMat);
@@ -906,15 +926,14 @@
 
   function setFlowHelix(f, xa, xb) {
     const turns = Math.abs(xb - xa) / COIL_PITCH;
-    // 匝距仅 0.19，若每匝一个箭头会挤成锯齿带；
-    // 按"每 2.5 匝一个"排布 → 相位逐级错开，看上去就是一匝一匝螺旋前进
-    const want = turns < 0.5 ? 0 : (turns < 1.4 ? 1 : Math.round(turns / 2.5));
+    // 螺旋电阻丝只保留少量移动光点，避免在圆柱表面出现一圈圈散乱红三角。
+    const want = turns < 0.5 ? 0 : Math.min(4, Math.max(1, Math.round(turns / 8)));
     setFlowCurve(f, 'h' + xa.toFixed(2) + '|' + xb.toFixed(2), helixPoints(xa, xb), want);
   }
 
   // 滑片段：从电阻丝表面（触片压住的那点）沿触片向上接到滑杆（滑片局部坐标固定）
   setFlowCurve(fSld, 'sld', [
-    [0, CORE_Y - 0.48 - BAR_Y, 1.34],
+    [0, CORE_Y - BAR_Y + 0.045, WIRE_OUT + 0.018],
     [0, -1.30, 1.31],
     [0, -0.02, 0.30]
   ], 2);
@@ -1134,7 +1153,7 @@
         u -= Math.floor(u);
         const m = f.arrows[i];
         m.position.copy(flowPoint(f, u));
-        m.quaternion.setFromUnitVectors(AXIS_X, flowTangent(f, u).multiplyScalar(sgn));
+        // 球形光点不需要方向旋转；路径方向由它的运动方向表达。
       }
     }
   }
@@ -1505,8 +1524,8 @@
       return FLOW_ALL.map(function (f) {
         let head = null;
         if (f.arrows.length) {
-          ax.set(1, 0, 0).applyQuaternion(f.arrows[0].quaternion);
-          head = [+ax.x.toFixed(3), +ax.y.toFixed(3), +ax.z.toFixed(3)];
+          const dv0 = flowTangent(f, 0.5).clone().multiplyScalar(f.sign * state.dir);
+          head = [+dv0.x.toFixed(3), +dv0.y.toFixed(3), +dv0.z.toFixed(3)];
         }
         // 路径中点处的实际电流方向（含 sign / 正反接），比单个箭头位移更稳定
         const dv = flowTangent(f, 0.5).clone().multiplyScalar(f.sign * state.dir);

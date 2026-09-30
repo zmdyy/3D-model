@@ -270,8 +270,8 @@
   const renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, preserveDrawingBuffer: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
   renderer.outputEncoding = THREE.sRGBEncoding;
-  renderer.toneMapping = THREE.LinearToneMapping;
-  renderer.toneMappingExposure = 1.0;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.08;
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
@@ -312,9 +312,9 @@
   })();
 
   /* ================= 灯光 ================= */
-  scene.add(new THREE.HemisphereLight(0xffffff, 0xb3c2d4, 0.30));
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x8fa0b0, 0.46));
 
-  const keyLight = new THREE.DirectionalLight(0xffffff, 0.66);
+  const keyLight = new THREE.DirectionalLight(0xfffbf5, 1.02);
   keyLight.position.set(8, 14, 10);
   keyLight.castShadow = true;
   keyLight.shadow.mapSize.set(2048, 2048);
@@ -328,18 +328,22 @@
   keyLight.shadow.radius = 2.4;
   scene.add(keyLight);
 
-  const fillLight = new THREE.DirectionalLight(0xdce8ff, 0.15);
-  fillLight.position.set(-10, 7, -8);
+  const fillLight = new THREE.DirectionalLight(0xd9e8ff, 0.30);
+  fillLight.position.set(-10, 8, -8);
   scene.add(fillLight);
 
-  const rimLight = new THREE.DirectionalLight(0xffffff, 0.16);
-  rimLight.position.set(-5, 5, 12);
+  const rimLight = new THREE.DirectionalLight(0xffffff, 0.34);
+  rimLight.position.set(-6, 7, 13);
   scene.add(rimLight);
+
+  const warmBounce = new THREE.DirectionalLight(0xffdec8, 0.16);
+  warmBounce.position.set(5, 3, -10);
+  scene.add(warmBounce);
 
   /* ================= 地面 ================= */
   const ground = new THREE.Mesh(
     new THREE.CircleGeometry(30, 72),
-    new THREE.MeshStandardMaterial({ color: 0xdde6f0, roughness: 0.98, metalness: 0.0 })
+    new THREE.MeshStandardMaterial({ color: 0xdce4ec, roughness: 0.82, metalness: 0.06, envMapIntensity: 0.32 })
   );
   ground.rotation.x = -Math.PI / 2;
   ground.position.y = -0.02;
@@ -406,17 +410,17 @@
 
   /* ================= 材质 ================= */
   const M = {
-    baseMetal: new THREE.MeshStandardMaterial({ color: 0xc0c9d2, roughness: 0.30, metalness: 0.95, envMapIntensity: 0.95 }),
-    plate: new THREE.MeshStandardMaterial({ color: 0x7c3a23, roughness: 0.62, metalness: 0.03, envMapIntensity: 0.4 }),
-    frame: new THREE.MeshStandardMaterial({ color: 0x2b2420, roughness: 0.72, metalness: 0.05, envMapIntensity: 0.3 }),
-    wire: new THREE.MeshStandardMaterial({ color: 0xc07635, roughness: 0.30, metalness: 0.88, envMapIntensity: 1.0 }),
-    wireSoft: new THREE.MeshStandardMaterial({ color: 0xa8632c, roughness: 0.36, metalness: 0.85, envMapIntensity: 0.95 }),
-    metal: new THREE.MeshStandardMaterial({ color: 0xc3ccd6, roughness: 0.24, metalness: 1.0, envMapIntensity: 1.0 }),
-    metalSoft: new THREE.MeshStandardMaterial({ color: 0xb2bcc7, roughness: 0.32, metalness: 0.95, envMapIntensity: 0.95 }),
-    brass: new THREE.MeshStandardMaterial({ color: 0xd0a24e, roughness: 0.28, metalness: 0.95, envMapIntensity: 1.0 }),
-    insulRed: new THREE.MeshStandardMaterial({ color: 0x8f4227, roughness: 0.55, metalness: 0.03, envMapIntensity: 0.45 }),
-    extRed: new THREE.MeshStandardMaterial({ color: 0xc92d2d, roughness: 0.46, metalness: 0.02, envMapIntensity: 0.35 }),
-    extBlack: new THREE.MeshStandardMaterial({ color: 0x20252b, roughness: 0.58, metalness: 0.02, envMapIntensity: 0.28 })
+    baseMetal: new THREE.MeshStandardMaterial({ color: 0xbfc6cc, roughness: 0.24, metalness: 0.96, envMapIntensity: 1.16 }),
+    plate: new THREE.MeshPhysicalMaterial({ color: 0x6b2f20, roughness: 0.43, metalness: 0.0, clearcoat: 0.22, clearcoatRoughness: 0.34, envMapIntensity: 0.48 }),
+    frame: new THREE.MeshPhysicalMaterial({ color: 0x24211f, roughness: 0.58, metalness: 0.0, clearcoat: 0.10, clearcoatRoughness: 0.40, envMapIntensity: 0.34 }),
+    wire: new THREE.MeshPhysicalMaterial({ color: 0xaa5d2d, roughness: 0.27, metalness: 0.24, clearcoat: 0.48, clearcoatRoughness: 0.22, envMapIntensity: 0.94 }),
+    wireSoft: new THREE.MeshStandardMaterial({ color: 0x9a542b, roughness: 0.32, metalness: 0.62, envMapIntensity: 0.88 }),
+    metal: new THREE.MeshStandardMaterial({ color: 0xc8ced3, roughness: 0.19, metalness: 1.0, envMapIntensity: 1.24 }),
+    metalSoft: new THREE.MeshStandardMaterial({ color: 0xabb4bc, roughness: 0.29, metalness: 0.94, envMapIntensity: 1.08 }),
+    brass: new THREE.MeshStandardMaterial({ color: 0xb7853c, roughness: 0.23, metalness: 0.93, envMapIntensity: 1.14 }),
+    insulRed: new THREE.MeshPhysicalMaterial({ color: 0x7c3525, roughness: 0.46, metalness: 0.0, clearcoat: 0.16, clearcoatRoughness: 0.34, envMapIntensity: 0.42 }),
+    extRed: new THREE.MeshPhysicalMaterial({ color: 0xc92f2f, roughness: 0.40, metalness: 0.0, clearcoat: 0.28, clearcoatRoughness: 0.28, envMapIntensity: 0.46 }),
+    extBlack: new THREE.MeshPhysicalMaterial({ color: 0x171b20, roughness: 0.48, metalness: 0.0, clearcoat: 0.18, clearcoatRoughness: 0.34, envMapIntensity: 0.38 })
   };
   const flowMat = new THREE.MeshBasicMaterial({
     color: 0xff3b30, transparent: true, opacity: 0.72,
@@ -427,14 +431,15 @@
     depthTest: true, depthWrite: false
   });
   // 外壳材质单独一份，方便调透明
-  const caseMat = new THREE.MeshStandardMaterial({
-    color: 0xa8442a, roughness: 0.46, metalness: 0.04,
-    envMapIntensity: 0.55, side: THREE.DoubleSide,
+  const caseMat = new THREE.MeshPhysicalMaterial({
+    color: 0x743222, roughness: 0.40, metalness: 0.0,
+    clearcoat: 0.18, clearcoatRoughness: 0.34,
+    envMapIntensity: 0.52, side: THREE.DoubleSide,
     transparent: false, opacity: 1, depthWrite: true
   });
   // 旋钮材质单独一份，便于悬停高亮（染铜金色）
-  const knobMat = new THREE.MeshStandardMaterial({ color: 0xc3ccd6, roughness: 0.24, metalness: 1.0, envMapIntensity: 1.0 });
-  const KNOB_COLOR = 0xc3ccd6, KNOB_HL = 0xe8903c;
+  const knobMat = new THREE.MeshStandardMaterial({ color: 0xc8ced3, roughness: 0.18, metalness: 1.0, envMapIntensity: 1.24 });
+  const KNOB_COLOR = 0xc8ced3, KNOB_HL = 0xd69a58;
 
   /* ================= 工具 ================= */
   function clamp(v, a, b) { return v < a ? a : (v > b ? b : v); }

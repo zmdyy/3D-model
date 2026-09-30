@@ -198,7 +198,7 @@
       <div class="readout">
         <div class="rv"><span>当前接入电阻</span><b id="activeOhm">10.0<i>Ω</i></b></div>
       </div>
-      <div class="mini">只给当前选中的两个端子接线。红色流动箭头沿实际通电路径运动；未接端子不显示电流。</div>
+      <div class="mini">只给当前选中的两个端子接线。红色光点沿真实导体运动；进入底板内部的引线会被绝缘底板正常遮挡，不再画成穿板红线。</div>
     </div>
 
     <div class="grp">
@@ -237,7 +237,7 @@
       <span><i class="copper"></i>铜色密绕＝电阻丝（绕在骨架内侧，电气有效 300°）</span>
       <span><i class="silver"></i>银色指针臂＝滑片，从中心轴伸出、末端触点压在电阻丝上</span>
       <span><i class="gold"></i>顶部一字槽＝旋钮，转它就改变分压比</span>
-      <span><i class="red"></i>红色流动箭头＝当前接法中实际有电流经过的路径</span>
+      <span><i class="red"></i>红色光点＝当前接法中实际有电流经过的导体路径</span>
     </div>
   </div>
   <button id="panelOpen" title="展开面板">‹</button>
@@ -419,8 +419,12 @@
     extBlack: new THREE.MeshStandardMaterial({ color: 0x20252b, roughness: 0.58, metalness: 0.02, envMapIntensity: 0.28 })
   };
   const flowMat = new THREE.MeshBasicMaterial({
-    color: 0xff3b30, transparent: true, opacity: 0.82,
-    depthTest: false, depthWrite: false
+    color: 0xff3b30, transparent: true, opacity: 0.72,
+    depthTest: true, depthWrite: false
+  });
+  const flowDotMat = new THREE.MeshBasicMaterial({
+    color: 0xff3b30, transparent: true, opacity: 0.94,
+    depthTest: true, depthWrite: false
   });
   // 外壳材质单独一份，方便调透明
   const caseMat = new THREE.MeshStandardMaterial({
@@ -669,7 +673,7 @@
   }
 
   // 滑片（中心轴套）→ 端子 2（经轴引下，沿底盘走到正前方焊片）
-  put(gLead, tube(wiperLeadPoints(), 0.028, 48, 6), M.wireSoft);
+  put(gLead, tube(wiperLeadPoints(), 0.032, 48, 7), M.brass);
 
   /* ================= 4A. 外部接线 + 动态电流路径 ================= */
   const gExternal = new THREE.Group();
@@ -789,44 +793,52 @@
     return route;
   }
 
+  // 使用折线 CurvePath，而不是一条 CatmullRom 曲线把所有控制点“抹圆”。
+  // 这样动态路径会严格经过已有金属滑片、中心集电环和内部引线，不会抄近路穿过胶木底板。
+  function exactPath(points) {
+    const path = new THREE.CurvePath();
+    for (let i = 0; i < points.length - 1; i++) {
+      path.add(new THREE.LineCurve3(points[i], points[i + 1]));
+    }
+    return path;
+  }
+
   function rebuildCurrentPath() {
     clearMeshes(gCurrent);
     currentArrows = [];
 
     const pts = currentRoutePoints().map(function (p) {
-      return new THREE.Vector3(p[0], p[1] + 0.018, p[2]);
+      return new THREE.Vector3(p[0], p[1] + 0.010, p[2]);
     });
-    currentCurve = new THREE.CatmullRomCurve3(pts, false, 'centripetal', 0.18);
+    currentCurve = exactPath(pts);
 
-    const pathGeo = new THREE.TubeGeometry(currentCurve, 180, 0.014, 6, false);
+    // 很细的路径线只贴在真实导体上；被底板或外壳挡住的内部引线会自然被遮挡。
+    const pathGeo = new THREE.TubeGeometry(currentCurve, 220, 0.010, 6, false);
     const pathMesh = new THREE.Mesh(pathGeo, flowMat);
-    pathMesh.renderOrder = 30;
+    pathMesh.renderOrder = 12;
     gCurrent.add(pathMesh);
 
-    const arrowGeo = new THREE.ConeGeometry(0.050, 0.16, 10);
-    for (let i = 0; i < 12; i++) {
-      const a = new THREE.Mesh(arrowGeo, flowMat);
-      a.userData.phase = i / 12;
-      a.renderOrder = 31;
+    // 动态电流改用小光点，避免红色大箭头遮挡结构。
+    const dotGeo = new THREE.SphereGeometry(0.047, 12, 9);
+    const count = 9;
+    for (let i = 0; i < count; i++) {
+      const a = new THREE.Mesh(dotGeo, flowDotMat);
+      a.userData.phase = i / count;
+      a.renderOrder = 13;
       currentArrows.push(a);
       gCurrent.add(a);
     }
     gCurrent.visible = state.showFlow;
   }
 
-  const FLOW_UP = new THREE.Vector3(0, 1, 0);
   function animateCurrent(ms) {
     if (!state.showFlow || !currentCurve) return;
     const speed = ms * 0.00011;
     currentArrows.forEach(function (a) {
       const t = (a.userData.phase + speed) % 1;
       const p = currentCurve.getPointAt(t);
-      const tan = currentCurve.getTangentAt(t);
-      if (tan.lengthSq() < 1e-8) return;
-      tan.normalize();
       a.position.copy(p);
-      a.quaternion.setFromUnitVectors(FLOW_UP, tan);
-      const pulse = 0.88 + 0.16 * Math.sin((t * 18 + speed * 20) * Math.PI);
+      const pulse = 0.84 + 0.20 * Math.sin((t * 16 + speed * 18) * Math.PI);
       a.scale.setScalar(pulse);
     });
   }
@@ -840,7 +852,7 @@
   }
   addLabel('外壳', '#a8442a', 0.55, [2.42, 2.28, 1.10]);
   addLabel('旋钮', '#15406f', 0.55, [0.80, 3.96, 0.10]);
-  addLabel('滑片', '#3c4756', 0.55, [0.12, 1.74, 0.58], true);
+  addLabel('滑片', '#3c4756', 0.55, [-0.72, 1.62, 0.28], true);
   addLabel('电阻丝', '#a8632c', 0.55, polar(2.30, -78, 1.35), true);
 
   /* ================= 6. 相机控制 ================= */

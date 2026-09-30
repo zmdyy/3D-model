@@ -1,0 +1,57 @@
+window.MODEL_CATALOG = [
+  {
+    "id": "battery-box",
+    "title": "2×AA 电池盒",
+    "subtitle": "外壳、底座与串联结构",
+    "category": "电学元件",
+    "summary": "观察两节 5 号电池的串联方式，可调整外壳透明度、掀开外壳并查看正负极与接线走向。",
+    "tags": ["电源", "串联", "结构透视"],
+    "path": "models/battery-box.html",
+    "symbol": "±",
+    "accent": "blue"
+  },
+  {
+    "id": "potentiometer",
+    "title": "电位器",
+    "subtitle": "旋钮、滑片与分压结构",
+    "category": "电学元件",
+    "summary": "拖动或旋转顶部旋钮，观察滑片位置及两段电阻的同步变化，并透视内部线绕结构。",
+    "tags": ["电阻", "滑片", "分压"],
+    "path": "models/potentiometer.html",
+    "symbol": "Ω",
+    "accent": "amber"
+  },
+  {
+    "id": "rheostat",
+    "title": "滑动变阻器",
+    "subtitle": "接线、滑片与电流方向",
+    "category": "电学元件",
+    "summary": "可拖动滑片 P、切换接线柱组合、观察接入电阻与电流方向，并使用爆炸视图理解内部结构。",
+    "tags": ["变阻器", "接线", "电流"],
+    "path": "models/rheostat.html",
+    "symbol": "R",
+    "accent": "violet"
+  },
+  {
+    "id": "e27-bulb",
+    "title": "螺口灯泡装配与接线",
+    "subtitle": "E27 灯泡、灯座与家庭电路",
+    "category": "家庭电路",
+    "summary": "动态演示灯泡拧入灯座、内部触点接触以及火线与零线的正确接法，可进行透明与剖切观察。",
+    "tags": ["家庭电路", "安全用电", "装配"],
+    "path": "models/e27-bulb.html",
+    "symbol": "☼",
+    "accent": "orange"
+  },
+  {
+    "id": "fuel-gauge",
+    "title": "油量测量装置",
+    "subtitle": "浮子—滑杆—变阻器联动",
+    "category": "综合应用",
+    "summary": "改变油量后，观察浮子、滑杆、滑片、电阻和电流表读数的连续联动，理解传感与测量原理。",
+    "tags": ["传感器", "变阻器", "电流表"],
+    "path": "models/fuel-gauge.html",
+    "symbol": "↕",
+    "accent": "green"
+  }
+];

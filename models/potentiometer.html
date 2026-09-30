@@ -681,10 +681,14 @@
   let currentArrows = [];
 
   function clearMeshes(group) {
+    const disposed = new Set();
     while (group.children.length) {
       const obj = group.children.pop();
       obj.traverse(function (o) {
-        if (o.geometry) o.geometry.dispose();
+        if (o.geometry && !disposed.has(o.geometry)) {
+          disposed.add(o.geometry);
+          o.geometry.dispose();
+        }
       });
     }
   }
@@ -728,6 +732,10 @@
 
   function ringArcPoints(aStart, aEnd) {
     const span = Math.max(0, aEnd - aStart);
+    if (span < 0.01) {
+      const p = polar(WIRE_CR, aStart, RING_Y);
+      return [[p.x, p.y, p.z]];
+    }
     const steps = Math.max(4, Math.ceil(span / 5));
     const pts = [];
     for (let i = 0; i <= steps; i++) {
@@ -813,7 +821,9 @@
     currentArrows.forEach(function (a) {
       const t = (a.userData.phase + speed) % 1;
       const p = currentCurve.getPointAt(t);
-      const tan = currentCurve.getTangentAt(t).normalize();
+      const tan = currentCurve.getTangentAt(t);
+      if (tan.lengthSq() < 1e-8) return;
+      tan.normalize();
       a.position.copy(p);
       a.quaternion.setFromUnitVectors(FLOW_UP, tan);
       const pulse = 0.88 + 0.16 * Math.sin((t * 18 + speed * 20) * Math.PI);

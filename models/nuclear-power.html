@@ -17,8 +17,11 @@ h1{margin:0;font-size:27px;line-height:1.18}.lead{margin:0;color:var(--muted);fo
 .row{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:13px;font-weight:760;color:#35445c}.value{color:#56677e}
 input[type=range]{width:100%;accent-color:#d35d48}
 .seg,.tools{display:flex;gap:8px;flex-wrap:wrap}
-button{border:1px solid var(--line);background:#fff;color:#43536b;border-radius:12px;padding:9px 12px;font:inherit;font-size:12.2px;font-weight:780;cursor:pointer;transition:.18s}
-button:hover{border-color:#b8cce6}button.active{background:#315f9f;color:#fff;border-color:#315f9f}
+button,.externalLink{border:1px solid var(--line);background:#fff;color:#43536b;border-radius:12px;padding:9px 12px;font:inherit;font-size:12.2px;font-weight:780;cursor:pointer;transition:.18s;text-decoration:none;display:inline-flex;align-items:center;gap:7px}
+button:hover,.externalLink:hover{border-color:#91b4da;box-shadow:0 5px 14px rgba(49,95,159,.10)}
+button.active{background:#315f9f;color:#fff;border-color:#315f9f}
+.externalLink{background:#eef6ff;color:#225d9c;border-color:#bfd6ee}
+.externalLink::after{content:'↗';font-size:14px}
 .stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
 .tile{border:1px solid var(--line);border-radius:14px;background:#f8fbfe;padding:9px}.tile b{display:block;font-size:10.5px;color:#77859b;margin-bottom:4px}.tile span{display:block;font-size:15px;font-weight:800;color:#20324d}
 .desc{border-top:1px dashed #d9e4ef;padding-top:12px;display:grid;gap:8px}.desc h2{margin:0;font-size:16px}.desc p{margin:0;color:#56657a;font-size:13px;line-height:1.72}
@@ -58,6 +61,7 @@ button:hover{border-color:#b8cce6}button.active{background:#315f9f;color:#fff;bo
     <button id="btnLabels" class="active">工程标注</button>
     <button id="btnPause">暂停</button>
     <button id="btnReset">恢复总览</button>
+    <a class="externalLink" href="https://3d.energyencyclopedia.com/npp-pwr/generator" target="_blank" rel="noopener noreferrer" title="打开 Energy Encyclopedia 的核电站专业 3D 模型">专业3D细节</a>
   </div>
 
   <div class="stats">
@@ -204,7 +208,8 @@ button:hover{border-color:#b8cce6}button.active{background:#315f9f;color:#fff;bo
 </g>
 
 <!-- GENERATOR detailed -->
-<g id="generator" filter="url(#shadow)">
+<a href="https://3d.energyencyclopedia.com/npp-pwr/generator" target="_blank" rel="noopener noreferrer">
+<g id="generator" filter="url(#shadow)" style="cursor:pointer">
   <rect x="1028" y="230" width="158" height="158" rx="40" fill="url(#steel)" stroke="#566573" stroke-width="3"/>
   <ellipse cx="1107" cy="309" rx="58" ry="58" fill="#394652"/>
   <ellipse cx="1107" cy="309" rx="46" ry="46" fill="none" stroke="url(#copper)" stroke-width="12" stroke-dasharray="11 7"/>
@@ -213,7 +218,12 @@ button:hover{border-color:#b8cce6}button.active{background:#315f9f;color:#fff;bo
   <line x1="1017" y1="309" x2="1028" y2="309" stroke="#586775" stroke-width="12"/>
   <text x="1107" y="422" text-anchor="middle" font-size="20" font-weight="800" fill="#34495f">同步发电机</text>
   <text x="1107" y="445" text-anchor="middle" font-size="13" fill="#63768b">转子旋转 → 定子线圈产生交流电</text>
+  <g transform="translate(1036 456)">
+    <rect x="0" y="0" width="142" height="34" rx="17" fill="#225d9c" opacity=".94"/>
+    <text x="71" y="22" text-anchor="middle" font-size="14" font-weight="800" fill="#ffffff">打开专业3D ↗</text>
+  </g>
 </g>
+</a>
 
 <!-- TRANSFORMER + GRID -->
 <g id="transformer" filter="url(#shadow)">
@@ -296,7 +306,7 @@ const desc={
 2:['一回路传热','PWR一回路保持很高压力，使水即使在很高温度下也不沸腾。热段把堆芯热量带到蒸汽发生器，冷却后的水再由主泵送回反应堆。'],
 3:['蒸汽发生','一回路水流过蒸汽发生器管内；二回路水位于管外。两种水不混合，只通过金属管壁换热，二回路水被加热并形成蒸汽。'],
 4:['汽轮机','高温高压蒸汽先进入高压级，再进入体积更大的低压级，不断膨胀并推动叶片旋转，把蒸汽的内能转化为转轴的机械能。'],
-5:['发电机','汽轮机与发电机共轴。发电机转子旋转，使定子线圈中的磁通量周期变化，产生交流电；电能经升压变压器后送入输电网。'],
+5:['发电机','汽轮机与发电机共轴。发电机转子旋转，使定子线圈中的磁通量周期变化，产生交流电；电能经升压变压器后送入输电网。页面中的“同步发电机”可直接点击，打开 Energy Encyclopedia 的专业 3D 细节模型。'],
 6:['冷凝与回水','汽轮机排汽进入冷凝器。循环冷却水在许多管束内部流动，把蒸汽的热量带走；蒸汽在管外凝结成水，再由凝结水和给水系统送回蒸汽发生器。']
 };
 const ui={

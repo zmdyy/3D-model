@@ -45,7 +45,7 @@
     <button id="btnLabels" class="active">部件标注</button>
     <button id="btnFlow" class="active">电流箭头</button>
     <button id="btnForce" class="active">受力方向</button>
-    <button id="btnSection" class="active">剖开展示</button>
+    <button id="btnSection" class="active">半剖面展示</button>
     <button id="btnReset">默认视角</button>
   </div>
 
@@ -57,13 +57,13 @@
 
   <div class="grp tip">
     <span><i class="dot magnet"></i>深灰环形件＝永久磁体，亮银色件＝极板、中心极柱与扬声器钢架。</span>
-    <span><i class="dot copper"></i>铜色密绕部分＝音圈，装在线圈骨架上并与纸盆连接。</span>
+    <span><i class="dot copper"></i>铜色密绕部分＝音圈，装在线圈骨架上并与纸盆连接；半剖面下可看到音圈位于中心极柱与前夹板之间的磁隙。</span>
     <span><i class="dot paper"></i>灰白色锥面＝纸盆；黑色外圈＝柔性悬边；棕色波纹环＝定心支片。</span>
     <span><i class="dot red"></i>红色箭头＝交流电方向；接线端导线、音圈与回线均连续显示，方向随交流信号周期性反转。</span>
     <span><i class="dot blue"></i>蓝色箭头＝线圈瞬时受力方向，与纸盆运动方向对应。</span>
   </div>
 </section>
-<div class="hint">拖拽旋转 · 滚轮缩放 · <kbd>Shift</kbd>+拖拽平移 · 建议先用“剖开展示”观察音圈所在的磁隙</div>
+<div class="hint">拖拽旋转 · 滚轮缩放 · <kbd>Shift</kbd>+拖拽平移 · 半剖面会同时切开纸盆、篮架和磁路，直接观察音圈所在的磁隙</div>
 
 <script src="https://cdn.jsdelivr.net/npm/three@0.144.0/build/three.min.js"></script>
 <script src="../shared/current-flow-style.js"></script>
@@ -80,6 +80,7 @@ renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.06;
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.localClippingEnabled = true;
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xeaf1f8);
@@ -106,8 +107,20 @@ const M={
   former:new THREE.MeshPhysicalMaterial({color:0xd5c6a9,roughness:.74,metalness:0,side:THREE.DoubleSide,envMapIntensity:.18}),
   copper:new THREE.MeshPhysicalMaterial({color:0xb66c34,roughness:.27,metalness:.35,clearcoat:.38,clearcoatRoughness:.18,envMapIntensity:.88}),
   redWire:new THREE.MeshPhysicalMaterial({color:0xcb3933,roughness:.43,metalness:0,clearcoat:.22,clearcoatRoughness:.30}),
-  blackWire:new THREE.MeshPhysicalMaterial({color:0x1e2329,roughness:.50,metalness:0,clearcoat:.16,clearcoatRoughness:.35})
+  blackWire:new THREE.MeshPhysicalMaterial({color:0x1e2329,roughness:.50,metalness:0,clearcoat:.16,clearcoatRoughness:.35}),
+  gap:new THREE.MeshBasicMaterial({color:0x4aa5ff,transparent:true,opacity:.20,side:THREE.DoubleSide,depthWrite:false})
 };
+
+const sectionPlane = new THREE.Plane(new THREE.Vector3(0,0,-1),0);
+const sectionMaterials = [M.basket,M.steel,M.steelDark,M.magnet,M.paper,M.paperEdge,M.rubber,M.spider,M.former,M.copper];
+
+function setMaterialSection(on){
+  sectionMaterials.forEach(mat=>{
+    mat.clippingPlanes = on ? [sectionPlane] : [];
+    mat.clipShadows = !!on;
+    mat.needsUpdate = true;
+  });
+}
 
 const FLOW = window.CurrentFlowStyle || {
   count:26,speed:3.0,
@@ -124,7 +137,7 @@ const flowMat=FLOW.createMaterial(THREE), flowGeo=FLOW.createGeometry(THREE), fl
 
 const root=new THREE.Group();scene.add(root);root.position.set(1.15,-.15,0);
 const staticG=new THREE.Group(), movingG=new THREE.Group(), labelG=new THREE.Group(), flowG=new THREE.Group();root.add(staticG,movingG,labelG,flowG);
-const fullG=new THREE.Group(), cutG=new THREE.Group();movingG.add(fullG,cutG);
+const fullG=new THREE.Group(), cutG=new THREE.Group(), sectionDetailG=new THREE.Group();movingG.add(fullG,cutG,sectionDetailG);
 
 function V(x,y,z){return new THREE.Vector3(x,y,z)}
 function put(parent,geo,mat,pos,rot){const m=new THREE.Mesh(geo,mat);if(pos)m.position.set(...pos);if(rot)m.rotation.set(...rot);m.castShadow=true;m.receiveShadow=true;parent.add(m);return m}
@@ -165,9 +178,13 @@ for(let i=0;i<5;i++){const R=.92+i*.14;const tor=new THREE.TorusGeometry(R,.035,
 put(movingG,cylX(.785,.785,1.30,56,true),M.former,[.20,0,0]);
 const coilXs=[];for(let i=0;i<19;i++){const x=-.24+i*(.82/18);coilXs.push(x);const g=new THREE.TorusGeometry(.805,.032,7,64);g.rotateY(Math.PI/2);put(movingG,g,M.copper,[x,0,0]);}
 
+// 磁隙高亮：剖切模式下可直接看到音圈处在中心极柱与前夹板之间的狭窄间隙中。
+const gapRing=new THREE.TorusGeometry(.765,.075,12,96);gapRing.rotateY(Math.PI/2);
+put(sectionDetailG,gapRing,M.gap,[-.08,0,0]);
+
 // ---------- cone / dust cap, cutaway and full versions ----------
 const CONE_X0=.54, CONE_X1=4.62, NECK_R=.79, OUT_R=3.86;
-const cutThetaStart=.35*Math.PI, cutThetaLen=1.48*Math.PI;
+const cutThetaStart=.50*Math.PI, cutThetaLen=1.00*Math.PI;
 put(fullG,cylX(OUT_R,NECK_R,CONE_X1-CONE_X0,96,true,0,Math.PI*2),M.paper,[(CONE_X0+CONE_X1)/2,0,0]);
 put(cutG,cylX(OUT_R,NECK_R,CONE_X1-CONE_X0,96,true,cutThetaStart,cutThetaLen),M.paper,[(CONE_X0+CONE_X1)/2,0,0]);
 // small neck collar
@@ -257,6 +274,7 @@ const forceG=new THREE.Group();movingG.add(forceG);const forceArrow=new THREE.Ar
 // ---------- labels ----------
 label('永久磁体','#34393f',.50,[-1.58,2.42,1.15]);
 label('中心极柱','#4e5a68',.45,[-.88,1.12,1.12]);
+label('磁隙','#2e7bc7',.40,[-.10,1.06,1.12],sectionDetailG);
 label('线圈','#a55f2d',.48,[.15,1.63,1.12],movingG);
 label('定心支片','#895f3a',.43,[.42,-1.72,1.10]);
 label('锥形纸盆','#566579',.50,[3.70,2.63,1.12],movingG);
@@ -269,7 +287,21 @@ function setAmp(v){state.amp=v;ampValue.textContent=Math.round(v*100)+'%';ampRan
 ampRange.addEventListener('input',e=>setAmp(+e.target.value/100));freqRange.addEventListener('input',e=>setFreq(+e.target.value/10));
 document.getElementById('playSeg').addEventListener('click',e=>{const b=e.target.closest('[data-mode]');if(!b)return;if(b.dataset.mode==='play')state.playing=true;if(b.dataset.mode==='pause')state.playing=false;if(b.dataset.mode==='flip')state.phaseFlip*=-1;document.querySelectorAll('#playSeg button').forEach(x=>x.classList.remove('active'));document.querySelector(state.playing?'[data-mode="play"]':'[data-mode="pause"]').classList.add('active')});
 function toggle(id,key,obj){document.getElementById(id).addEventListener('click',function(){state[key]=!state[key];this.classList.toggle('active',state[key]);obj.visible=state[key]})}toggle('btnLabels','showLabels',labelG);toggle('btnFlow','showFlow',flowG);toggle('btnForce','showForce',forceG);
-document.getElementById('btnSection').addEventListener('click',function(){state.section=!state.section;this.classList.toggle('active',state.section);cutG.visible=state.section;fullG.visible=!state.section});cutG.visible=true;fullG.visible=false;
+function applySection(){
+  // 剖切时不再只挖掉纸盆一角，而是用同一剖切平面切开：
+  // 篮架、纸盆、悬边、磁体、极板、中心极柱、线圈与定心支片。
+  // 这样可以真正看到音圈位于磁隙中的装配关系。
+  setMaterialSection(state.section);
+  fullG.visible = true;
+  cutG.visible = false; // 旧扇形切口保留作几何备用，但不作为主剖切方式
+  sectionDetailG.visible = state.section;
+}
+document.getElementById('btnSection').addEventListener('click',function(){
+  state.section=!state.section;
+  this.classList.toggle('active',state.section);
+  applySection();
+});
+applySection();
 
 const view={theta:.05,phi:1.17,dist:18.6,distTarget:18.6,target:new THREE.Vector3(1.10,0,0)};
 const DEF={theta:.05,phi:1.17,dist:18.6,target:[1.10,0,0]};

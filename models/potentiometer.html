@@ -198,7 +198,7 @@
       <div class="readout">
         <div class="rv"><span>当前接入电阻</span><b id="activeOhm">10.0<i>Ω</i></b></div>
       </div>
-      <div class="mini">只给当前选中的两个端子接线。红色光点沿真实导体运动；进入底板内部的引线会被绝缘底板正常遮挡，不再画成穿板红线。</div>
+      <div class="mini">只给当前选中的两个端子接线。红色箭头只沿真实导体运动，不再绘制连续红线；箭头更密，便于直接判断电流方向。</div>
     </div>
 
     <div class="grp">
@@ -234,10 +234,10 @@
       <b>结构对照</b>
       <span><i class="red"></i>红棕色圆盘＝外壳（可透明 / 可隐藏）</span>
       <span><i class="black"></i>黑色圆环＝环形绝缘骨架</span>
-      <span><i class="copper"></i>铜色环形段＝电阻体，1 与 3 分别接它的两端</span>
+      <span><i class="copper"></i>铜色环形段＝电阻体；1 接左端、3 接右端，2 通过中间金属连线接中心集电环</span>
       <span><i class="silver"></i>金属滑动片＝从中心转轴伸出，末端触点压在电阻体上；2 接中心集电端</span>
       <span><i class="gold"></i>顶部一字槽＝旋钮，转它就改变分压比</span>
-      <span><i class="red"></i>红色光点＝当前接法中实际有电流经过的导体路径</span>
+      <span><i class="red"></i>红色箭头＝当前接法中的电流方向，只沿真实导体路径运动</span>
     </div>
   </div>
   <button id="panelOpen" title="展开面板">‹</button>
@@ -535,8 +535,8 @@
   const gRing = new THREE.Group();
   scene.add(gRing);
 
-  put(gRing, new THREE.TorusGeometry(R_RING, RING_R, 12, 96),
-    M.frame, [0, RING_Y, 0], [Math.PI / 2, 0, 0]);
+  // 不再绘制完整黑色环形骨架：前侧 60° 缺口保持完全敞开，
+  // 用于清楚展示 1 / 2 / 3 三个接线柱与内部结构的金属连线。
 
   (function buildCoil() {
     const geo = new THREE.TorusGeometry(WIRE_MINOR, WIRE_R, 6, 16);
@@ -651,40 +651,45 @@
 
   function ringLeadPoints(aRing, aLug) {
     const p0 = polar(WIRE_CR, aRing, RING_Y);
-    const p1 = polar(1.48, aRing, 0.96);
-    const p2 = polar(1.82, aLug, TRACE_Y);
-    const p3 = polar(2.12, aLug, 0.48);
+    const p1 = polar(1.48, aRing, 1.00);
+    const p2 = polar(1.72, aLug, 0.96);
+    const p3 = polar(1.96, aLug, 0.82);
+    const p4 = polar(2.12, aLug, 0.48);
     return [
       [p0.x, p0.y, p0.z],
       [p1.x, p1.y, p1.z],
-      [p2.x, p2.y, p2.z],
-      [p3.x, p3.y, p3.z]
-    ];
-  }
-
-  function ringLead(aRing, aLug) {
-    put(gLead, tube(ringLeadPoints(aRing, aLug), 0.036, 36, 7), M.brass);
-  }
-
-  // A / C：电阻体两端
-  ringLead(A0, A_LUG[0]);            // 1(A) → 电阻体起端
-  ringLead(A0 + SPAN, A_LUG[2]);     // 3(C) → 电阻体末端
-
-  function wiperLeadPoints() {
-    const p2 = polar(0.82, A_LUG[1], TRACE_Y);
-    const p3 = polar(1.48, A_LUG[1], TRACE_Y);
-    const p4 = polar(2.12, A_LUG[1], 0.48);
-    return [
-      [0, RING_Y - 0.03, 0],         // 中心集电环 / 转轴
-      [0, TRACE_Y, 0],
       [p2.x, p2.y, p2.z],
       [p3.x, p3.y, p3.z],
       [p4.x, p4.y, p4.z]
     ];
   }
 
-  // B：中心集电端 → 2号接线柱
-  put(gLead, tube(wiperLeadPoints(), 0.040, 40, 7), M.brass);
+  function ringLead(aRing, aLug) {
+    put(gLead, tube(ringLeadPoints(aRing, aLug), 0.050, 40, 8), M.brass);
+  }
+
+  // 左 / 右两条固定端连线：各自连接最近的电阻体端点，不跨越前侧开口。
+  // 1 在左侧 → 接 330° 电阻体左端；3 在右侧 → 接 30° 电阻体右端。
+  ringLead(A0 + SPAN, A_LUG[0]);     // 1(A) → 左侧电阻体端
+  ringLead(A0, A_LUG[2]);            // 3(C) → 右侧电阻体端
+
+  function wiperLeadPoints() {
+    const p2 = polar(0.66, A_LUG[1], 0.98);
+    const p3 = polar(1.28, A_LUG[1], 0.98);
+    const p4 = polar(1.82, A_LUG[1], 0.88);
+    const p5 = polar(2.12, A_LUG[1], 0.48);
+    return [
+      [0, RING_Y - 0.03, 0],         // 中心集电环 / 转轴
+      [0, 0.98, 0],
+      [p2.x, p2.y, p2.z],
+      [p3.x, p3.y, p3.z],
+      [p4.x, p4.y, p4.z],
+      [p5.x, p5.y, p5.z]
+    ];
+  }
+
+  // 中间连线：2(B) → 中心集电环。前侧缺口打开后，这条线应完整可见。
+  put(gLead, tube(wiperLeadPoints(), 0.055, 46, 8), M.brass);
 
   /* ================= 4A. 外部接线 + 动态电流路径 ================= */
   const gExternal = new THREE.Group();
@@ -781,22 +786,22 @@
     appendPoints(route, externalWirePoints(pair[0], 'in'), true);
 
     if (mode === '12') {
-      // 1(A) → 电阻体起端 → 当前接触点 → 滑动片 → 中心集电端 → 2(B)
-      appendPoints(route, ringLeadPoints(A0, A_LUG[0]), true);
-      appendPoints(route, ringArcPoints(A0, aW), false);
+      // 1(左固定端，330°) → 电阻体 → 当前接触点 → 滑动片 → 中心集电端 → 2
+      appendPoints(route, ringLeadPoints(A0 + SPAN, A_LUG[0]), true);
+      appendPoints(route, ringArcPoints(aW, A0 + SPAN), true);
       appendPoints(route, wiperArmPoints(aW, false), false);
       appendPoints(route, wiperLeadPoints(), false);
     } else if (mode === '13') {
-      // 1(A) → 整段电阻体 → 3(C)；2(B) 开路，不显示电流
-      appendPoints(route, ringLeadPoints(A0, A_LUG[0]), true);
-      appendPoints(route, ringArcPoints(A0, A0 + SPAN), false);
-      appendPoints(route, ringLeadPoints(A0 + SPAN, A_LUG[2]), false);
+      // 1(左) → 整段电阻体 → 3(右)；2 开路
+      appendPoints(route, ringLeadPoints(A0 + SPAN, A_LUG[0]), true);
+      appendPoints(route, ringArcPoints(A0, A0 + SPAN), true);
+      appendPoints(route, ringLeadPoints(A0, A_LUG[2]), false);
     } else {
-      // 2(B) → 中心集电端 → 滑动片 → 当前接触点 → 电阻体末端 → 3(C)
+      // 2 → 中心集电端 → 滑动片 → 当前接触点 → 电阻体 → 3(右固定端，30°)
       appendPoints(route, wiperLeadPoints(), true);
       appendPoints(route, wiperArmPoints(aW, true), false);
-      appendPoints(route, ringArcPoints(aW, A0 + SPAN), false);
-      appendPoints(route, ringLeadPoints(A0 + SPAN, A_LUG[2]), false);
+      appendPoints(route, ringArcPoints(A0, aW), true);
+      appendPoints(route, ringLeadPoints(A0, A_LUG[2]), false);
     }
 
     // 流出导线：第二个端子 → 外部
@@ -819,37 +824,39 @@
     currentArrows = [];
 
     const pts = currentRoutePoints().map(function (p) {
-      return new THREE.Vector3(p[0], p[1] + 0.010, p[2]);
+      return new THREE.Vector3(p[0], p[1] + 0.018, p[2]);
     });
     currentCurve = exactPath(pts);
 
-    // 很细的路径线只贴在真实导体上；被底板或外壳挡住的内部引线会自然被遮挡。
-    const pathGeo = new THREE.TubeGeometry(currentCurve, 220, 0.010, 6, false);
-    const pathMesh = new THREE.Mesh(pathGeo, flowMat);
-    pathMesh.renderOrder = 12;
-    gCurrent.add(pathMesh);
-
-    // 动态电流改用小光点，避免红色大箭头遮挡结构。
-    const dotGeo = new THREE.SphereGeometry(0.047, 12, 9);
-    const count = 9;
+    // 不再画连续红线，避免把“电流示意”误看成额外导线。
+    // 只画沿真实导体移动的红色箭头。
+    const arrowGeo = new THREE.ConeGeometry(0.062, 0.19, 10, 1);
+    const pathLen = Math.max(0.001, currentCurve.getLength());
+    const count = Math.max(14, Math.min(28, Math.round(pathLen / 0.42)));
     for (let i = 0; i < count; i++) {
-      const a = new THREE.Mesh(dotGeo, flowDotMat);
+      const a = new THREE.Mesh(arrowGeo, flowDotMat);
       a.userData.phase = i / count;
-      a.renderOrder = 13;
+      a.renderOrder = 15;
       currentArrows.push(a);
       gCurrent.add(a);
     }
     gCurrent.visible = state.showFlow;
   }
 
+  const FLOW_Y = new THREE.Vector3(0, 1, 0);
   function animateCurrent(ms) {
     if (!state.showFlow || !currentCurve) return;
-    const speed = ms * 0.00011;
+    const speed = ms * 0.000095;
     currentArrows.forEach(function (a) {
       const t = (a.userData.phase + speed) % 1;
       const p = currentCurve.getPointAt(t);
+      const tangent = currentCurve.getTangentAt(t);
       a.position.copy(p);
-      const pulse = 0.84 + 0.20 * Math.sin((t * 16 + speed * 18) * Math.PI);
+      if (tangent.lengthSq() > 1e-8) {
+        tangent.normalize();
+        a.quaternion.setFromUnitVectors(FLOW_Y, tangent);
+      }
+      const pulse = 0.94 + 0.10 * Math.sin((t * 18 + speed * 16) * Math.PI);
       a.scale.setScalar(pulse);
     });
   }
@@ -903,8 +910,8 @@
   function updateActiveOhm() {
     const frac = state.knob / SPAN;
     let r = R_TOTAL;
-    if (state.wiring === '12') r = R_TOTAL * frac;
-    if (state.wiring === '23') r = R_TOTAL * (1 - frac);
+    if (state.wiring === '12') r = R_TOTAL * (1 - frac);
+    if (state.wiring === '23') r = R_TOTAL * frac;
     elActiveOhm.innerHTML = r.toFixed(1) + '<i>Ω</i>';
   }
 
@@ -915,8 +922,8 @@
     elKnobRange.value = String(Math.round(state.knob));
     elKnobLabel.textContent = Math.round(state.knob) + '°';
     elAng.textContent = Math.round(A0 + state.knob) + '°';
-    elO12.innerHTML = (R_TOTAL * frac).toFixed(1) + '<i>Ω</i>';
-    elO23.innerHTML = (R_TOTAL * (1 - frac)).toFixed(1) + '<i>Ω</i>';
+    elO12.innerHTML = (R_TOTAL * (1 - frac)).toFixed(1) + '<i>Ω</i>';
+    elO23.innerHTML = (R_TOTAL * frac).toFixed(1) + '<i>Ω</i>';
     updateActiveOhm();
     rebuildCurrentPath();
   }
@@ -1148,9 +1155,9 @@
         labelOuterVisible: labelG.visible,
         wiring: state.wiring,
         showFlow: state.showFlow,
-        activeOhm: +(state.wiring === '12' ? R_TOTAL * state.knob / SPAN : (state.wiring === '23' ? R_TOTAL * (1 - state.knob / SPAN) : R_TOTAL)).toFixed(2),
-        ohm12: +(R_TOTAL * state.knob / SPAN).toFixed(2),
-        ohm23: +(R_TOTAL * (1 - state.knob / SPAN)).toFixed(2),
+        activeOhm: +(state.wiring === '12' ? R_TOTAL * (1 - state.knob / SPAN) : (state.wiring === '23' ? R_TOTAL * state.knob / SPAN : R_TOTAL)).toFixed(2),
+        ohm12: +(R_TOTAL * (1 - state.knob / SPAN)).toFixed(2),
+        ohm23: +(R_TOTAL * state.knob / SPAN).toFixed(2),
         contactR: +CONTACT_R.toFixed(3),
         wireCR: +WIRE_CR.toFixed(3),
         ringY: RING_Y,

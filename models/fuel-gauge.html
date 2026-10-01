@@ -258,6 +258,7 @@
   <div id="toast"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/three@0.144.0/build/three.min.js"></script>
+  <script src="../shared/current-flow-style.js"></script>
   <script>
 /* =========================================================
    图 16.4-12 油量测量装置 · 3D 交互演示
@@ -725,15 +726,15 @@
   /* ================= 7. 电流箭头 ================= */
   const gFlow = new THREE.Group();
   scene.add(gFlow);
-  const FLOW_N = 26, FLOW_SPEED = 3.0;
-  const arrowMat = new THREE.MeshBasicMaterial({ color: 0xe8372a });
-  const arrowGeo = new THREE.ConeGeometry(0.062, 0.20, 8);
-  arrowGeo.rotateZ(-Math.PI / 2);
+  const FLOW_STYLE = window.CurrentFlowStyle;
+  const FLOW_N = FLOW_STYLE.count, FLOW_SPEED = FLOW_STYLE.speed;
+  const arrowMat = FLOW_STYLE.createMaterial(THREE);
+  const arrowGeo = FLOW_STYLE.createGeometry(THREE);
   const arrows = [];
   for (let i = 0; i < FLOW_N; i++) { arrows.push(new THREE.Mesh(arrowGeo, arrowMat)); gFlow.add(arrows[i]); }
 
   let flowCurve = null, flowLen = 1;
-  const X_AXIS = new THREE.Vector3(1, 0, 0);
+  const X_AXIS = FLOW_STYLE.createAxis(THREE);
 
   function buildFlowPath() {
     const phi = state.phi;

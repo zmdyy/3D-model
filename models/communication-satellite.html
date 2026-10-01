@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>通信卫星与全球通信 · 3D 交互演示</title>
+<style>
+:root{--bg:#eef4fb;--card:rgba(255,255,255,.93);--ink:#172033;--muted:#66758a;--line:#dbe5f0;--blue:#2f6fd1}
+*{box-sizing:border-box}html,body{height:100%}
+body{margin:0;overflow:hidden;background:linear-gradient(180deg,#f6faff,#edf3f9);font-family:"Segoe UI","PingFang SC","Microsoft YaHei",system-ui,sans-serif;color:var(--ink)}
+#scene{width:100vw;height:100vh;display:block;touch-action:none;cursor:grab}
+.panel{position:fixed;left:18px;top:18px;z-index:20;width:min(380px,calc(100vw - 36px));max-height:calc(100vh - 36px);overflow:auto;background:var(--card);backdrop-filter:blur(12px);border:1px solid rgba(217,228,240,.95);border-radius:22px;box-shadow:0 16px 44px rgba(28,45,78,.13);padding:18px}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;padding:7px 10px;border-radius:999px;background:#eaf2ff;color:#2b62b4;font-size:12px;font-weight:800;letter-spacing:.05em}
+.eyebrow i{width:8px;height:8px;border-radius:50%;background:#3476d8;box-shadow:0 0 0 5px rgba(52,118,216,.13)}
+h1{font-size:25px;margin:13px 0 7px;line-height:1.2}.lead{margin:0;color:var(--muted);font-size:13px;line-height:1.75}
+.grp{margin-top:14px}.row{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:13px;font-weight:700;color:#35445c}.value{font-size:13px;color:#52647b;font-weight:700}
+input[type=range]{width:100%;accent-color:#326ed1}
+.seg,.tools{display:flex;gap:8px;flex-wrap:wrap;margin-top:9px}
+button{border:1px solid var(--line);background:#fff;color:#42516a;border-radius:12px;padding:9px 12px;font:inherit;font-size:12.5px;font-weight:750;cursor:pointer;transition:.18s}
+button:hover{border-color:#b9cce6}button.active{background:#2d5f9d;color:#fff;border-color:#2d5f9d}
+.stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:12px}
+.tile{border:1px solid var(--line);background:#f8fbfe;border-radius:14px;padding:9px}.tile b{display:block;font-size:10.5px;color:#76849a;margin-bottom:3px}.tile span{font-size:16px;font-weight:800;color:#1f304b}
+.tip{display:grid;gap:6px;margin-top:12px;padding-top:11px;border-top:1px dashed #d9e4ef}.tip span{display:flex;gap:8px;align-items:flex-start;color:#59677b;font-size:12.2px;line-height:1.55}
+.dot{width:10px;height:10px;border-radius:50%;margin-top:4px;flex:0 0 10px}.earth{background:#2f78c8}.sat{background:#d0a154}.beam{background:#e54234}.cover{background:#58b994}
+.hint{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:10;background:rgba(255,255,255,.93);border:1px solid #d9e4ef;border-radius:999px;padding:9px 14px;color:#617087;font-size:12px;box-shadow:0 6px 18px rgba(30,50,85,.08)}
+kbd{font:inherit;font-weight:800;background:#eef3f8;border:1px solid #dce5ef;border-bottom-width:2px;border-radius:7px;padding:1px 6px}
+@media(max-width:720px){.panel{left:12px;top:12px;width:min(370px,calc(100vw - 24px));padding:15px}.hint{left:12px;right:12px;transform:none;text-align:center}}
+</style>
+</head>
+<body>
+<canvas id="scene"></canvas>
+<section class="panel">
+  <span class="eyebrow"><i></i> PHYSICS · SATELLITE COMMUNICATION</span>
+  <h1>通信卫星与全球通信</h1>
+  <p class="lead">同步通信卫星位于赤道上空，绕地球运行的周期与地球自转周期相同、方向也相同，因此相对地面经度基本不变。卫星可以像“空中的微波中继站”一样接收、放大并转发信号。</p>
+
+  <div class="grp">
+    <div class="row"><label for="speedRange">演示速度</label><span class="value" id="speedValue">1.0×</span></div>
+    <input id="speedRange" type="range" min="0" max="30" value="10">
+  </div>
+
+  <div class="seg" id="modeSeg">
+    <button data-mode="sync" class="active">同步卫星</button>
+    <button data-mode="drift">不同步对比</button>
+  </div>
+
+  <div class="tools">
+    <button id="btnThree" class="active">3颗卫星</button>
+    <button id="btnCoverage" class="active">覆盖范围</button>
+    <button id="btnRelay" class="active">中继通信</button>
+    <button id="btnOrbit" class="active">同步轨道</button>
+    <button id="btnLabels" class="active">部件标注</button>
+    <button id="btnReset">默认视角</button>
+  </div>
+
+  <div class="stats">
+    <div class="tile"><b>地球自转周期</b><span>约 24 h</span></div>
+    <div class="tile"><b>卫星轨道周期</b><span id="periodValue">约 24 h</span></div>
+    <div class="tile"><b>相对地面</b><span id="relativeValue">近似静止</span></div>
+    <div class="tile"><b>覆盖认识</b><span id="coverValue">大部分地表</span></div>
+  </div>
+
+  <div class="tip">
+    <span><i class="dot earth"></i>蓝色球体＝地球；黄色圆环＝同步卫星所在的赤道上空轨道（距离比例为教学示意，不按真实比例）。</span>
+    <span><i class="dot sat"></i>3颗卫星相隔约 120° 布置时，可以近似覆盖除高纬和极区外的大部分地表。</span>
+    <span><i class="dot beam"></i>红色动态信号＝地面站 → 卫星 → 另一地面站的中继通信过程。</span>
+    <span><i class="dot cover"></i>绿色半透明区域＝每颗卫星的可通信覆盖示意。真实覆盖范围取决于天线、频率和地形等因素。</span>
+  </div>
+</section>
+<div class="hint">拖拽旋转 · 滚轮缩放 · <kbd>Shift</kbd>+拖拽平移 · 双指缩放</div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.144.0/build/three.min.js"></script>
+<script>
+(() => {
+'use strict';
+
+if(THREE.ColorManagement)THREE.ColorManagement.legacyMode=false;
+const canvas=document.getElementById('scene');
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true,preserveDrawingBuffer:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));
+renderer.outputEncoding=THREE.sRGBEncoding;
+renderer.toneMapping=THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure=1.08;
+renderer.shadowMap.enabled=true;
+renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0xeaf1f8);
+scene.fog=new THREE.Fog(0xeaf1f8,35,95);
+const camera=new THREE.PerspectiveCamera(38,1,.1,240);
+
+scene.add(new THREE.HemisphereLight(0xffffff,0x8799aa,.92));
+const key=new THREE.DirectionalLight(0xfffbf5,1.22);key.position.set(10,13,9);key.castShadow=true;key.shadow.mapSize.set(2048,2048);key.shadow.camera.left=-14;key.shadow.camera.right=14;key.shadow.camera.top=14;key.shadow.camera.bottom=-14;scene.add(key);
+const fill=new THREE.DirectionalLight(0xd7e8ff,.42);fill.position.set(-9,8,-11);scene.add(fill);
+const rim=new THREE.DirectionalLight(0xffffff,.30);rim.position.set(-6,8,15);scene.add(rim);
+
+const M={
+  earth:new THREE.MeshPhysicalMaterial({color:0x286fbd,roughness:.46,metalness:0,clearcoat:.30,clearcoatRoughness:.32,envMapIntensity:.46}),
+  land:new THREE.MeshPhysicalMaterial({color:0x6f9e65,roughness:.70,metalness:0,clearcoat:.06}),
+  atmosphere:new THREE.MeshPhysicalMaterial({color:0x78b8ff,roughness:.3,metalness:0,transparent:true,opacity:.12,side:THREE.BackSide,depthWrite:false}),
+  orbit:new THREE.MeshBasicMaterial({color:0xd7a63b,transparent:true,opacity:.75}),
+  satBody:new THREE.MeshStandardMaterial({color:0xbcc6cf,roughness:.24,metalness:.94,envMapIntensity:1.1}),
+  satGold:new THREE.MeshPhysicalMaterial({color:0xb28a3d,roughness:.28,metalness:.82,clearcoat:.18,envMapIntensity:.92}),
+  panel:new THREE.MeshPhysicalMaterial({color:0x173d78,roughness:.34,metalness:.40,clearcoat:.32,clearcoatRoughness:.25,envMapIntensity:.72}),
+  dish:new THREE.MeshStandardMaterial({color:0xd4d9de,roughness:.30,metalness:.82,envMapIntensity:1.0,side:THREE.DoubleSide}),
+  station:new THREE.MeshStandardMaterial({color:0x5e6977,roughness:.38,metalness:.68}),
+  beam:new THREE.MeshBasicMaterial({color:0xe54234}),
+  footprint:new THREE.MeshBasicMaterial({color:0x53b38f,transparent:true,opacity:.13,side:THREE.DoubleSide,depthWrite:false})
+};
+
+const EARTH_R=2.75, ORBIT_R=6.15;
+const root=new THREE.Group();scene.add(root);
+const earthG=new THREE.Group(),satFrame=new THREE.Group(),orbitG=new THREE.Group(),coverageG=new THREE.Group(),relayG=new THREE.Group(),labelG=new THREE.Group();
+root.add(earthG,orbitG,satFrame,coverageG,relayG,labelG);
+
+function put(parent,geo,mat,pos,rot){const m=new THREE.Mesh(geo,mat);if(pos)m.position.set(...pos);if(rot)m.rotation.set(...rot);m.castShadow=true;m.receiveShadow=true;parent.add(m);return m}
+function latLon(lat,lon,r){const la=lat*Math.PI/180,lo=lon*Math.PI/180;return new THREE.Vector3(r*Math.cos(la)*Math.cos(lo),r*Math.sin(la),r*Math.cos(la)*Math.sin(lo))}
+function tube(a,b,r,mat,parent){
+  const curve=new THREE.LineCurve3(a,b);const g=new THREE.TubeGeometry(curve,20,r,7,false);return put(parent,g,mat);
+}
+function makeLabel(text,color,h,pos,parent){
+  const c=document.createElement('canvas');c.width=512;c.height=144;const x=c.getContext('2d');
+  x.font='bold 72px "Microsoft YaHei","PingFang SC",sans-serif';x.textAlign='center';x.textBaseline='middle';x.lineJoin='round';x.lineWidth=14;x.strokeStyle='rgba(255,255,255,.95)';x.strokeText(text,256,74);x.fillStyle=color;x.fillText(text,256,74);
+  const tex=new THREE.CanvasTexture(c);tex.encoding=THREE.sRGBEncoding;const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,depthWrite:false}));sp.scale.set(h*3.5,h,1);sp.position.copy(pos);(parent||labelG).add(sp);return sp;
+}
+
+// Earth
+put(earthG,new THREE.SphereGeometry(EARTH_R,96,64),M.earth);
+put(earthG,new THREE.SphereGeometry(EARTH_R*1.035,72,48),M.atmosphere);
+
+// simple continents as low relief patches
+[
+  [28,-100,1.05,.52],[10,-65,.82,.42],[18,20,1.20,.50],[-20,25,.84,.40],[42,90,1.35,.56],[-25,135,.70,.34]
+].forEach(([lat,lon,sx,sy])=>{
+  const p=latLon(lat,lon,EARTH_R*1.008);
+  const patch=put(earthG,new THREE.SphereGeometry(.30,24,12,0,Math.PI*2,0,Math.PI*.50),M.land);
+  patch.scale.set(sx,sy,.18);
+  patch.position.copy(p);
+  patch.lookAt(new THREE.Vector3(0,0,0));
+});
+
+// globe grid
+for(let lat=-60;lat<=60;lat+=30){
+  const y=EARTH_R*Math.sin(lat*Math.PI/180),rr=EARTH_R*Math.cos(lat*Math.PI/180);
+  const g=new THREE.TorusGeometry(rr,.008,5,160);g.rotateX(Math.PI/2);const m=new THREE.Mesh(g,new THREE.MeshBasicMaterial({color:0xc9e0f7,transparent:true,opacity:.36}));m.position.y=y;earthG.add(m);
+}
+for(let lon=0;lon<180;lon+=30){
+  const pts=[];for(let a=-90;a<=90;a+=4)pts.push(latLon(a,lon,EARTH_R*1.003));
+  const g=new THREE.BufferGeometry().setFromPoints(pts);earthG.add(new THREE.Line(g,new THREE.LineBasicMaterial({color:0xc9e0f7,transparent:true,opacity:.28})));
+  const pts2=[];for(let a=-90;a<=90;a+=4)pts2.push(latLon(a,lon+180,EARTH_R*1.003));
+  const g2=new THREE.BufferGeometry().setFromPoints(pts2);earthG.add(new THREE.Line(g2,new THREE.LineBasicMaterial({color:0xc9e0f7,transparent:true,opacity:.28})));
+}
+
+// orbit ring
+const orbitMesh=put(orbitG,new THREE.TorusGeometry(ORBIT_R,.035,8,240),M.orbit,[0,0,0],[Math.PI/2,0,0]);
+
+function makeSatellite(lonDeg){
+  const pivot=new THREE.Group();satFrame.add(pivot);pivot.rotation.y=-lonDeg*Math.PI/180;
+  const sat=new THREE.Group();sat.position.set(ORBIT_R,0,0);pivot.add(sat);
+  put(sat,new THREE.BoxGeometry(.52,.42,.62),M.satGold);
+  put(sat,new THREE.BoxGeometry(1.05,.12,.56),M.panel,[-.80,0,0]);
+  put(sat,new THREE.BoxGeometry(1.05,.12,.56),M.panel,[.80,0,0]);
+  put(sat,new THREE.CylinderGeometry(.18,.30,.14,32,1,true),M.dish,[0,-.34,0],[0,0,0]);
+  put(sat,new THREE.CylinderGeometry(.035,.035,.28,12),M.satBody,[0,-.20,0]);
+  sat.rotation.z=-Math.PI/2;
+  return {pivot,sat,lon:lonDeg};
+}
+const sats=[makeSatellite(0),makeSatellite(120),makeSatellite(240)];
+
+// coverage cones
+function makeCoverageFor(satObj){
+  const satWorld=new THREE.Vector3(ORBIT_R,0,0).applyAxisAngle(new THREE.Vector3(0,1,0),-satObj.lon*Math.PI/180);
+  const base=satWorld.clone().normalize().multiplyScalar(EARTH_R*.58);
+  const mid=satWorld.clone().add(base).multiplyScalar(.5);
+  const dir=satWorld.clone().sub(base);const h=dir.length();
+  const geo=new THREE.ConeGeometry(2.05,h,64,1,true);
+  const mesh=new THREE.Mesh(geo,M.footprint);
+  mesh.position.copy(mid);
+  mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),dir.clone().normalize());
+  coverageG.add(mesh);
+  return mesh;
+}
+const covers=sats.map(makeCoverageFor);
+
+// ground stations and relay
+const stationA=new THREE.Group(),stationB=new THREE.Group();earthG.add(stationA,stationB);
+function addStation(group,lat,lon,color){
+  const p=latLon(lat,lon,EARTH_R*1.02);group.position.copy(p);group.lookAt(p.clone().multiplyScalar(1.5));
+  put(group,new THREE.CylinderGeometry(.06,.09,.20,16),M.station,[0,.10,0]);
+  const dish=put(group,new THREE.CylinderGeometry(.02,.17,.05,28,1,true),new THREE.MeshStandardMaterial({color,roughness:.28,metalness:.72}),[0,.28,0],[Math.PI,0,0]);
+  return p;
+}
+const stationAPos=addStation(stationA,12,-12,0xe06b3f);
+const stationBPos=addStation(stationB,4,42,0x4e8fd3);
+
+const beamGroup=new THREE.Group();relayG.add(beamGroup);
+let beamCurve=null,beamArrows=[];
+function rebuildRelay(){
+  while(beamGroup.children.length){const o=beamGroup.children.pop();if(o.geometry)o.geometry.dispose();}
+  beamArrows=[];
+  const satPos=new THREE.Vector3(ORBIT_R,0,0);
+  const a=stationAPos.clone(),b=stationBPos.clone();
+  tube(a,satPos,.022,M.beam,beamGroup);tube(satPos,b,.022,M.beam,beamGroup);
+  const pts=[a.clone(),satPos.clone(),b.clone()];
+  beamCurve=new THREE.CatmullRomCurve3(pts,false,'centripetal',.1);
+  const arrowGeo=new THREE.ConeGeometry(.07,.22,8);arrowGeo.rotateZ(-Math.PI/2);
+  for(let i=0;i<16;i++){const m=new THREE.Mesh(arrowGeo,M.beam);beamGroup.add(m);beamArrows.push(m)}
+}
+rebuildRelay();
+
+makeLabel('地球', '#22588d', .52, new THREE.Vector3(-1.6,3.55,0));
+makeLabel('同步轨道', '#9d7a2e', .48, new THREE.Vector3(0,0,6.75));
+makeLabel('通信卫星', '#7c642d', .48, new THREE.Vector3(6.5,1.0,0));
+makeLabel('地面站 A', '#a94b2e', .40, stationAPos.clone().multiplyScalar(1.25));
+makeLabel('地面站 B', '#2b69a6', .40, stationBPos.clone().multiplyScalar(1.25));
+
+// state + UI
+const state={speed:1,mode:'sync',three:true,coverage:true,relay:true,orbit:true,labels:true,t:0};
+const speedRange=document.getElementById('speedRange'),speedValue=document.getElementById('speedValue'),periodValue=document.getElementById('periodValue'),relativeValue=document.getElementById('relativeValue'),coverValue=document.getElementById('coverValue');
+speedRange.addEventListener('input',e=>{state.speed=+e.target.value/10;speedValue.textContent=state.speed.toFixed(1)+'×'});
+document.getElementById('modeSeg').addEventListener('click',e=>{
+  const b=e.target.closest('[data-mode]');if(!b)return;state.mode=b.dataset.mode;
+  document.querySelectorAll('#modeSeg button').forEach(x=>x.classList.toggle('active',x===b));
+  const sync=state.mode==='sync';periodValue.textContent=sync?'约 24 h':'与 24 h 不同';relativeValue.textContent=sync?'近似静止':'相对地面漂移';
+});
+function toggle(id,key,obj){document.getElementById(id).addEventListener('click',function(){state[key]=!state[key];this.classList.toggle('active',state[key]);if(obj)obj.visible=state[key]})}
+toggle('btnCoverage','coverage',coverageG);toggle('btnRelay','relay',relayG);toggle('btnOrbit','orbit',orbitG);toggle('btnLabels','labels',labelG);
+document.getElementById('btnThree').addEventListener('click',function(){state.three=!state.three;this.classList.toggle('active',state.three);sats[1].pivot.visible=sats[2].pivot.visible=state.three;covers[1].visible=covers[2].visible=state.three&&state.coverage;coverValue.textContent=state.three?'大部分地表':'单星局部覆盖'});
+
+// mature camera controls
+const view={theta:.72,phi:1.02,dist:17.5,distTarget:17.5,target:new THREE.Vector3(0,.1,0)};
+const DEF={theta:.72,phi:1.02,dist:17.5,target:[0,.1,0]};
+function clamp(v,a,b){return v<a?a:(v>b?b:v)}
+function applyCamera(){const sp=Math.sin(view.phi),cp=Math.cos(view.phi);camera.position.set(view.target.x+view.dist*sp*Math.sin(view.theta),view.target.y+view.dist*cp,view.target.z+view.dist*sp*Math.cos(view.theta));camera.lookAt(view.target)}
+function reset(){view.theta=DEF.theta;view.phi=DEF.phi;view.dist=view.distTarget=DEF.dist;view.target.set(...DEF.target)}reset();document.getElementById('btnReset').addEventListener('click',reset);
+const pointers=new Map();let dragging=false,dragMode=null,last={x:0,y:0},pinchStart=0,pinchDist=0;
+canvas.addEventListener('pointerdown',function(e){canvas.setPointerCapture&&canvas.setPointerCapture(e.pointerId);pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});canvas.style.cursor='grabbing';if(pointers.size===1){dragMode=(e.button===2||e.shiftKey)?'pan':'orbit';dragging=true;last={x:e.clientX,y:e.clientY}}else if(pointers.size===2){dragMode='pinch';dragging=false;const pts=Array.from(pointers.values());pinchDist=Math.hypot(pts[0].x-pts[1].x,pts[0].y-pts[1].y);pinchStart=view.distTarget}e.preventDefault()});
+canvas.addEventListener('pointermove',function(e){if(!pointers.has(e.pointerId))return;const prev=pointers.get(e.pointerId),dx=e.clientX-prev.x,dy=e.clientY-prev.y;pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});if(dragMode==='pinch'&&pointers.size===2){const pts=Array.from(pointers.values()),d=Math.hypot(pts[0].x-pts[1].x,pts[0].y-pts[1].y);if(pinchDist>0)view.distTarget=clamp(pinchStart*pinchDist/d,8,34);e.preventDefault();return}if(!dragging)return;if(dragMode==='pan'){const scale=view.dist*.0016;const right=new THREE.Vector3().setFromMatrixColumn(camera.matrix,0),up=new THREE.Vector3().setFromMatrixColumn(camera.matrix,1);view.target.addScaledVector(right,-dx*scale);view.target.addScaledVector(up,dy*scale)}else{view.theta-=dx*.0058;view.phi=clamp(view.phi-dy*.0055,.10,1.62)}e.preventDefault()});
+function endPointer(e){pointers.delete(e.pointerId);if(pointers.size===0){dragging=false;dragMode=null;canvas.style.cursor='grab'}else if(pointers.size===1&&dragMode==='pinch'){const p=Array.from(pointers.values())[0];dragMode='orbit';dragging=true;last={x:p.x,y:p.y}}}
+canvas.addEventListener('pointerup',endPointer);canvas.addEventListener('pointercancel',endPointer);canvas.addEventListener('pointerleave',e=>{if(pointers.size)endPointer(e)});
+canvas.addEventListener('wheel',function(e){e.preventDefault();view.distTarget=clamp(view.distTarget*Math.exp(e.deltaY*.0011),8,34)},{passive:false});canvas.addEventListener('contextmenu',e=>e.preventDefault());
+
+function resize(){const w=innerWidth,h=innerHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix()}addEventListener('resize',resize);resize();
+
+function updateRelayArrows(t){
+  if(!state.relay||!beamCurve)return;const axis=new THREE.Vector3(1,0,0),q=new THREE.Quaternion();
+  for(let i=0;i<beamArrows.length;i++){const u=(i/beamArrows.length+t*.18)%1,p=beamCurve.getPointAt(u),tan=beamCurve.getTangentAt(u).normalize();beamArrows[i].position.copy(p);q.setFromUnitVectors(axis,tan);beamArrows[i].quaternion.copy(q)}
+}
+function animate(ms){
+  requestAnimationFrame(animate);
+  const dt=.001;const t=ms*.001;view.dist+=(view.distTarget-view.dist)*.12;applyCamera();
+  const earthOmega=.16*state.speed;
+  const satOmega=(state.mode==='sync'?earthOmega:earthOmega*1.32);
+  earthG.rotation.y=t*earthOmega;
+  satFrame.rotation.y=t*satOmega;
+  coverageG.rotation.y=t*satOmega;
+  relayG.rotation.y=t*earthOmega;
+  labelG.rotation.y=0;
+  updateRelayArrows(t);
+  renderer.render(scene,camera);
+}
+requestAnimationFrame(animate);
+})();
+</script>
+</body>
+</html>

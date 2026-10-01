@@ -169,7 +169,7 @@
 
   <div class="head">
     <h1>滑动变阻器 <span>· 3D 交互演示</span></h1>
-    <p>A、B 接电阻丝两端，C、D 接滑杆两端；滑片 P 把滑杆与电阻丝连通。<b>一上一下</b>接入才能改变电阻。选定接线柱后自动接上外接导线，用<b>沿真实导体运动的红色光点</b>显示电流方向。</p>
+    <p>A、B 接电阻丝两端，C、D 接滑杆两端；滑片 P 把滑杆与电阻丝连通。<b>一上一下</b>接入才能改变电阻。选定接线柱后自动接上外接导线，用<b>沿真实导体运动的小红箭头</b>显示电流方向。</p>
   </div>
 
   <div class="panel" id="panel">
@@ -212,13 +212,13 @@
         <button data-dir="1" class="active">正 接</button>
         <button data-dir="-1">反 接</button>
       </div>
-      <div class="mini">接入的两个接线柱上各引出一根导线；红色光点只沿实际导电路径流动。点「正接 / 反接」可切换方向。</div>
+      <div class="mini">接入的两个接线柱上各引出一根导线；小红箭头只沿实际导电路径流动，并始终指向电流方向。点「正接 / 反接」可切换方向。</div>
     </div>
 
     <div class="grp">
       <div class="lbl">显示选项</div>
       <div class="toggles">
-        <button id="btnFlow" class="active">电流流动</button>
+        <button id="btnFlow" class="active">电流箭头</button>
         <button id="btnMarks" class="active">接线柱标记</button>
         <button id="btnAxis" class="active">装配轴线</button>
       </div>
@@ -239,7 +239,7 @@
       <span><i class="blue"></i>A、B＝电阻丝两端（下接线柱，柱身向盒外微倾）</span>
       <span><i class="gray"></i>C、D＝滑杆两端（上接线柱，等电位）</span>
       <span><i class="amber"></i>滑片 P 末端压在电阻丝表面的窄裸金属接触线上</span>
-      <span><i class="red"></i>红色光点＝电流方向，只沿真实导体路径动态流动</span>
+      <span><i class="red"></i>小红箭头＝电流方向，只沿真实导体路径动态流动</span>
       <span class="ok">✓ 一上一下：滑片移动 → 阻值连续变化</span>
       <span class="bad">✗ A+B：全部丝接入，滑片失效</span>
       <span class="bad">✗ C+D：只有滑杆，近似短路</span>
@@ -815,12 +815,13 @@
     color: 0x3b424e, roughness: 0.66, metalness: 0.05, envMapIntensity: 0.45
   });
   const arrowMat = new THREE.MeshBasicMaterial({
-    color: 0xff3b30, transparent: true, opacity: 0.92,
-    depthTest: false, depthWrite: false
+    color: 0xff3b30, transparent: true, opacity: 0.94,
+    depthTest: true, depthWrite: false
   });
-  // 不再用大红三角。用尺寸很小的发光球沿导体移动，避免误读为“箭头指向某个零件”。
-  const arrowGeo = new THREE.SphereGeometry(0.105, 14, 10);
-  const AXIS_X = new THREE.Vector3(1, 0, 0);
+  // 小箭头只表示电流方向，尺寸控制得很小，避免再次遮挡模型结构。
+  // ConeGeometry 默认箭头轴沿 +Y，运行时按路径切线实时旋转。
+  const arrowGeo = new THREE.ConeGeometry(0.075, 0.22, 10, 1);
+  const AXIS_Y = new THREE.Vector3(0, 1, 0);
   const FLOW_SPEED = 4.6;                    // 箭头流速（cm/s）
   let travel = 0;
 
@@ -864,12 +865,12 @@
     };
   }
 
-  // 按段长自动排布箭头（段长变化时增减数量；段太短就不画，避免箭头挤成一团）
-  // f.want 存在时以它为准（绕线螺旋按“每匝 2 个箭头”计数）
+  // 按段长自动排布小箭头（段长变化时增减数量；段太短就不画，避免拥挤）。
+  // 螺旋电阻丝单独限制数量，确保箭头只是在路径上“走”，而不是铺满表面。
   function syncArrows(f) {
     const wantRaw = (f.want != null) ? f.want
       : (f.length < 0.8 ? 0 : Math.max(1, Math.round(f.length / f.spacing)));
-    const want = Math.min(5, wantRaw);
+    const want = Math.min(4, wantRaw);
     while (f.arrows.length > want) f.group.remove(f.arrows.pop());
     while (f.arrows.length < want) {
       const m = new THREE.Mesh(arrowGeo, arrowMat);
@@ -936,8 +937,8 @@
 
   function setFlowHelix(f, xa, xb) {
     const turns = Math.abs(xb - xa) / COIL_PITCH;
-    // 螺旋电阻丝只保留少量移动光点，避免在圆柱表面出现一圈圈散乱红三角。
-    const want = turns < 0.5 ? 0 : Math.min(4, Math.max(1, Math.round(turns / 8)));
+    // 螺旋电阻丝只保留少量小箭头，沿真实绕线前进，不在表面散铺。
+    const want = turns < 0.5 ? 0 : Math.min(3, Math.max(1, Math.round(turns / 10)));
     setFlowCurve(f, 'h' + xa.toFixed(2) + '|' + xb.toFixed(2), helixPoints(xa, xb), want);
   }
 
@@ -1163,7 +1164,11 @@
         u -= Math.floor(u);
         const m = f.arrows[i];
         m.position.copy(flowPoint(f, u));
-        // 球形光点不需要方向旋转；路径方向由它的运动方向表达。
+        const tangent = flowTangent(f, u).clone().multiplyScalar(sgn);
+        if (tangent.lengthSq() > 1e-8) {
+          tangent.normalize();
+          m.quaternion.setFromUnitVectors(AXIS_Y, tangent);
+        }
       }
     }
   }

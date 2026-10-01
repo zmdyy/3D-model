@@ -198,7 +198,7 @@
       <div class="readout">
         <div class="rv"><span>当前接入电阻</span><b id="activeOhm">10.0<i>Ω</i></b></div>
       </div>
-      <div class="mini">只给当前选中的两个端子接线。电流箭头的形式、大小、密度和速度与油量测量装置统一，并沿真实导体经过滑动片接触点。</div>
+      <div class="mini">只给当前选中的两个端子接线。电流箭头沿真实导体路径运动，并整体抬到导体上方显示，避免被电阻体和滑动片遮挡。</div>
     </div>
 
     <div class="grp">
@@ -236,7 +236,7 @@
       <span><i class="copper"></i>铜色环形段＝电阻体；1 接左端、3 接右端，2 通过中间金属连线接中心集电环</span>
       <span><i class="silver"></i>金属滑动片＝从中心转轴伸出，末端触点压在电阻体上；2 接中心集电端</span>
       <span><i class="gold"></i>顶部一字槽＝旋钮，转它就改变分压比</span>
-      <span><i class="red"></i>红色箭头＝电流方向；形式、大小与密度和油量测量装置统一</span>
+      <span><i class="red"></i>红色箭头＝电流方向；箭头位于导体上方，便于观察完整电流路径</span>
     </div>
   </div>
   <button id="panelOpen" title="展开面板">‹</button>
@@ -822,8 +822,9 @@
     clearMeshes(gCurrent);
     currentArrows = [];
 
+    const FLOW_LIFT = 0.145; // 把电流箭头抬到导体上方，避免被电阻体、滑动片和金属连线遮挡
     const pts = currentRoutePoints().map(function (p) {
-      return new THREE.Vector3(p[0], p[1] + 0.018, p[2]);
+      return new THREE.Vector3(p[0], p[1] + FLOW_LIFT, p[2]);
     });
     currentCurve = exactPath(pts);
     currentLen = Math.max(0.001, currentCurve.getLength());
@@ -834,7 +835,7 @@
     for (let i = 0; i < count; i++) {
       const a = new THREE.Mesh(arrowGeo, flowArrowMat);
       a.userData.phase = i / count;
-      a.renderOrder = 15;
+      a.renderOrder = 24;
       currentArrows.push(a);
       gCurrent.add(a);
     }

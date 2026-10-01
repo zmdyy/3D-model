@@ -8,7 +8,7 @@
   :root{--ink:#172033;--muted:#657287;--line:#dbe5f0;--blue:#2f69bd;--card:rgba(255,255,255,.93);--shadow:0 16px 46px rgba(27,44,75,.12)}
   *{box-sizing:border-box} html,body{height:100%}
   body{margin:0;overflow:hidden;background:#edf3f9;color:var(--ink);font-family:"Segoe UI","PingFang SC","Microsoft YaHei",system-ui,sans-serif}
-  #scene{width:100vw;height:100vh;display:block}
+  #scene{width:100vw;height:100vh;display:block;touch-action:none;cursor:grab}
   .panel{position:fixed;left:18px;top:18px;z-index:20;width:min(370px,calc(100vw - 36px));padding:18px;border:1px solid rgba(216,226,238,.96);border-radius:22px;background:var(--card);backdrop-filter:blur(12px);box-shadow:var(--shadow)}
   .eyebrow{display:inline-flex;align-items:center;gap:8px;padding:7px 10px;border-radius:999px;background:#eaf2ff;color:#2f64b8;font-size:11.5px;font-weight:800;letter-spacing:.055em}.eyebrow i{width:8px;height:8px;border-radius:50%;background:#3c78d6;box-shadow:0 0 0 5px rgba(60,120,214,.12)}
   h1{margin:13px 0 7px;font-size:25px;line-height:1.2}.lead{margin:0;color:var(--muted);font-size:13px;line-height:1.72}
@@ -271,11 +271,96 @@ document.getElementById('playSeg').addEventListener('click',e=>{const b=e.target
 function toggle(id,key,obj){document.getElementById(id).addEventListener('click',function(){state[key]=!state[key];this.classList.toggle('active',state[key]);obj.visible=state[key]})}toggle('btnLabels','showLabels',labelG);toggle('btnFlow','showFlow',flowG);toggle('btnForce','showForce',forceG);
 document.getElementById('btnSection').addEventListener('click',function(){state.section=!state.section;this.classList.toggle('active',state.section);cutG.visible=state.section;fullG.visible=!state.section});cutG.visible=true;fullG.visible=false;
 
-const view={theta:.05,phi:1.17,dist:18.6,distTarget:18.6,target:new THREE.Vector3(1.10,0,0)};const DEF={theta:.05,phi:1.17,dist:18.6,target:[1.10,0,0]};
-function cameraApply(){const sp=Math.sin(view.phi),cp=Math.cos(view.phi);camera.position.set(view.target.x+view.dist*sp*Math.sin(view.theta),view.target.y+view.dist*cp,view.target.z+view.dist*sp*Math.cos(view.theta));camera.lookAt(view.target)}
-function reset(){view.theta=DEF.theta;view.phi=DEF.phi;view.dist=view.distTarget=DEF.dist;view.target.set(...DEF.target)}reset();document.getElementById('btnReset').addEventListener('click',reset);
-let drag=false,pan=false,lx=0,ly=0;canvas.addEventListener('pointerdown',e=>{drag=true;pan=e.shiftKey;lx=e.clientX;ly=e.clientY;canvas.setPointerCapture(e.pointerId)});canvas.addEventListener('pointermove',e=>{if(!drag)return;const dx=e.clientX-lx,dy=e.clientY-ly;lx=e.clientX;ly=e.clientY;if(pan){const k=view.dist*.0018;const right=new THREE.Vector3(1,0,0).applyAxisAngle(new THREE.Vector3(0,1,0),view.theta-Math.PI/2);view.target.addScaledVector(right,-dx*k);view.target.y+=dy*k}else{view.theta-=dx*.006;view.phi=Math.max(.18,Math.min(Math.PI-.18,view.phi+dy*.006))}});['pointerup','pointercancel','pointerleave'].forEach(ev=>canvas.addEventListener(ev,()=>drag=false));canvas.addEventListener('wheel',e=>{e.preventDefault();view.distTarget=Math.max(9,Math.min(32,view.distTarget*(e.deltaY>0?1.08:.92)))},{passive:false});
-function resize(){const w=innerWidth,h=innerHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix()}addEventListener('resize',resize);resize();
+const view={theta:.05,phi:1.17,dist:18.6,distTarget:18.6,target:new THREE.Vector3(1.10,0,0)};
+const DEF={theta:.05,phi:1.17,dist:18.6,target:[1.10,0,0]};
+function clamp(v,a,b){return v<a?a:(v>b?b:v)}
+function cameraApply(){
+  const sp=Math.sin(view.phi),cp=Math.cos(view.phi);
+  camera.position.set(
+    view.target.x+view.dist*sp*Math.sin(view.theta),
+    view.target.y+view.dist*cp,
+    view.target.z+view.dist*sp*Math.cos(view.theta)
+  );
+  camera.lookAt(view.target);
+}
+function reset(){
+  view.theta=DEF.theta;view.phi=DEF.phi;view.dist=view.distTarget=DEF.dist;view.target.set(...DEF.target);
+}
+reset();document.getElementById('btnReset').addEventListener('click',reset);
+
+// 与滑动变阻器 / 电位器一致的成熟相机交互：
+// 单指/左键旋转，Shift+拖拽或右键平移，双指缩放，滚轮平滑缩放。
+const pointers=new Map();
+let dragging=false,dragMode=null,last={x:0,y:0},pinchStart=0,pinchDist=0;
+
+canvas.addEventListener('pointerdown',function(e){
+  canvas.setPointerCapture&&canvas.setPointerCapture(e.pointerId);
+  pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  canvas.style.cursor='grabbing';
+
+  if(pointers.size===1){
+    dragMode=(e.button===2||e.shiftKey)?'pan':'orbit';
+    dragging=true;
+    last={x:e.clientX,y:e.clientY};
+  }else if(pointers.size===2){
+    dragMode='pinch';
+    dragging=false;
+    const pts=Array.from(pointers.values());
+    pinchDist=Math.hypot(pts[0].x-pts[1].x,pts[0].y-pts[1].y);
+    pinchStart=view.distTarget;
+  }
+  e.preventDefault();
+});
+
+canvas.addEventListener('pointermove',function(e){
+  if(!pointers.has(e.pointerId)) return;
+  const prev=pointers.get(e.pointerId);
+  const dx=e.clientX-prev.x,dy=e.clientY-prev.y;
+  pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
+
+  if(dragMode==='pinch'&&pointers.size===2){
+    const pts=Array.from(pointers.values());
+    const d=Math.hypot(pts[0].x-pts[1].x,pts[0].y-pts[1].y);
+    if(pinchDist>0) view.distTarget=clamp(pinchStart*pinchDist/d,8.5,34);
+    e.preventDefault();
+    return;
+  }
+  if(!dragging) return;
+
+  if(dragMode==='pan'){
+    const scale=view.dist*.0016;
+    const right=new THREE.Vector3().setFromMatrixColumn(camera.matrix,0);
+    const up=new THREE.Vector3().setFromMatrixColumn(camera.matrix,1);
+    view.target.addScaledVector(right,-dx*scale);
+    view.target.addScaledVector(up,dy*scale);
+  }else{
+    view.theta-=dx*.0058;
+    view.phi=clamp(view.phi-dy*.0055,.10,1.62);
+  }
+  e.preventDefault();
+});
+
+function endPointer(e){
+  pointers.delete(e.pointerId);
+  if(pointers.size===0){
+    dragging=false;dragMode=null;canvas.style.cursor='grab';
+  }else if(pointers.size===1&&dragMode==='pinch'){
+    const p=Array.from(pointers.values())[0];
+    dragMode='orbit';dragging=true;last={x:p.x,y:p.y};
+  }
+}
+canvas.addEventListener('pointerup',endPointer);
+canvas.addEventListener('pointercancel',endPointer);
+canvas.addEventListener('pointerleave',function(e){if(pointers.size)endPointer(e)});
+
+canvas.addEventListener('wheel',function(e){
+  e.preventDefault();
+  view.distTarget=clamp(view.distTarget*Math.exp(e.deltaY*.0011),8.5,34);
+},{passive:false});
+canvas.addEventListener('contextmenu',e=>e.preventDefault());
+
+function resize(){const w=innerWidth,h=innerHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix()}
+addEventListener('resize',resize);resize();
 
 const MOVE_MAX=.24;
 function updateFlow(t,current){

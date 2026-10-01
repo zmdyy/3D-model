@@ -198,7 +198,7 @@
       <div class="readout">
         <div class="rv"><span>当前接入电阻</span><b id="activeOhm">10.0<i>Ω</i></b></div>
       </div>
-      <div class="mini">只给当前选中的两个端子接线。红色箭头只沿真实导体运动，不再绘制连续红线；箭头更密，便于直接判断电流方向。</div>
+      <div class="mini">只给当前选中的两个端子接线。电流箭头的形式、大小、密度和速度与油量测量装置统一，并沿真实导体经过滑动片接触点。</div>
     </div>
 
     <div class="grp">
@@ -233,11 +233,10 @@
     <div class="tip">
       <b>结构对照</b>
       <span><i class="red"></i>红棕色圆盘＝外壳（可透明 / 可隐藏）</span>
-      <span><i class="black"></i>黑色圆环＝环形绝缘骨架</span>
       <span><i class="copper"></i>铜色环形段＝电阻体；1 接左端、3 接右端，2 通过中间金属连线接中心集电环</span>
       <span><i class="silver"></i>金属滑动片＝从中心转轴伸出，末端触点压在电阻体上；2 接中心集电端</span>
       <span><i class="gold"></i>顶部一字槽＝旋钮，转它就改变分压比</span>
-      <span><i class="red"></i>红色箭头＝当前接法中的电流方向，只沿真实导体路径运动</span>
+      <span><i class="red"></i>红色箭头＝电流方向；形式、大小与密度和油量测量装置统一</span>
     </div>
   </div>
   <button id="panelOpen" title="展开面板">‹</button>
@@ -246,13 +245,14 @@
   <div id="toast"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/three@0.144.0/build/three.min.js"></script>
+  <script src="../shared/current-flow-style.js"></script>
   <script>
 /* =========================================================
    圆盘式线绕电位器 · 3D 交互演示
    ---------------------------------------------------------
    结构（按实物照片装配关系建模，1 单位 ≈ 1 cm）：
      · 金属底盘 + 胶木绝缘盘：基准件，3 个焊片从底盘侧面伸出
-     · 环形绝缘骨架（黑色圆环）：坐在绝缘盘上
+     · 环形电阻体：前侧保留开口，用于展示三端内部连线
      · 电阻丝：绕骨架环向密绕 100 匝，电气有效 300°
      · 中心轴：从底盘穿出外壳顶
      · 滑片：弓形弹片，装在轴上随轴转，两端触点压在电阻丝内侧面上
@@ -396,7 +396,8 @@
   const A0 = 30, SPAN = 300;        // 电气有效区：α ∈ [30°, 330°]
   const A_LUG = [-55, 0, 55];       // 三个焊片方位：1 / 2(滑片) / 3
 
-  const CONTACT_R = WIRE_CR - WIRE_R - 0.055;  // 滑片触点半径 ≈ 1.128（压住丝的内表面）
+  const CONTACT_FACE = WIRE_CR - WIRE_R;       // 电阻丝内侧实际接触面
+  const CONTACT_R = CONTACT_FACE - 0.030;       // 滑动片压头中心略嵌入接触面，形成明确机械接触
 
   const CASE_R = 2.02, CASE_Y0 = 0.55, CASE_TOP = 2.16;  // 外壳
   const THREAD_R = 0.28, THREAD_Y0 = 2.16, THREAD_Y1 = 2.85;
@@ -422,14 +423,9 @@
     extRed: new THREE.MeshPhysicalMaterial({ color: 0xc92f2f, roughness: 0.40, metalness: 0.0, clearcoat: 0.28, clearcoatRoughness: 0.28, envMapIntensity: 0.46 }),
     extBlack: new THREE.MeshPhysicalMaterial({ color: 0x171b20, roughness: 0.48, metalness: 0.0, clearcoat: 0.18, clearcoatRoughness: 0.34, envMapIntensity: 0.38 })
   };
-  const flowMat = new THREE.MeshBasicMaterial({
-    color: 0xff3b30, transparent: true, opacity: 0.72,
-    depthTest: true, depthWrite: false
-  });
-  const flowDotMat = new THREE.MeshBasicMaterial({
-    color: 0xff3b30, transparent: true, opacity: 0.94,
-    depthTest: true, depthWrite: false
-  });
+  const FLOW_STYLE = window.CurrentFlowStyle;
+  const flowArrowMat = FLOW_STYLE.createMaterial(THREE);
+  const FLOW_AXIS = FLOW_STYLE.createAxis(THREE);
   // 外壳材质单独一份，方便调透明
   const caseMat = new THREE.MeshPhysicalMaterial({
     color: 0x743222, roughness: 0.40, metalness: 0.0,
@@ -577,18 +573,19 @@
   put(gWiper, new THREE.TorusGeometry(HUB_R - 0.02, 0.035, 8, 36), M.brass,
     [0, RING_Y + 0.06, 0], [Math.PI / 2, 0, 0]);
 
-  // 滑动片：按教学简图处理为从中心转轴径向伸出的扁平金属片，
-  // 末端只在一个接触点压到环形电阻体上。
+  // 滑动片：像滑动变阻器一样明确表现“压在电阻体上”。
+  // 金属片一直伸到电阻体内侧，末端再加一块亮银色压头。
   (function buildArm() {
-    const z0 = HUB_R * 0.72, z1 = CONTACT_R, len = z1 - z0;
-    put(gWiper, new THREE.BoxGeometry(0.18, 0.070, len), M.brass,
-      [0, RING_Y + 0.025, (z0 + z1) / 2]);
+    const z0 = HUB_R * 0.72, z1 = CONTACT_FACE - 0.025, len = z1 - z0;
+    put(gWiper, new THREE.BoxGeometry(0.20, 0.075, len), M.brass,
+      [0, RING_Y + 0.020, (z0 + z1) / 2]);
   })();
 
-  // 末端触点（顶在电阻丝内侧面）
-  put(gWiper, new THREE.SphereGeometry(0.092, 18, 14), M.metal, [0, RING_Y, CONTACT_R]);
-  put(gWiper, new THREE.CylinderGeometry(0.055, 0.055, 0.30, 14), M.metal,
-    [0, RING_Y - 0.16, CONTACT_R - 0.04]);  // 触点下探的小柱，视觉上压在丝上
+  // 末端压头：中心略进入电阻丝内侧表面，俯视和斜视都能看出真实接触。
+  put(gWiper, new THREE.BoxGeometry(0.24, 0.105, 0.17), M.metal,
+    [0, RING_Y + 0.020, CONTACT_FACE - 0.020]);
+  put(gWiper, new THREE.SphereGeometry(0.095, 18, 14), M.metal,
+    [0, RING_Y + 0.020, CONTACT_FACE + 0.008]);
 
   /* ---- 顶部旋钮（一字槽轴头，随轴转） ---- */
   const gKnob = new THREE.Group();
@@ -698,6 +695,7 @@
   scene.add(gCurrent);
 
   let currentCurve = null;
+  let currentLen = 1;
   let currentArrows = [];
 
   function clearMeshes(group) {
@@ -769,8 +767,9 @@
   function wiperArmPoints(angle, outward) {
     const pts = [
       [0, RING_Y, 0],
-      (function(){ const p=polar(0.48, angle, RING_Y); return [p.x,p.y,p.z]; })(),
-      (function(){ const p=polar(CONTACT_R, angle, RING_Y); return [p.x,p.y,p.z]; })(),
+      (function(){ const p=polar(0.48, angle, RING_Y + 0.02); return [p.x,p.y,p.z]; })(),
+      (function(){ const p=polar(CONTACT_FACE - 0.02, angle, RING_Y + 0.02); return [p.x,p.y,p.z]; })(),
+      (function(){ const p=polar(CONTACT_FACE + 0.008, angle, RING_Y + 0.02); return [p.x,p.y,p.z]; })(),
       (function(){ const p=polar(WIRE_CR, angle, RING_Y); return [p.x,p.y,p.z]; })()
     ];
     return outward ? pts : pts.reverse();
@@ -827,14 +826,13 @@
       return new THREE.Vector3(p[0], p[1] + 0.018, p[2]);
     });
     currentCurve = exactPath(pts);
+    currentLen = Math.max(0.001, currentCurve.getLength());
 
-    // 不再画连续红线，避免把“电流示意”误看成额外导线。
-    // 只画沿真实导体移动的红色箭头。
-    const arrowGeo = new THREE.ConeGeometry(0.062, 0.19, 10, 1);
-    const pathLen = Math.max(0.001, currentCurve.getLength());
-    const count = Math.max(14, Math.min(28, Math.round(pathLen / 0.42)));
+    // 与油量测量装置完全共用：26 个、0.062 × 0.20、8 边红色锥形箭头。
+    const arrowGeo = FLOW_STYLE.createGeometry(THREE);
+    const count = FLOW_STYLE.count;
     for (let i = 0; i < count; i++) {
-      const a = new THREE.Mesh(arrowGeo, flowDotMat);
+      const a = new THREE.Mesh(arrowGeo, flowArrowMat);
       a.userData.phase = i / count;
       a.renderOrder = 15;
       currentArrows.push(a);
@@ -843,21 +841,18 @@
     gCurrent.visible = state.showFlow;
   }
 
-  const FLOW_Y = new THREE.Vector3(0, 1, 0);
   function animateCurrent(ms) {
     if (!state.showFlow || !currentCurve) return;
-    const speed = ms * 0.000095;
+    const timeSec = (ms || 0) * 0.001;
     currentArrows.forEach(function (a) {
-      const t = (a.userData.phase + speed) % 1;
+      const t = (a.userData.phase + timeSec * FLOW_STYLE.speed / currentLen) % 1;
       const p = currentCurve.getPointAt(t);
       const tangent = currentCurve.getTangentAt(t);
       a.position.copy(p);
       if (tangent.lengthSq() > 1e-8) {
         tangent.normalize();
-        a.quaternion.setFromUnitVectors(FLOW_Y, tangent);
+        a.quaternion.setFromUnitVectors(FLOW_AXIS, tangent);
       }
-      const pulse = 0.94 + 0.10 * Math.sin((t * 18 + speed * 16) * Math.PI);
-      a.scale.setScalar(pulse);
     });
   }
 

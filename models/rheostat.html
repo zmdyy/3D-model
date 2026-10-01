@@ -239,7 +239,7 @@
       <span><i class="blue"></i>A、B＝电阻丝两端（下接线柱，柱身向盒外微倾）</span>
       <span><i class="gray"></i>C、D＝滑杆两端（上接线柱，等电位）</span>
       <span><i class="amber"></i>滑片 P 末端压在电阻丝表面的窄裸金属接触线上</span>
-      <span><i class="red"></i>小红箭头＝电流方向，只沿真实导体路径动态流动</span>
+      <span><i class="red"></i>红色箭头＝电流方向；形式、大小与密度和油量测量装置统一</span>
       <span class="ok">✓ 一上一下：滑片移动 → 阻值连续变化</span>
       <span class="bad">✗ A+B：全部丝接入，滑片失效</span>
       <span class="bad">✗ C+D：只有滑杆，近似短路</span>
@@ -251,6 +251,7 @@
   <div id="toast"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/three@0.144.0/build/three.min.js"></script>
+  <script src="../shared/current-flow-style.js"></script>
   <script>
 /* =========================================================
    滑动变阻器（J2354 型）· 3D 交互演示
@@ -814,15 +815,11 @@
   const leadMat = new THREE.MeshStandardMaterial({
     color: 0x3b424e, roughness: 0.66, metalness: 0.05, envMapIntensity: 0.45
   });
-  const arrowMat = new THREE.MeshBasicMaterial({
-    color: 0xff3b30, transparent: true, opacity: 0.94,
-    depthTest: true, depthWrite: false
-  });
-  // 小箭头只表示电流方向，尺寸控制得很小，避免再次遮挡模型结构。
-  // ConeGeometry 默认箭头轴沿 +Y，运行时按路径切线实时旋转。
-  const arrowGeo = new THREE.ConeGeometry(0.075, 0.22, 10, 1);
-  const AXIS_Y = new THREE.Vector3(0, 1, 0);
-  const FLOW_SPEED = 4.6;                    // 箭头流速（cm/s）
+  const FLOW_STYLE = window.CurrentFlowStyle;
+  const arrowMat = FLOW_STYLE.createMaterial(THREE);
+  const arrowGeo = FLOW_STYLE.createGeometry(THREE);
+  const FLOW_AXIS = FLOW_STYLE.createAxis(THREE);
+  const FLOW_SPEED = FLOW_STYLE.speed;       // 与油量测量装置统一
   let travel = 0;
 
   function curveOf(pts) {
@@ -865,13 +862,14 @@
     };
   }
 
-  // 按段长自动排布小箭头（段长变化时增减数量；段太短就不画，避免拥挤）。
-  // 螺旋电阻丝单独限制数量，确保箭头只是在路径上“走”，而不是铺满表面。
+  // 每一段的箭头数量由整条有效通路统一分配。
+  // 总数固定为油量测量装置的 26 个，再按各段弧长比例分配。
   function syncArrows(f) {
-    const wantRaw = (f.want != null) ? f.want
-      : (f.length < 0.8 ? 0 : Math.max(1, Math.round(f.length / f.spacing)));
-    const want = Math.min(4, wantRaw);
-    while (f.arrows.length > want) f.group.remove(f.arrows.pop());
+    const want = Math.max(0, Math.round(f.want == null ? 0 : f.want));
+    while (f.arrows.length > want) {
+      const m = f.arrows.pop();
+      f.group.remove(m);
+    }
     while (f.arrows.length < want) {
       const m = new THREE.Mesh(arrowGeo, arrowMat);
       m.castShadow = false;
@@ -907,6 +905,16 @@
   const fSld = makeFlow({ id: 'sld', parent: gSlider, spacing: 1.6 });   // 滑片触片 → 滑杆
 
   const FLOW_ALL = [fLeadA, fLeadB, fLeadC, fLeadD, fCoil, fBar, fSld];
+
+  function rebalanceFlowArrows() {
+    const active = FLOW_ALL.filter(function (f) { return f.on && f.length > 0.001; });
+    const counts = FLOW_STYLE.allocateCounts(active.map(function (f) { return f.length; }), FLOW_STYLE.count);
+
+    FLOW_ALL.forEach(function (f) { f.want = 0; });
+    active.forEach(function (f, i) { f.want = counts[i]; });
+    FLOW_ALL.forEach(syncArrows);
+  }
+
   const BAR_SEG_Y = BAR_Y + 0.30;              // 箭头浮在滑杆上方
 
   /* ---- 电阻丝段：电流沿绕线一匝一匝螺旋前进 ---- */
@@ -937,8 +945,9 @@
 
   function setFlowHelix(f, xa, xb) {
     const turns = Math.abs(xb - xa) / COIL_PITCH;
-    // 螺旋电阻丝只保留少量小箭头，沿真实绕线前进，不在表面散铺。
-    const want = turns < 0.5 ? 0 : Math.min(3, Math.max(1, Math.round(turns / 10)));
+    // 数量最终由 rebalanceFlowArrows() 按整条有效路径统一分配；
+    // 这里先保证曲线被建立。
+    const want = turns < 0.5 ? 0 : 1;
     setFlowCurve(f, 'h' + xa.toFixed(2) + '|' + xb.toFixed(2), helixPoints(xa, xb), want);
   }
 
@@ -1144,6 +1153,8 @@
       setFlowLine(fBar, -NUT_X, BAR_SEG_Y, 0, NUT_X, BAR_SEG_Y, 0);       // C 端 → D 端（只有滑杆）
     }
 
+    rebalanceFlowArrows();
+
     const show = state.showFlow && state.explodeShown < 0.04;
     for (let i = 0; i < FLOW_ALL.length; i++) {
       FLOW_ALL[i].group.visible = show && FLOW_ALL[i].on;
@@ -1167,7 +1178,7 @@
         const tangent = flowTangent(f, u).clone().multiplyScalar(sgn);
         if (tangent.lengthSq() > 1e-8) {
           tangent.normalize();
-          m.quaternion.setFromUnitVectors(AXIS_Y, tangent);
+          m.quaternion.setFromUnitVectors(FLOW_AXIS, tangent);
         }
       }
     }

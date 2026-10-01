@@ -59,7 +59,7 @@
     <span><i class="dot magnet"></i>深灰环形件＝永久磁体，亮银色件＝极板、中心极柱与扬声器钢架。</span>
     <span><i class="dot copper"></i>铜色密绕部分＝音圈，装在线圈骨架上并与纸盆连接。</span>
     <span><i class="dot paper"></i>灰白色锥面＝纸盆；黑色外圈＝柔性悬边；棕色波纹环＝定心支片。</span>
-    <span><i class="dot red"></i>红色箭头＝交流电方向；方向会随交流信号周期性反转。</span>
+    <span><i class="dot red"></i>红色箭头＝交流电方向；接线端导线、音圈与回线均连续显示，方向随交流信号周期性反转。</span>
     <span><i class="dot blue"></i>蓝色箭头＝线圈瞬时受力方向，与纸盆运动方向对应。</span>
   </div>
 </section>
@@ -113,7 +113,12 @@ const FLOW = window.CurrentFlowStyle || {
   count:26,speed:3.0,
   createMaterial:t=>new t.MeshBasicMaterial({color:0xe8372a}),
   createGeometry:t=>{const g=new t.ConeGeometry(.062,.20,8);g.rotateZ(-Math.PI/2);return g;},
-  createAxis:t=>new t.Vector3(1,0,0)
+  createAxis:t=>new t.Vector3(1,0,0),
+  allocateCounts:(lengths,total)=>{
+    const sum=lengths.reduce((a,b)=>a+b,0)||1;
+    const out=lengths.map(v=>Math.max(1,Math.round(v/sum*total)));
+    return out;
+  }
 };
 const flowMat=FLOW.createMaterial(THREE), flowGeo=FLOW.createGeometry(THREE), flowAxis=FLOW.createAxis(THREE);
 
@@ -179,24 +184,72 @@ const edgeC=new THREE.TorusGeometry(3.82,.055,8,96,cutThetaLen);edgeC.rotateY(Ma
 // ---------- terminals and flexible lead wires ----------
 put(staticG,new THREE.BoxGeometry(.28,.30,.18),M.steelDark,[-1.72,-2.45,.72]);
 put(staticG,new THREE.BoxGeometry(.28,.30,.18),M.steelDark,[-1.72,-2.45,-.72]);
-let wireRedMesh=null,wireBlackMesh=null,flowCurve=null,flowLen=1,lastWireDisp=999;
+
+let wireRedMesh=null,wireBlackMesh=null,lastWireDisp=999;
+const flowSegments=[
+  {id:'redLead',curve:null,length:1,displayLength:1,arrows:[]},
+  {id:'coil',curve:null,length:1,displayLength:3.6,arrows:[]},
+  {id:'blackLead',curve:null,length:1,displayLength:1,arrows:[]}
+];
+
+function syncSpeakerArrows(seg,count){
+  count=Math.max(0,Math.round(count));
+  while(seg.arrows.length>count){
+    const m=seg.arrows.pop();flowG.remove(m);
+  }
+  while(seg.arrows.length<count){
+    const m=new THREE.Mesh(flowGeo,flowMat);m.renderOrder=16;flowG.add(m);seg.arrows.push(m);
+  }
+}
+
 function rebuildElectricalPath(dx){
-  if(wireRedMesh){staticG.remove(wireRedMesh,wireBlackMesh);wireRedMesh.geometry.dispose();wireBlackMesh.geometry.dispose();}
+  if(wireRedMesh){
+    staticG.remove(wireRedMesh,wireBlackMesh);
+    wireRedMesh.geometry.dispose();wireBlackMesh.geometry.dispose();
+  }
+
   const redPts=[[-1.72,-2.45,.72],[-1.15,-2.12,.74],[-.42,-1.52,.76],[.06+dx,-.84,.78],[.18+dx,-.80,.78]];
   const blackPts=[[-1.72,-2.45,-.72],[-1.15,-2.12,-.74],[-.42,-1.52,-.76],[.06+dx,-.84,-.78],[.18+dx,-.80,-.78]];
+
   let t=tube(redPts,.045,54);wireRedMesh=new THREE.Mesh(t.geo,M.redWire);wireRedMesh.castShadow=true;staticG.add(wireRedMesh);
   t=tube(blackPts,.045,54);wireBlackMesh=new THREE.Mesh(t.geo,M.blackWire);wireBlackMesh.castShadow=true;staticG.add(wireBlackMesh);
 
-  const pts=redPts.map(p=>V(...p));
-  const loops=4.5,steps=48;
-  for(let i=0;i<=steps;i++){const u=i/steps;const x=coilXs[0]+dx+(coilXs[coilXs.length-1]-coilXs[0])*u;const a=(.33+loops*2*Math.PI*u);pts.push(V(x,.805*Math.cos(a),.805*Math.sin(a)));}
-  for(let i=blackPts.length-1;i>=0;i--)pts.push(V(...blackPts[i]));
-  flowCurve=new THREE.CatmullRomCurve3(pts,false,'centripetal',.15);flowLen=Math.max(.001,flowCurve.getLength());
+  // 红导线：接线端 → 音圈
+  const redCurve=new THREE.CatmullRomCurve3(redPts.map(p=>V(...p)),false,'centripetal',.15);
+
+  // 音圈：用真实螺旋路径运动，但箭头密度按画面可见长度分配，
+  // 不让真实螺旋弧长把所有箭头都“吸”到线圈上。
+  const coilPts=[],loops=4.5,steps=48;
+  for(let i=0;i<=steps;i++){
+    const u=i/steps;
+    const x=coilXs[0]+dx+(coilXs[coilXs.length-1]-coilXs[0])*u;
+    const a=.33+loops*2*Math.PI*u;
+    coilPts.push(V(x,.805*Math.cos(a),.805*Math.sin(a)));
+  }
+  const coilCurve=new THREE.CatmullRomCurve3(coilPts,false,'centripetal',.15);
+
+  // 黑导线按“音圈 → 接线端”的方向建立，保证整条正向电流路径连续。
+  const blackCurve=new THREE.CatmullRomCurve3(blackPts.slice().reverse().map(p=>V(...p)),false,'centripetal',.15);
+
+  flowSegments[0].curve=redCurve;
+  flowSegments[0].length=Math.max(.001,redCurve.getLength());
+  flowSegments[0].displayLength=flowSegments[0].length;
+
+  flowSegments[1].curve=coilCurve;
+  flowSegments[1].length=Math.max(.001,coilCurve.getLength());
+  flowSegments[1].displayLength=3.6;
+
+  flowSegments[2].curve=blackCurve;
+  flowSegments[2].length=Math.max(.001,blackCurve.getLength());
+  flowSegments[2].displayLength=flowSegments[2].length;
+
+  const counts=FLOW.allocateCounts(flowSegments.map(s=>s.displayLength),FLOW.count);
+  // 两根外接导线各至少 5 个箭头，明确表示导线中同样有电流。
+  counts[0]=Math.max(5,counts[0]);
+  counts[2]=Math.max(5,counts[2]);
+  flowSegments.forEach((s,i)=>syncSpeakerArrows(s,counts[i]));
 }
 rebuildElectricalPath(0);
-
-// ---------- shared current arrows ----------
-const arrows=[];for(let i=0;i<FLOW.count;i++){const m=new THREE.Mesh(flowGeo,flowMat);m.renderOrder=16;flowG.add(m);arrows.push(m)}
 
 // ---------- force arrow ----------
 const forceG=new THREE.Group();movingG.add(forceG);const forceArrow=new THREE.ArrowHelper(new THREE.Vector3(1,0,0),new THREE.Vector3(-.08,0,0),1.20,0x3f7fd7,.30,.18);forceG.add(forceArrow);
@@ -225,7 +278,25 @@ let drag=false,pan=false,lx=0,ly=0;canvas.addEventListener('pointerdown',e=>{dra
 function resize(){const w=innerWidth,h=innerHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix()}addEventListener('resize',resize);resize();
 
 const MOVE_MAX=.24;
-function updateFlow(t,current){flowG.visible=state.showFlow;if(!state.showFlow||!flowCurve)return;const sign=current>=0?1:-1;const q=new THREE.Quaternion();for(let i=0;i<arrows.length;i++){let u=(i/arrows.length+t*FLOW.speed/flowLen*sign)%1;if(u<0)u+=1;arrows[i].position.copy(flowCurve.getPointAt(u));const tan=flowCurve.getTangentAt(u).normalize().multiplyScalar(sign);q.setFromUnitVectors(flowAxis,tan);arrows[i].quaternion.copy(q)}}
+function updateFlow(t,current){
+  flowG.visible=state.showFlow;
+  if(!state.showFlow)return;
+  const sign=current>=0?1:-1;
+  const q=new THREE.Quaternion();
+
+  flowSegments.forEach(seg=>{
+    if(!seg.curve||!seg.arrows.length)return;
+    for(let i=0;i<seg.arrows.length;i++){
+      let u=(i/seg.arrows.length+t*FLOW.speed/seg.length*sign)%1;
+      if(u<0)u+=1;
+      const m=seg.arrows[i];
+      m.position.copy(seg.curve.getPointAt(u));
+      const tan=seg.curve.getTangentAt(u).normalize().multiplyScalar(sign);
+      q.setFromUnitVectors(flowAxis,tan);
+      m.quaternion.copy(q);
+    }
+  });
+}
 function animate(ms){requestAnimationFrame(animate);const t=ms*.001;view.dist+=(view.distTarget-view.dist)*.12;cameraApply();const signal=state.playing?state.phaseFlip*Math.sin(2*Math.PI*state.freq*t):0;const target=MOVE_MAX*state.amp*signal;state.disp+=(target-state.disp)*.24;movingG.position.x=state.disp;const wireDx=state.disp*.94;if(Math.abs(wireDx-lastWireDisp)>.008){rebuildElectricalPath(wireDx);lastWireDisp=wireDx;}updateFlow(t,signal);
   const dir=signal>=0?1:-1;forceArrow.setDirection(new THREE.Vector3(dir,0,0));forceArrow.setLength(.52+1.15*Math.abs(signal),.30,.18);forceG.visible=state.showForce&&Math.abs(signal)>.03;
   iValue.textContent=(signal>=0?'+':'')+(1.20*signal).toFixed(2)+' A';xValue.textContent=(state.disp*10).toFixed(1)+' mm';fValue.textContent=signal>.03?'向右':signal<-.03?'向左':'接近 0';renderer.render(scene,camera)}

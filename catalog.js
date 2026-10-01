@@ -64,5 +64,16 @@ window.MODEL_CATALOG = [
     "path": "models/speaker.html",
     "symbol": "🔊",
     "accent": "orange"
+  }  ,
+  {
+    "id": "dynamic-microphone",
+    "title": "动圈式话筒",
+    "subtitle": "膜片、线圈与电磁感应",
+    "category": "声学与电磁",
+    "summary": "观察声音推动膜片和线圈在永久磁体磁隙中运动，并用感应电流箭头展示“磁生电”过程，理解声信号如何转换成电信号。",
+    "tags": ["话筒", "麦克风", "电磁感应", "磁生电", "线圈", "膜片"],
+    "path": "models/dynamic-microphone.html",
+    "symbol": "🎙",
+    "accent": "blue"
   }
 ];

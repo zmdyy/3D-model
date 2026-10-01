@@ -64,7 +64,7 @@ window.MODEL_CATALOG = [
     "path": "models/speaker.html",
     "symbol": "🔊",
     "accent": "orange"
-  }  ,
+  },
   {
     "id": "dynamic-microphone",
     "title": "动圈式话筒",
@@ -75,5 +75,27 @@ window.MODEL_CATALOG = [
     "path": "models/dynamic-microphone.html",
     "symbol": "🎙",
     "accent": "blue"
+  },
+  {
+    "id": "communication-satellite",
+    "title": "通信卫星与全球通信",
+    "subtitle": "同步卫星、覆盖与中继通信",
+    "category": "通信与信息",
+    "summary": "用3D地球和同步轨道演示通信卫星相对地面近似静止、3颗卫星近似覆盖大部分地表，以及地面站经卫星中继传递信号的过程。",
+    "tags": ["通信卫星", "同步卫星", "中继通信", "电磁波", "全球通信"],
+    "path": "models/communication-satellite.html",
+    "symbol": "🛰",
+    "accent": "blue"
+  },
+  {
+    "id": "nuclear-power",
+    "title": "核能发电",
+    "subtitle": "反应堆、汽轮机与发电机",
+    "category": "能源与发电",
+    "summary": "以压水堆典型三回路为框架，动态展示反应堆放热、一回路传热、蒸汽推动汽轮机、发电机发电以及冷凝冷却过程，并同步显示能量转化。",
+    "tags": ["核能", "反应堆", "汽轮机", "发电机", "能量转化", "冷却"],
+    "path": "models/nuclear-power.html",
+    "symbol": "⚛",
+    "accent": "green"
   }
 ];

@@ -53,13 +53,13 @@ window.MODEL_CATALOG = [
     "path": "models/fuel-gauge.html",
     "symbol": "↕",
     "accent": "green"
-  }  ,
+  },
   {
     "id": "speaker",
     "title": "扬声器结构与振动",
     "subtitle": "永久磁体、音圈与锥形纸盆",
     "category": "声学与电磁",
-    "summary": "剖开展示扬声器的永久磁体、磁隙、音圈、定心支片与锥形纸盆，并用交流电箭头和受力方向演示电信号如何转换成声信号。",
+    "summary": "剖开展示永久磁体、磁隙、音圈、定心支片与锥形纸盆；接线导线和音圈均显示交流电箭头，并联动纸盆振动与受力方向。",
     "tags": ["扬声器", "音圈", "永久磁体", "电流", "振动", "声信号"],
     "path": "models/speaker.html",
     "symbol": "🔊",

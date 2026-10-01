@@ -239,7 +239,7 @@
       <span><i class="blue"></i>A、B＝电阻丝两端（下接线柱，柱身向盒外微倾）</span>
       <span><i class="gray"></i>C、D＝滑杆两端（上接线柱，等电位）</span>
       <span><i class="amber"></i>滑片 P 末端压在电阻丝表面的窄裸金属接触线上</span>
-      <span><i class="red"></i>红色箭头＝电流方向；形式、大小与密度和油量测量装置统一</span>
+      <span><i class="red"></i>红色箭头＝电流方向；外接导线、电阻丝、滑片和横梁保持近似一致的视觉密度</span>
       <span class="ok">✓ 一上一下：滑片移动 → 阻值连续变化</span>
       <span class="bad">✗ A+B：全部丝接入，滑片失效</span>
       <span class="bad">✗ C+D：只有滑杆，近似短路</span>
@@ -857,7 +857,7 @@
     return {
       id: opts.id, group: g, parent: opts.parent,
       curve: null, a: new THREE.Vector3(), b: new THREE.Vector3(),
-      length: 1, spacing: opts.spacing || 1.8,
+      length: 1, displayLength: 1, spacing: opts.spacing || 1.8,
       sign: 1, on: true, arrows: []
     };
   }
@@ -883,6 +883,7 @@
     const f = makeFlow({ id: id, parent: parent, spacing: spacing });
     f.curve = curveOf(pts);
     f.length = f.curve.getLength();
+    f.displayLength = f.length;
     const lead = new THREE.Mesh(new THREE.TubeGeometry(f.curve, 72, LEAD_R, 10, false), leadMat);
     lead.castShadow = true;
     lead.receiveShadow = true;
@@ -908,10 +909,21 @@
 
   function rebalanceFlowArrows() {
     const active = FLOW_ALL.filter(function (f) { return f.on && f.length > 0.001; });
-    const counts = FLOW_STYLE.allocateCounts(active.map(function (f) { return f.length; }), FLOW_STYLE.count);
+
+    // 关键：视觉密度按画面中的“可见长度”分配，而不是按真实电阻丝螺旋弧长。
+    // 否则螺旋线圈会占走几乎全部箭头，导致横梁和外接导线只剩 1~2 个。
+    const counts = FLOW_STYLE.allocateCounts(
+      active.map(function (f) { return Math.max(0.001, f.displayLength || f.length); }),
+      FLOW_STYLE.count
+    );
 
     FLOW_ALL.forEach(function (f) { f.want = 0; });
-    active.forEach(function (f, i) { f.want = counts[i]; });
+    active.forEach(function (f, i) {
+      let n = counts[i];
+      // 外接导线至少保留 3 个箭头，保证学生能看出导线中也有电流。
+      if (f.id.indexOf('lead') === 0) n = Math.max(3, n);
+      f.want = n;
+    });
     FLOW_ALL.forEach(syncArrows);
   }
 
@@ -939,6 +951,7 @@
     f._key = key;
     f.curve = curveOf(pts);
     f.length = Math.max(0.001, f.curve.getLength());
+    f.displayLength = f.length;
     f.want = arrowCount;
     syncArrows(f);
   }
@@ -949,6 +962,8 @@
     // 这里先保证曲线被建立。
     const want = turns < 0.5 ? 0 : 1;
     setFlowCurve(f, 'h' + xa.toFixed(2) + '|' + xb.toFixed(2), helixPoints(xa, xb), want);
+    // 视觉密度只按电阻丝在画面中的左右跨度计算，不按绕线真实弧长计算。
+    f.displayLength = Math.max(0.45, Math.abs(xb - xa));
   }
 
   // 滑片段：从电阻丝表面（触片压住的那点）沿触片向上接到滑杆（滑片局部坐标固定）
@@ -957,6 +972,7 @@
     [0, -1.30, 1.31],
     [0, -0.02, 0.30]
   ], 2);
+  fSld.displayLength = 2.4;
 
   function setFlowLine(f, ax, ay, az, bx, by, bz) {
     f.curve = null;
@@ -965,6 +981,7 @@
     f.a.set(ax, ay, az);
     f.b.set(bx, by, bz);
     f.length = Math.max(0.001, f.a.distanceTo(f.b));
+    f.displayLength = f.length;
     syncArrows(f);
   }
 

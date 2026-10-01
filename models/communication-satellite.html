@@ -135,8 +135,8 @@ const M={
 const loader=new THREE.TextureLoader();loader.crossOrigin='anonymous';
 loader.load('https://threejs.org/examples/textures/planets/earth_atmos_2048.jpg',t=>{t.encoding=THREE.sRGBEncoding;M.earth.map=t;M.earth.needsUpdate=true},undefined,()=>{});
 loader.load('https://threejs.org/examples/textures/planets/earth_specular_2048.jpg',t=>{M.earth.specularMap=t;M.earth.needsUpdate=true},undefined,()=>{});
-loader.load('https://threejs.org/examples/textures/planets/earth_normal_2048.jpg',t=>{M.earth.bumpMap=t;M.earth.needsUpdate=true},undefined,()=>{});
-loader.load('https://threejs.org/examples/textures/planets/earth_clouds_1024.png',t=>{t.encoding=THREE.sRGBEncoding;cloudMat.map=t;cloudMat.needsUpdate=true},undefined,()=>{});
+loader.load('https://threejs.org/examples/textures/planets/earth_normal_2048.jpg',t=>{M.earth.normalMap=t;M.earth.normalScale=new THREE.Vector2(.55,.55);M.earth.needsUpdate=true},undefined,()=>{});
+loader.load('https://threejs.org/examples/textures/planets/earth_clouds_1024.png',t=>{t.encoding=THREE.sRGBEncoding;cloudMat.map=t;cloudMat.opacity=.22;cloudMat.needsUpdate=true},undefined,()=>{});
 
 const EARTH_R=2.70, ORBIT_R=7.05, CAP_ANGLE=80*Math.PI/180;
 const root=new THREE.Group();scene.add(root);
@@ -144,7 +144,7 @@ const earthMesh=new THREE.Mesh(new THREE.SphereGeometry(EARTH_R,128,96),M.earth)
 const atmosphere=new THREE.Mesh(new THREE.SphereGeometry(EARTH_R*1.045,96,72),M.atmosphere);root.add(atmosphere);
 
 // Blue-Marble 风格云层：独立于地表纹理缓慢旋转，避免“蓝绿色科技球”的假感。
-const cloudMat=new THREE.MeshPhongMaterial({color:0xffffff,transparent:true,opacity:.22,depthWrite:false,side:THREE.DoubleSide});
+const cloudMat=new THREE.MeshPhongMaterial({color:0xffffff,transparent:true,opacity:0,depthWrite:false,side:THREE.DoubleSide});
 const cloudG=new THREE.Mesh(new THREE.SphereGeometry(EARTH_R*1.012,96,72),cloudMat);root.add(cloudG);
 
 // equator and longitude tech grid

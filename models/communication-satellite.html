@@ -61,7 +61,7 @@ kbd{font:inherit;font-weight:800;background:#eef3f8;border:1px solid #dce5ef;bor
   </div>
 
   <div class="tip">
-    <span><i class="dot earth"></i>地球采用真实纹理、经纬网和大气辉光；同步轨道距离为教学压缩显示，不按真实比例绘制。</span>
+    <span><i class="dot earth"></i>地球采用 Blue Marble 风格的真实地表纹理、地形明暗与云层；经纬网仅作很弱的空间辅助，同步轨道距离为教学压缩显示。</span>
     <span><i class="dot sat"></i>卫星包含金色多层隔热材料、太阳翼、通信反射面天线、馈源和设备舱；通信天线始终朝向地球。</span>
     <span><i class="dot beam"></i>橙红色＝上行链路，青蓝色＝下行链路；两个地面站的抛物面天线会实时对准正在中继的卫星。</span>
     <span><i class="dot cover"></i>青色球面足迹＝同步卫星可见/可通信区域的科技化示意。3颗等间隔同步卫星可实现近全球覆盖，但高纬和极区仍受限制。</span>
@@ -113,7 +113,7 @@ function makeSolarTexture(){
 const solarTex=makeSolarTexture();
 
 const M={
-  earth:new THREE.MeshPhongMaterial({color:0x2a6da6,shininess:18,specular:0x294f71}),
+  earth:new THREE.MeshPhongMaterial({color:0xffffff,shininess:10,specular:0x2f4052,bumpScale:.035}),
   atmosphere:new THREE.MeshBasicMaterial({color:0x4ea4ff,transparent:true,opacity:.10,side:THREE.BackSide,blending:THREE.AdditiveBlending,depthWrite:false}),
   cloud:new THREE.MeshPhongMaterial({color:0xffffff,transparent:true,opacity:.20,depthWrite:false}),
   orbit:new THREE.MeshBasicMaterial({color:0xd9b654,transparent:true,opacity:.78}),
@@ -135,32 +135,28 @@ const M={
 const loader=new THREE.TextureLoader();loader.crossOrigin='anonymous';
 loader.load('https://threejs.org/examples/textures/planets/earth_atmos_2048.jpg',t=>{t.encoding=THREE.sRGBEncoding;M.earth.map=t;M.earth.needsUpdate=true},undefined,()=>{});
 loader.load('https://threejs.org/examples/textures/planets/earth_specular_2048.jpg',t=>{M.earth.specularMap=t;M.earth.needsUpdate=true},undefined,()=>{});
+loader.load('https://threejs.org/examples/textures/planets/earth_normal_2048.jpg',t=>{M.earth.bumpMap=t;M.earth.needsUpdate=true},undefined,()=>{});
+loader.load('https://threejs.org/examples/textures/planets/earth_clouds_1024.png',t=>{t.encoding=THREE.sRGBEncoding;cloudMat.map=t;cloudMat.needsUpdate=true},undefined,()=>{});
 
 const EARTH_R=2.70, ORBIT_R=7.05, CAP_ANGLE=80*Math.PI/180;
 const root=new THREE.Group();scene.add(root);
 const earthMesh=new THREE.Mesh(new THREE.SphereGeometry(EARTH_R,128,96),M.earth);earthMesh.castShadow=true;earthMesh.receiveShadow=true;root.add(earthMesh);
 const atmosphere=new THREE.Mesh(new THREE.SphereGeometry(EARTH_R*1.045,96,72),M.atmosphere);root.add(atmosphere);
 
-// thin cloud veil using procedural wisps on a slightly larger sphere
-const cloudG=new THREE.Group();root.add(cloudG);
-for(let i=0;i<34;i++){
-  const lat=-65+Math.random()*130,lon=-180+Math.random()*360;
-  const la=lat*Math.PI/180,lo=lon*Math.PI/180;
-  const p=new THREE.Vector3(EARTH_R*1.018*Math.cos(la)*Math.cos(lo),EARTH_R*1.018*Math.sin(la),EARTH_R*1.018*Math.cos(la)*Math.sin(lo));
-  const s=new THREE.Sprite(new THREE.SpriteMaterial({color:0xffffff,transparent:true,opacity:.06,depthWrite:false}));
-  s.position.copy(p);s.scale.set(.45+Math.random()*.65,.16+Math.random()*.22,1);cloudG.add(s);
-}
+// Blue-Marble 风格云层：独立于地表纹理缓慢旋转，避免“蓝绿色科技球”的假感。
+const cloudMat=new THREE.MeshPhongMaterial({color:0xffffff,transparent:true,opacity:.22,depthWrite:false,side:THREE.DoubleSide});
+const cloudG=new THREE.Mesh(new THREE.SphereGeometry(EARTH_R*1.012,96,72),cloudMat);root.add(cloudG);
 
 // equator and longitude tech grid
 const gridG=new THREE.Group();root.add(gridG);
 for(let lat=-60;lat<=60;lat+=30){
   const y=EARTH_R*Math.sin(lat*Math.PI/180),rr=EARTH_R*Math.cos(lat*Math.PI/180);
-  const g=new THREE.TorusGeometry(rr,.008,4,180);g.rotateX(Math.PI/2);const m=new THREE.Mesh(g,new THREE.MeshBasicMaterial({color:0x75b8ed,transparent:true,opacity:.24}));m.position.y=y;gridG.add(m);
+  const g=new THREE.TorusGeometry(rr,.008,4,180);g.rotateX(Math.PI/2);const m=new THREE.Mesh(g,new THREE.MeshBasicMaterial({color:0x75b8ed,transparent:true,opacity:.105}));m.position.y=y;gridG.add(m);
 }
 for(let lon=0;lon<180;lon+=30){
   for(const add of [0,180]){
     const pts=[];for(let lat=-90;lat<=90;lat+=3){const la=lat*Math.PI/180,lo=(lon+add)*Math.PI/180;pts.push(new THREE.Vector3(EARTH_R*1.004*Math.cos(la)*Math.cos(lo),EARTH_R*1.004*Math.sin(la),EARTH_R*1.004*Math.cos(la)*Math.sin(lo)));}
-    gridG.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts),new THREE.LineBasicMaterial({color:0x75b8ed,transparent:true,opacity:.18})));
+    gridG.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts),new THREE.LineBasicMaterial({color:0x75b8ed,transparent:true,opacity:.075})));
   }
 }
 
@@ -280,7 +276,7 @@ function makeStation(lat,lon,color,name){
     beamBetween(dish,rim,new THREE.Vector3(0,.24,0),.012,M.stationSteel);
   }
   const lbl=label(name,color===0xc16b4c?'#ff9b77':'#7bd5ff',.34,new THREE.Vector3(),labelG);
-  return {lat,lon,base,dish,label:lbl,pos:new THREE.Vector3()};
+  return {lat,lon,base,dish,label:lbl,pos:new THREE.Vector3(),axis:new THREE.Vector3(),feed:new THREE.Vector3()};
 }
 const stations=[
   makeStation(10,-32,0xc16b4c,'地面站 A'),
@@ -339,7 +335,11 @@ function updateStation(st,earthAngle,satPos){
   st.pos.copy(p);
   st.base.position.copy(p);st.base.quaternion.setFromUnitVectors(AXIS_Y,n);
   const dishPos=p.clone().addScaledVector(n,.34);st.dish.position.copy(dishPos);
-  const dir=satPos.clone().sub(dishPos).normalize();st.dish.quaternion.setFromUnitVectors(AXIS_Y,dir);
+  const dir=satPos.clone().sub(dishPos).normalize();
+  st.axis.copy(dir);
+  st.dish.quaternion.setFromUnitVectors(AXIS_Y,dir);
+  // 馈源位于反射面开口一侧；信号链从馈源位置出发/到达，而不是从底座中心穿过去。
+  st.feed.copy(dishPos).addScaledVector(dir,.285);
   st.label.position.copy(p.clone().addScaledVector(n,.62));
 }
 function setLine(line,a,b){
@@ -347,7 +347,7 @@ function setLine(line,a,b){
   pos.setXYZ(0,a.x,a.y,a.z);pos.setXYZ(1,b.x,b.y,b.z);pos.needsUpdate=true;
 }
 function updateRelay(t,satPos){
-  const a=stations[0].dish.position.clone(),b=stations[1].dish.position.clone();
+  const a=stations[0].feed.clone(),b=stations[1].feed.clone();
   setLine(uplinkLine,a,satPos);setLine(downlinkLine,satPos,b);
   const up=new THREE.LineCurve3(a,satPos),down=new THREE.LineCurve3(satPos,b),q=new THREE.Quaternion();
   relayArrows.forEach(m=>{
@@ -371,7 +371,7 @@ function animate(ms){
   const t=ms*.001,earthAngle=t*.12*state.speed,satAngle=t*.12*state.speed*(state.mode==='sync'?1:1.30);
   view.dist+=(view.distTarget-view.dist)*.11;applyCamera();
 
-  earthMesh.rotation.y=earthAngle;gridG.rotation.y=earthAngle;cloudG.rotation.y=earthAngle*.92;
+  earthMesh.rotation.y=earthAngle;gridG.rotation.y=earthAngle;cloudG.rotation.y=earthAngle*.965;
   sats.forEach(s=>updateSatellite(s,satAngle));
   covers.forEach(c=>updateCoverage(c,satAngle));
 

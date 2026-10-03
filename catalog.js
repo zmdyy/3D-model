@@ -97,5 +97,16 @@ window.MODEL_CATALOG = [
     "path": "models/nuclear-power.html",
     "symbol": "⚛",
     "accent": "green"
+  },
+  {
+    "id": "mechanical-stopwatch",
+    "title": "机械停表内部结构与工作原理",
+    "subtitle": "发条、轮系、擒纵、计时与归零",
+    "category": "精密机械",
+    "summary": "教学型高仿简化机械停表：可上弦、开始、停止和归零，并通过半剖切、爆炸视图和擒纵慢放观察发条储能、齿轮轮系、摆轮擒纵、计时离合、制动杆以及心形凸轮归零机构。",
+    "tags": ["机械停表", "发条", "齿轮传动", "擒纵机构", "摆轮", "心形凸轮", "归零"],
+    "path": "models/mechanical-stopwatch.html",
+    "symbol": "⏱",
+    "accent": "amber"
   }
 ];

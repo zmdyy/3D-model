@@ -189,13 +189,13 @@ function beamBetween(parent,a,b,r,mat){
   const m=put(parent,new THREE.CylinderGeometry(r,r,d.length(),10),mat);
   m.position.copy(mid);m.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),d.clone().normalize());return m;
 }
-function label(text,color,h,pos){
+function label(text,color,h,pos,parent=labelG){
   const c=document.createElement('canvas');c.width=512;c.height=144;const x=c.getContext('2d');
   x.font='bold 70px "Microsoft YaHei","PingFang SC",sans-serif';x.textAlign='center';x.textBaseline='middle';x.lineJoin='round';x.lineWidth=14;
   x.strokeStyle='rgba(255,255,255,.96)';x.strokeText(text,256,74);x.fillStyle=color;x.fillText(text,256,74);
   const tex=new THREE.CanvasTexture(c);tex.encoding=THREE.sRGBEncoding;
   const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,depthWrite:false,depthTest:false}));
-  sp.scale.set(h*3.55,h,1);sp.position.set(...pos);labelG.add(sp);return sp;
+  sp.scale.set(h*3.55,h,1);sp.position.set(...pos);parent.add(sp);return sp;
 }
 
 function makeGear(r,teeth,thick,mat,pos,parent=movementG){
@@ -267,7 +267,7 @@ for(let i=0;i<60;i++){
 // numerals
 for(let n=5;n<=60;n+=5){
   const a=Math.PI/2-n/60*Math.PI*2,r=CASE_R*.66;
-  label(String(n===60?60:n),'#1f2630',.24,[r*Math.cos(a),r*Math.sin(a),.72]);
+  label(String(n===60?60:n),'#1f2630',.24,[r*Math.cos(a),r*Math.sin(a),.72],dialG);
 }
 
 // minute subdial
@@ -276,7 +276,7 @@ for(let i=0;i<30;i++){
   const a=Math.PI/2-i/30*Math.PI*2,r=.65;
   put(dialG,new THREE.BoxGeometry(.018,i%5===0?.12:.07,.015),M.ink,[r*Math.cos(a),1.15+r*Math.sin(a),.58],[0,0,-a]);
 }
-label('MIN','#444b54',.16,[0,1.90,.74]);
+label('MIN','#444b54',.16,[0,1.90,.74],dialG);
 
 // hands
 const secHand=new THREE.Group();secHand.position.z=.72;dialG.add(secHand);
@@ -418,7 +418,7 @@ document.getElementById('btnStop').addEventListener('click',()=>setRunning(false
 document.getElementById('btnReset').addEventListener('click',()=>{
   if(state.running){showToast('先停止计时，再归零');return;}
   if(state.elapsed<.001){showToast('已经在零位');return;}
-  state.resetting=true;state.resetT=0;
+  state.resetting=true;state.resetT=0;state.resetStart=state.elapsed;
 });
 document.getElementById('moduleSeg').addEventListener('click',e=>{
   const b=e.target.closest('[data-module]');if(!b)return;
@@ -486,8 +486,7 @@ function animate(ms){
   if(state.resetting){
     state.resetT=Math.min(1,state.resetT+dt*3.2);
     const ease=1-Math.pow(1-state.resetT,3);
-    state.elapsed=state.resetStart==null?state.elapsed*(1-ease):state.resetStart*(1-ease);
-    if(state.resetStart==null)state.resetStart=state.elapsed;
+    state.elapsed=state.resetStart*(1-ease);
     if(state.resetT>=1){state.elapsed=0;state.resetting=false;state.resetStart=null;showToast('归零完成');}
   }else state.resetStart=null;
   updateWindUI();updateReadout();

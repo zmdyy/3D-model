@@ -5,7 +5,11 @@ window.MODEL_CATALOG = [
     "subtitle": "外壳、底座与串联结构",
     "category": "电学元件",
     "summary": "观察两节 5 号电池的串联方式，可调整外壳透明度、掀开外壳并查看正负极与接线走向。",
-    "tags": ["电源", "串联", "结构透视"],
+    "tags": [
+      "电源",
+      "串联",
+      "结构透视"
+    ],
     "path": "models/battery-box.html",
     "symbol": "±",
     "accent": "blue"
@@ -16,7 +20,11 @@ window.MODEL_CATALOG = [
     "subtitle": "旋钮、滑片与分压结构",
     "category": "电学元件",
     "summary": "拖动或旋转顶部旋钮，观察滑片位置及两段电阻的同步变化，并透视内部线绕结构。",
-    "tags": ["电阻", "滑片", "分压"],
+    "tags": [
+      "电阻",
+      "滑片",
+      "分压"
+    ],
     "path": "models/potentiometer.html",
     "symbol": "Ω",
     "accent": "amber"
@@ -27,7 +35,11 @@ window.MODEL_CATALOG = [
     "subtitle": "接线、滑片与电流方向",
     "category": "电学元件",
     "summary": "可拖动滑片 P、切换接线柱组合、观察接入电阻与电流方向，并使用爆炸视图理解内部结构。",
-    "tags": ["变阻器", "接线", "电流"],
+    "tags": [
+      "变阻器",
+      "接线",
+      "电流"
+    ],
     "path": "models/rheostat.html",
     "symbol": "R",
     "accent": "violet"
@@ -38,7 +50,11 @@ window.MODEL_CATALOG = [
     "subtitle": "E27 灯泡、灯座与家庭电路",
     "category": "家庭电路",
     "summary": "动态演示灯泡拧入灯座、内部触点接触以及火线与零线的正确接法，可进行透明与剖切观察。",
-    "tags": ["家庭电路", "安全用电", "装配"],
+    "tags": [
+      "家庭电路",
+      "安全用电",
+      "装配"
+    ],
     "path": "models/e27-bulb.html",
     "symbol": "☼",
     "accent": "orange"
@@ -49,7 +65,11 @@ window.MODEL_CATALOG = [
     "subtitle": "浮子—滑杆—变阻器联动",
     "category": "综合应用",
     "summary": "改变油量后，观察浮子、滑杆、滑片、电阻和电流表读数的连续联动，理解传感与测量原理。",
-    "tags": ["传感器", "变阻器", "电流表"],
+    "tags": [
+      "传感器",
+      "变阻器",
+      "电流表"
+    ],
     "path": "models/fuel-gauge.html",
     "symbol": "↕",
     "accent": "green"
@@ -60,7 +80,14 @@ window.MODEL_CATALOG = [
     "subtitle": "永久磁体、音圈与锥形纸盆",
     "category": "声学与电磁",
     "summary": "剖开展示永久磁体、磁隙、音圈、定心支片与锥形纸盆；接线导线和音圈均显示交流电箭头，并联动纸盆振动与受力方向。",
-    "tags": ["扬声器", "音圈", "永久磁体", "电流", "振动", "声信号"],
+    "tags": [
+      "扬声器",
+      "音圈",
+      "永久磁体",
+      "电流",
+      "振动",
+      "声信号"
+    ],
     "path": "models/speaker.html",
     "symbol": "🔊",
     "accent": "orange"
@@ -71,7 +98,14 @@ window.MODEL_CATALOG = [
     "subtitle": "膜片、线圈与电磁感应",
     "category": "声学与电磁",
     "summary": "观察声音推动膜片和线圈在永久磁体磁隙中运动，并用感应电流箭头展示“磁生电”过程，理解声信号如何转换成电信号。",
-    "tags": ["话筒", "麦克风", "电磁感应", "磁生电", "线圈", "膜片"],
+    "tags": [
+      "话筒",
+      "麦克风",
+      "电磁感应",
+      "磁生电",
+      "线圈",
+      "膜片"
+    ],
     "path": "models/dynamic-microphone.html",
     "symbol": "🎙",
     "accent": "blue"
@@ -82,7 +116,13 @@ window.MODEL_CATALOG = [
     "subtitle": "同步卫星、覆盖与中继通信",
     "category": "通信与信息",
     "summary": "用Blue Marble风格3D地球、真实感同步卫星与可转向地面站展示GEO通信：天线自动指向卫星，3颗卫星的球面科技覆盖层表现近全球覆盖，并动态演示上下行中继链路。",
-    "tags": ["通信卫星", "同步卫星", "中继通信", "电磁波", "全球通信"],
+    "tags": [
+      "通信卫星",
+      "同步卫星",
+      "中继通信",
+      "电磁波",
+      "全球通信"
+    ],
     "path": "models/communication-satellite.html",
     "symbol": "🛰",
     "accent": "blue"
@@ -93,20 +133,67 @@ window.MODEL_CATALOG = [
     "subtitle": "反应堆、汽轮机与发电机",
     "category": "能源与发电",
     "summary": "按压水堆工程流程重绘为详细SVG剖面：核裂变与控制棒、一回路、蒸汽发生器、高低压汽轮机、同步发电机、变压器、电网、冷凝器和冷却塔全过程连续展示。",
-    "tags": ["核能", "反应堆", "汽轮机", "发电机", "能量转化", "冷却"],
+    "tags": [
+      "核能",
+      "反应堆",
+      "汽轮机",
+      "发电机",
+      "能量转化",
+      "冷却"
+    ],
     "path": "models/nuclear-power.html",
     "symbol": "⚛",
     "accent": "green"
   },
   {
-    "id": "mechanical-stopwatch",
-    "title": "机械停表内部结构与工作原理",
-    "subtitle": "发条、轮系、擒纵、计时与归零",
+    "id": "stopwatch",
+    "title": "机械秒表（停表）",
+    "subtitle": "装配、分解与计时机构",
     "category": "精密机械",
-    "summary": "教学型高仿简化机械停表：可上弦、开始、停止和归零，并通过半剖切、爆炸视图和擒纵慢放观察发条储能、齿轮轮系、摆轮擒纵、计时离合、制动杆以及心形凸轮归零机构。",
-    "tags": ["机械停表", "发条", "齿轮传动", "擒纵机构", "摆轮", "心形凸轮", "归零"],
-    "path": "models/mechanical-stopwatch.html",
+    "summary": "观察机械秒表的机芯结构，可开始、暂停和归零，切换装配、分解、透视及慢速演示，理解齿轮传动与擒纵计时。",
+    "tags": [
+      "秒表",
+      "停表",
+      "齿轮传动",
+      "擒纵机构",
+      "计时"
+    ],
+    "path": "models/stopwatch.html",
     "symbol": "⏱",
     "accent": "amber"
+  },
+  {
+    "id": "solar-tower",
+    "title": "塔式太阳能电站",
+    "subtitle": "定日镜、集热塔与熔盐储能",
+    "category": "能源与发电",
+    "summary": "调节太阳位置、集热塔和镜场参数，观察定日镜反射聚光、自动追踪及熔盐储能，理解塔式光热发电。",
+    "tags": [
+      "太阳能",
+      "光热发电",
+      "定日镜",
+      "光的反射",
+      "熔盐储能"
+    ],
+    "path": "models/solar-tower.html",
+    "symbol": "☀",
+    "accent": "orange"
+  },
+  {
+    "id": "mirage",
+    "title": "海市蜃楼",
+    "subtitle": "上蜃、下蜃与弯曲光路",
+    "category": "光学现象",
+    "summary": "切换上蜃与下蜃，观察空气温度分层中的弯曲光线、视线与虚像，并用侧视剖面和观察者视角比较成因。",
+    "tags": [
+      "海市蜃楼",
+      "上蜃",
+      "下蜃",
+      "光的折射",
+      "虚像"
+    ],
+    "path": "models/mirage.html",
+    "symbol": "↗",
+    "accent": "blue"
   }
 ];

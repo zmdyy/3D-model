@@ -25,16 +25,21 @@ button:hover{border-color:#b9cce6}button.active{background:#2d5f9d;color:#fff;bo
 .hint{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:10;background:rgba(248,252,255,.93);border:1px solid rgba(216,228,240,.92);border-radius:999px;padding:9px 14px;color:#617087;font-size:12px;box-shadow:0 8px 24px rgba(0,0,0,.18)}
 kbd{font:inherit;font-weight:800;background:#eef3f8;border:1px solid #dce5ef;border-bottom-width:2px;border-radius:7px;padding:1px 6px}
 @media(max-width:720px){.panel{left:12px;top:12px;width:min(380px,calc(100vw - 24px));padding:15px}.hint{left:12px;right:12px;transform:none;text-align:center}}
+
+#viewport{position:fixed;inset:0 0 0 410px}#scene{width:100%;height:100%}.panel{width:370px}.lead,.row,.value{font-size:14px}button{font-size:14px}.tile b{font-size:12px}.tip span{font-size:13px}.hint{left:430px;right:20px;transform:none;text-align:center;border-radius:12px;font-size:13px}.topic-seg{padding:8px 0 4px}.topic-seg button{flex:1;font-size:15px}.part-tools button{font-size:13px;padding:7px 9px}.part-info{margin-top:13px;padding:13px;border:1px solid #ceddeb;border-radius:13px;background:#edf4fb}.part-info h2{font-size:18px;margin:0 0 7px}.part-info p{font-size:14px;line-height:1.75;margin:0;color:#40546b}.small-note{font-size:13px;color:#63738a;line-height:1.7;margin:7px 0}.model-note{padding-top:12px;border-top:1px dashed #cbd8e8}.comm-readout{margin-top:16px;padding:12px;background:#edf5fc;border:1px solid #d6e2ef;border-radius:12px;font-size:14px}.comm-readout p{font-size:14px;line-height:1.6;margin:5px 0 13px}.sources{font-size:13px;color:#61758a;line-height:1.7;margin-top:13px}.sources a{display:block;color:#336ca4;margin:7px 0}.sources summary{cursor:pointer}button:disabled{opacity:.5;cursor:default}#stationLabels,#stationLeaders{position:absolute;inset:0;pointer-events:none;z-index:4;width:100%;height:100%}.station-label{transition:none;position:absolute;left:0;top:0;white-space:nowrap;padding:4px 9px;border-radius:6px;background:rgba(13,29,45,.87);border:1px solid #638097;color:#edf6fd;font-size:14px;font-weight:600;pointer-events:auto}.station-label:hover{background:#264f72}.station-label[hidden],[hidden]{display:none!important}#btnOpenPanel{position:fixed;top:12px;left:12px;z-index:30}#btnClosePanel{display:none}.panel.collapsed{display:none}
+@media(max-width:760px){#viewport{left:0}.panel{left:12px;right:12px;top:12px;width:auto;max-height:calc(100vh - 24px)}#btnClosePanel{display:block;float:right;padding:5px 8px}.hint{left:12px;right:12px;font-size:11px;bottom:10px;padding:7px}.station-label{font-size:11px;padding:3px 6px}}
+
 </style>
 </head>
 <body>
-<canvas id="scene"></canvas>
-<section class="panel">
-  <span class="eyebrow"><i></i> PHYSICS · GEO COMMUNICATION</span>
-  <h1>通信卫星与全球通信</h1>
-  <p class="lead">同步卫星位于赤道上空，绕地球运行的方向和周期与地球自转一致，因此相对地面经度近似不变。地面站天线可以固定指向卫星，卫星负责接收、放大并转发无线电信号。</p>
+<div id="viewport"><canvas id="scene"></canvas><svg id="stationLeaders" aria-hidden="true"></svg><div id="stationLabels" hidden></div></div><button id="btnOpenPanel"><span id="mobileTopic">通信卫星</span> · 控制面板</button>
+<section class="panel"><button id="btnClosePanel">收起</button>
+  <span class="eyebrow"><i></i> <span id="modeBadge">PHYSICS · GEO COMMUNICATION</span></span>
+  <h1 id="sceneTitle">通信卫星与全球通信</h1>
+  <p class="lead" id="sceneLead">同步卫星位于赤道上空，绕地球运行的方向和周期与地球自转一致，因此相对地面经度近似不变。地面站天线可以固定指向卫星，卫星负责接收、放大并转发无线电信号。</p>
 
-  <div class="grp">
+<nav class="seg topic-seg" id="topicSeg" aria-label="案例"><button data-topic="satellite" class="active">通信卫星</button><button data-topic="tiangong">中国空间站</button></nav>
+<div id="geoControls">  <div class="grp">
     <div class="row"><label for="speedRange">演示速度</label><span class="value" id="speedValue">1.0×</span></div>
     <input id="speedRange" type="range" min="0" max="30" value="10">
   </div>
@@ -66,10 +71,24 @@ kbd{font:inherit;font-weight:800;background:#eef3f8;border:1px solid #dce5ef;bor
     <span><i class="dot beam"></i>橙红色＝上行链路，青蓝色＝下行链路；两个地面站的抛物面天线会实时对准正在中继的卫星。</span>
     <span><i class="dot cover"></i>青色球面足迹＝同步卫星可见/可通信区域的科技化示意。3颗等间隔同步卫星可实现近全球覆盖，但高纬和极区仍受限制。</span>
   </div>
-</section>
+</div><div id="tiangongControls" hidden>
+<nav class="seg" id="stationViewSeg"><button data-station-view="structure" class="active">结构观察</button><button data-station-view="communication">天地通信</button></nav>
+<div id="stationStructureControls"><div class="stats"><div class="tile"><b>天和核心舱</b><span>16.6 m</span></div><div class="tile"><b>实验舱长度</b><span>约 17.9 m</span></div><div class="tile"><b>舱体最大直径</b><span>4.2 m</span></div><div class="tile"><b>实验舱太阳翼</b><span>4 片</span></div></div>
+<div class="grp"><div class="row">选择部件</div><div class="tools part-tools" id="stationParts"></div></div>
+<article class="part-info"><h2 id="partTitle">三舱 T 字基本构型</h2><p id="partDescription"></p><div class="tools"><button id="btnFocusPart" disabled>放大所选</button><button id="btnWholeStation">完整视图</button><button id="btnTopStation">俯视构型</button></div></article>
+<div class="grp"><div class="row"><label for="explodeRange">舱段分解</label><span class="value" id="explodeValue">0%</span></div><input id="explodeRange" type="range" min="0" max="100" value="0"><p class="small-note">红线：两侧实验舱永久连接。蓝线：来访飞船停靠示例。</p></div>
+<div class="grp"><div class="row"><label for="solarAngleRange">太阳翼转动</label><span class="value" id="solarAngleValue">0°</span></div><input id="solarAngleRange" type="range" min="-70" max="70" value="0"><p class="small-note">观察柔性电池毯面、中央桁架和转动关节。</p></div>
+<div class="tools"><button id="btnVisitors" class="active">来访飞船示例</button><button id="btnStationLabels" class="active">结构标注</button></div>
+</div>
+<div id="stationCommunicationControls" hidden><div class="stats"><div class="tile"><b>空间站轨道高度</b><span>约 400 km</span></div><div class="tile"><b>空间站绕行一圈</b><span>约 90 min</span></div><div class="tile"><b>中继卫星轨道</b><span>GEO</span></div><div class="tile"><b>同步轨道高度</b><span>35,786 km</span></div></div>
+<div class="comm-readout"><b>空间站 → 地面直连站</b><p id="directStatus"></p><b>空间站 → 天链中继 → 地面站</b><p id="relayStatus"></p></div><div class="tools"><button id="btnStationPause">暂停公转</button><button id="btnDirect" class="active">直连链路</button></div><p class="small-note">空间站位于近地轨道，会相对地面移动。地球遮挡时，直连线路消失；中继卫星可扩大天地通信覆盖。橙色：空间站上传；蓝色：中继下传；绿色：地面直连。</p><p class="small-note">航天器尺寸大幅放大，轨道间距经示意调整；中继卫星展示功能与几何可见性，不预测实际通信调度。</p></div>
+<p class="small-note model-note">按参考图重建三舱基本构型；外部设备、机械臂姿态与舱段局部比例为教学简化。来访飞船与核心舱太阳翼属于参考构型示例，不代表当前在轨停靠和外部配置。</p>
+<details class="sources"><summary>参考资料</summary><a href="https://zh.wikipedia.org/zh-cn/天宫空间站" target="_blank" rel="noopener">天宫空间站：构型与参考图</a><a href="https://www.cmse.gov.cn/xwzx/zhxw/202105/t20210507_47814.html" target="_blank" rel="noopener">中国载人航天：天和核心舱</a><a href="https://www.cmse.gov.cn/xwzx/202211/t20221107_51360.html" target="_blank" rel="noopener">实验舱与 T 字构型</a><a href="https://www.cmse.gov.cn/xwzx/202401/t20240108_54902.html" target="_blank" rel="noopener">空间站机械臂</a><a href="https://www.cmse.gov.cn/xwzx/202301/t20230103_52072.html" target="_blank" rel="noopener">天地测控通信</a></details>
+</div></section>
 <div class="hint">拖拽旋转 · 滚轮缩放 · <kbd>Shift</kbd>+拖拽平移 · 双指缩放</div>
 
-<script src="https://cdn.jsdelivr.net/npm/three@0.144.0/build/three.min.js"></script>
+<script src="../shared/vendor/three-r144.min.js"></script>
+<script src="../shared/tiangong-model.js"></script>
 <script>
 (() => {
 'use strict';
@@ -81,7 +100,7 @@ renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));
 renderer.outputEncoding=THREE.sRGBEncoding;
 renderer.toneMapping=THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure=1.10;
-renderer.shadowMap.enabled=true;
+renderer.shadowMap.enabled=false;
 renderer.shadowMap.type=THREE.PCFSoftShadowMap;
 
 const scene=new THREE.Scene();
@@ -97,7 +116,7 @@ const rim=new THREE.DirectionalLight(0x8ec8ff,.52);rim.position.set(-6,10,15);sc
 {
   const pts=[];for(let i=0;i<1200;i++){const r=55+Math.random()*70,th=Math.random()*Math.PI*2,ph=Math.acos(2*Math.random()-1);pts.push(new THREE.Vector3(r*Math.sin(ph)*Math.cos(th),r*Math.cos(ph),r*Math.sin(ph)*Math.sin(th)));}
   const g=new THREE.BufferGeometry().setFromPoints(pts);
-  const m=new THREE.PointsMaterial({color:0xffffff,size:.055,transparent:true,opacity:.72,sizeAttenuation:true});
+  const m=new THREE.PointsMaterial({color:0xffffff,size:1.15,transparent:true,opacity:.46,sizeAttenuation:false});
   scene.add(new THREE.Points(g,m));
 }
 
@@ -133,10 +152,8 @@ const M={
 
 // optional real Earth maps; materials remain usable if the network texture is unavailable
 const loader=new THREE.TextureLoader();loader.crossOrigin='anonymous';
-loader.load('https://threejs.org/examples/textures/planets/earth_atmos_2048.jpg',t=>{t.encoding=THREE.sRGBEncoding;M.earth.map=t;M.earth.needsUpdate=true},undefined,()=>{});
-loader.load('https://threejs.org/examples/textures/planets/earth_specular_2048.jpg',t=>{M.earth.specularMap=t;M.earth.needsUpdate=true},undefined,()=>{});
-loader.load('https://threejs.org/examples/textures/planets/earth_normal_2048.jpg',t=>{M.earth.normalMap=t;M.earth.normalScale=new THREE.Vector2(.55,.55);M.earth.needsUpdate=true},undefined,()=>{});
-loader.load('https://threejs.org/examples/textures/planets/earth_clouds_1024.png',t=>{t.encoding=THREE.sRGBEncoding;cloudMat.map=t;cloudMat.opacity=.22;cloudMat.needsUpdate=true},undefined,()=>{});
+loader.load('../shared/textures/earth-atmos-r144.jpg',t=>{t.encoding=THREE.sRGBEncoding;M.earth.map=t;M.earth.needsUpdate=true;needsRender=true});
+loader.load('../shared/textures/earth-clouds-r144.png',t=>{t.encoding=THREE.sRGBEncoding;cloudMat.map=t;cloudMat.opacity=.22;cloudMat.needsUpdate=true;needsRender=true});
 
 const EARTH_R=2.70, ORBIT_R=7.05, CAP_ANGLE=80*Math.PI/180;
 const root=new THREE.Group();scene.add(root);
@@ -176,7 +193,7 @@ function dishGeometry(radius,depth,segments=48){
 }
 function label(text,color,h,pos,parent){
   const c=document.createElement('canvas');c.width=512;c.height=144;const x=c.getContext('2d');x.font='bold 72px "Microsoft YaHei","PingFang SC",sans-serif';x.textAlign='center';x.textBaseline='middle';x.lineJoin='round';x.lineWidth=14;x.strokeStyle='rgba(4,12,24,.75)';x.strokeText(text,256,74);x.fillStyle=color;x.fillText(text,256,74);
-  const tex=new THREE.CanvasTexture(c);tex.encoding=THREE.sRGBEncoding;const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,depthWrite:false,depthTest:false}));sp.scale.set(h*3.5,h,1);sp.position.copy(pos);(parent||root).add(sp);return sp;
+  const tex=new THREE.CanvasTexture(c);tex.encoding=THREE.sRGBEncoding;const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,depthWrite:false,depthTest:false,toneMapped:false}));sp.scale.set(h*4.2,h*1.2,1);sp.position.copy(pos);(parent||root).add(sp);return sp;
 }
 const labelG=new THREE.Group();root.add(labelG);
 const orbitLabel=label('GEO 同步轨道','#f4d878',.46,new THREE.Vector3(0,.55,ORBIT_R+.55),labelG);
@@ -313,16 +330,16 @@ const view={theta:.66,phi:1.08,dist:18.8,distTarget:18.8,target:new THREE.Vector
 const DEF={theta:.66,phi:1.08,dist:18.8,target:[0,.05,0]};
 function clamp(v,a,b){return v<a?a:(v>b?b:v)}
 function applyCamera(){const sp=Math.sin(view.phi),cp=Math.cos(view.phi);camera.position.set(view.target.x+view.dist*sp*Math.sin(view.theta),view.target.y+view.dist*cp,view.target.z+view.dist*sp*Math.cos(view.theta));camera.lookAt(view.target)}
-function reset(){view.theta=DEF.theta;view.phi=DEF.phi;view.dist=view.distTarget=DEF.dist;view.target.set(...DEF.target)}
+function reset(){if(state.topic){resetTopicView();return;}view.theta=DEF.theta;view.phi=DEF.phi;view.dist=view.distTarget=DEF.dist;view.target.set(...DEF.target)}
 reset();document.getElementById('btnReset').addEventListener('click',reset);
 const pointers=new Map();let dragging=false,dragMode=null,pinchStart=0,pinchDist=0;
 canvas.addEventListener('pointerdown',function(e){canvas.setPointerCapture&&canvas.setPointerCapture(e.pointerId);pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});canvas.style.cursor='grabbing';if(pointers.size===1){dragMode=(e.button===2||e.shiftKey)?'pan':'orbit';dragging=true}else if(pointers.size===2){dragMode='pinch';dragging=false;const p=Array.from(pointers.values());pinchDist=Math.hypot(p[0].x-p[1].x,p[0].y-p[1].y);pinchStart=view.distTarget}e.preventDefault()});
-canvas.addEventListener('pointermove',function(e){if(!pointers.has(e.pointerId))return;const prev=pointers.get(e.pointerId),dx=e.clientX-prev.x,dy=e.clientY-prev.y;pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});if(dragMode==='pinch'&&pointers.size===2){const p=Array.from(pointers.values()),d=Math.hypot(p[0].x-p[1].x,p[0].y-p[1].y);if(pinchDist>0)view.distTarget=clamp(pinchStart*pinchDist/d,8,36);e.preventDefault();return}if(!dragging)return;if(dragMode==='pan'){const k=view.dist*.0015,right=new THREE.Vector3().setFromMatrixColumn(camera.matrix,0),up=new THREE.Vector3().setFromMatrixColumn(camera.matrix,1);view.target.addScaledVector(right,-dx*k);view.target.addScaledVector(up,dy*k)}else{view.theta-=dx*.0058;view.phi=clamp(view.phi-dy*.0053,.12,1.60)}e.preventDefault()});
+canvas.addEventListener('pointermove',function(e){if(!pointers.has(e.pointerId))return;needsRender=true;const prev=pointers.get(e.pointerId),dx=e.clientX-prev.x,dy=e.clientY-prev.y;pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});if(dragMode==='pinch'&&pointers.size===2){const p=Array.from(pointers.values()),d=Math.hypot(p[0].x-p[1].x,p[0].y-p[1].y);if(pinchDist>0)view.distTarget=clamp(pinchStart*pinchDist/d,8,230);e.preventDefault();return}if(!dragging)return;if(dragMode==='pan'){const k=view.dist*.0015,right=new THREE.Vector3().setFromMatrixColumn(camera.matrix,0),up=new THREE.Vector3().setFromMatrixColumn(camera.matrix,1);view.target.addScaledVector(right,-dx*k);view.target.addScaledVector(up,dy*k)}else{view.theta-=dx*.0055;view.phi=clamp(view.phi-dy*.005,.10,Math.PI-.10)}e.preventDefault()});
 function endPointer(e){pointers.delete(e.pointerId);if(!pointers.size){dragging=false;dragMode=null;canvas.style.cursor='grab'}else if(pointers.size===1&&dragMode==='pinch'){dragMode='orbit';dragging=true}}
 canvas.addEventListener('pointerup',endPointer);canvas.addEventListener('pointercancel',endPointer);canvas.addEventListener('pointerleave',e=>{if(pointers.size)endPointer(e)});
-canvas.addEventListener('wheel',e=>{e.preventDefault();view.distTarget=clamp(view.distTarget*Math.exp(e.deltaY*.0011),8,36)},{passive:false});canvas.addEventListener('contextmenu',e=>e.preventDefault());
+canvas.addEventListener('wheel',e=>{e.preventDefault();needsRender=true;view.distTarget=clamp(view.distTarget*Math.exp(e.deltaY*.0011),8,state.topic==='tiangong'&&state.stationView==='structure'?230:90)},{passive:false});canvas.addEventListener('contextmenu',e=>e.preventDefault());
 
-function resize(){const w=innerWidth,h=innerHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix()}addEventListener('resize',resize);resize();
+function resize(){const r=document.getElementById('viewport').getBoundingClientRect(),w=r.width,h=r.height;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();if(typeof window.SpaceDemo!=='undefined'){needsRender=true;resetTopicView();if(innerWidth<=760)setPanel(false);}}addEventListener('resize',resize);resize();
 
 const AXIS_X=new THREE.Vector3(1,0,0),AXIS_Y=new THREE.Vector3(0,1,0);
 function geoPos(lat,lonDeg,r=EARTH_R){
@@ -366,22 +383,44 @@ function updateCoverage(c,angle){
   c.group.quaternion.setFromUnitVectors(AXIS_X,out);
 }
 
-function animate(ms){
-  requestAnimationFrame(animate);
-  const t=ms*.001,earthAngle=t*.12*state.speed,satAngle=t*.12*state.speed*(state.mode==='sync'?1:1.30);
-  view.dist+=(view.distTarget-view.dist)*.11;applyCamera();
-
-  earthMesh.rotation.y=earthAngle;gridG.rotation.y=earthAngle;cloudG.rotation.y=earthAngle*.965;
-  sats.forEach(s=>updateSatellite(s,satAngle));
-  covers.forEach(c=>updateCoverage(c,satAngle));
-
-  updateStation(stations[0],earthAngle,sats[0].pos);
-  updateStation(stations[1],earthAngle,sats[0].pos);
-  updateRelay(t,sats[0].pos);
-
-  renderer.render(scene,camera);
+// Tiangong shares the camera and orbit interaction with the original GEO case.
+const tiangong=createTiangongModel();scene.add(tiangong.group);tiangong.group.visible=false;
+state.topic='satellite';state.stationView='structure';state.selected='all';state.visitors=true;state.explosion=0;state.solarAngle=0;state.stationPaused=false;state.direct=true;
+let needsRender=true,simulationTime=0,lastTime=0;
+const viewport=document.getElementById('viewport'),stationLabels=document.getElementById('stationLabels'),leaderSVG=document.getElementById('stationLeaders');
+const labels=tiangong.anchors.map(([id,anchor])=>{const el=document.createElement('button');el.className='station-label';el.textContent=tiangong.parts[id].name;el.onclick=()=>selectPart(id);stationLabels.appendChild(el);const line=document.createElementNS('http://www.w3.org/2000/svg','line');line.setAttribute('stroke','#9eb6c4');line.setAttribute('stroke-width','1');leaderSVG.appendChild(line);return {id,anchor,el,line};});
+const leoG=new THREE.Group();root.add(leoG);const leoPoints=[];for(let i=0;i<=240;i++){const a=i/240*Math.PI*2;leoPoints.push(new THREE.Vector3(3.4*Math.cos(a),3.4*Math.sin(a)*Math.sin(.7243),3.4*Math.sin(a)*Math.cos(.7243)));}leoG.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(leoPoints),new THREE.LineBasicMaterial({color:0x8bbaf8,transparent:true,opacity:.6})));leoG.visible=false;
+const communicationLabels=new THREE.Group();root.add(communicationLabels);communicationLabels.visible=false;
+const spaceLabel=label('天宫（放大）','#e4f3ff',.50,new THREE.Vector3(),communicationLabels),relayLabel=label('天链中继示意','#f6cd73',.50,new THREE.Vector3(),communicationLabels),relayGroundLabel=label('中继地面站','#ffb280',.42,new THREE.Vector3(),communicationLabels),directGroundLabel=label('直连地面站','#89ded0',.42,new THREE.Vector3(),communicationLabels);
+const directG=new THREE.Group();root.add(directG);const directLine=new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(),new THREE.Vector3()]),new THREE.LineBasicMaterial({color:0x70d9bd,transparent:true,opacity:.9}));directG.add(directLine);const directArrows=[];const directGeo=new THREE.ConeGeometry(.045,.16,8);directGeo.rotateZ(-Math.PI/2);for(let i=0;i<6;i++){const o=new THREE.Mesh(directGeo,new THREE.MeshBasicMaterial({color:0x70d9bd}));o.userData.phase=i/6;directG.add(o);directArrows.push(o);}directG.visible=false;
+const partButtons=document.getElementById('stationParts');for(const [id,p] of Object.entries(tiangong.parts)){if(id==='coreSolar')continue;const b=document.createElement('button');b.dataset.part=id;b.textContent=p.name;b.onclick=()=>selectPart(id);partButtons.appendChild(b);}
+function selectPart(id){state.selected=id;tiangong.select(id);document.querySelectorAll('[data-part]').forEach(b=>b.classList.toggle('active',b.dataset.part===id));document.getElementById('partTitle').textContent=id==='all'?'三舱 T 字基本构型':tiangong.parts[id].name;document.getElementById('partDescription').textContent=id==='all'?'天和居中，问天与梦天永久连接节点舱两侧。点击部件名称或模型表面，查看功能；“放大所选”可近看舱门、太阳翼和机械臂。':tiangong.parts[id].description;document.getElementById('btnFocusPart').disabled=id==='all';needsRender=true;}
+function fitStation(id='all'){tiangong.group.updateMatrixWorld(true);const box=tiangong.getBounds(id),sphere=box.getBoundingSphere(new THREE.Sphere());view.target.copy(sphere.center);view.dist=view.distTarget=clamp(sphere.radius/Math.sin(camera.fov*Math.PI/360)*1.16/Math.min(1,camera.aspect),8,230);needsRender=true;}
+function resetTopicView(){if(state.topic==='tiangong'&&state.stationView==='structure'){view.theta=.52;view.phi=.77;fitStation();}else{view.theta=.66;view.phi=1.08;view.dist=view.distTarget=26/Math.min(1,camera.aspect);view.target.set(0,.05,0);}needsRender=true;}
+function syncVisibility(){const isStation=state.topic==='tiangong',isStructure=isStation&&state.stationView==='structure';root.visible=!isStructure;tiangong.group.visible=isStation;leoG.visible=isStation&&!isStructure;communicationLabels.visible=isStation&&!isStructure&&state.labels;stationLabels.hidden=!isStructure||!state.labels;leaderSVG.style.display=isStructure&&state.labels?'block':'none';document.getElementById('geoControls').hidden=isStation;document.getElementById('tiangongControls').hidden=!isStation;document.getElementById('stationStructureControls').hidden=!isStructure;document.getElementById('stationCommunicationControls').hidden=!isStation||isStructure;document.getElementById('stationViewSeg').hidden=!isStation;
+ orbitG.visible=isStation?!isStructure:state.orbit;labelG.visible=!isStation&&state.labels;covers.forEach((c,i)=>c.group.visible=!isStation&&state.coverage&&(i===0||state.three));sats.forEach((s,i)=>s.group.visible=!isStation?(i===0||state.three):!isStructure);relayG.visible=!isStation&&state.relay;directG.visible=false;stations.forEach(s=>{s.base.visible=!isStructure;s.dish.visible=!isStructure;});
+ if(isStructure){tiangong.group.scale.setScalar(1);tiangong.group.position.set(0,0,0);tiangong.group.quaternion.identity();renderer.toneMappingExposure=1.0;tiangong.pointAntenna(null);tiangong.setExplosion(state.explosion);tiangong.setVisitors(state.visitors);}else if(isStation){renderer.toneMappingExposure=1.10;tiangong.setExplosion(0);tiangong.setVisitors(state.visitors);tiangong.group.scale.setScalar(.017);}
+ document.getElementById('sceneTitle').textContent=isStation?'天宫空间站':'通信卫星与全球通信';document.getElementById('sceneLead').textContent=isStation?'三舱基本构型与外部结构：观察天和、问天、梦天，以及太阳翼、机械臂和来访飞船；切换“天地通信”查看空间站与地面的联系。':'同步卫星位于赤道上空，相对地面经度近似不变。地面站指向卫星，卫星接收、放大并转发无线电信号。';document.getElementById('modeBadge').textContent=isStation?'TIANGONG · CHINA SPACE STATION':'PHYSICS · GEO COMMUNICATION';document.getElementById('mobileTopic').textContent=isStation?'天宫空间站':'通信卫星';document.getElementById('btnStationLabels').classList.toggle('active',state.labels);document.getElementById('btnLabels').classList.toggle('active',state.labels);needsRender=true;
 }
+function setTopic(topic){state.topic=topic;document.querySelectorAll('#topicSeg button').forEach(b=>b.classList.toggle('active',b.dataset.topic===topic));syncVisibility();resetTopicView();if(innerWidth<=760)setPanel(false);}
+document.getElementById('topicSeg').onclick=e=>{const b=e.target.closest('[data-topic]');if(b)setTopic(b.dataset.topic);};document.getElementById('stationViewSeg').onclick=e=>{const b=e.target.closest('[data-station-view]');if(!b)return;state.stationView=b.dataset.stationView;document.querySelectorAll('#stationViewSeg button').forEach(x=>x.classList.toggle('active',x===b));syncVisibility();resetTopicView();if(innerWidth<=760)setPanel(false);};
+document.getElementById('btnFocusPart').onclick=()=>{fitStation(state.selected);if(innerWidth<=760)setPanel(false);};document.getElementById('btnWholeStation').onclick=()=>{selectPart('all');resetTopicView();};document.getElementById('btnTopStation').onclick=()=>{view.theta=0;view.phi=.10;fitStation();};
+document.getElementById('explodeRange').oninput=function(){state.explosion=+this.value/100;document.getElementById('explodeValue').textContent=this.value+'%';tiangong.setExplosion(state.explosion);needsRender=true;};document.getElementById('solarAngleRange').oninput=function(){state.solarAngle=+this.value;document.getElementById('solarAngleValue').textContent=this.value+'°';tiangong.setSolarAngle(state.solarAngle*Math.PI/180);needsRender=true;};
+document.getElementById('btnVisitors').onclick=function(){state.visitors=!state.visitors;this.classList.toggle('active',state.visitors);tiangong.setVisitors(state.visitors);if(!state.visitors&&state.selected==='ships')selectPart('all');needsRender=true;};document.getElementById('btnStationLabels').onclick=function(){state.labels=!state.labels;this.classList.toggle('active',state.labels);document.getElementById('btnLabels').classList.toggle('active',state.labels);syncVisibility();};document.getElementById('btnStationPause').onclick=function(){state.stationPaused=!state.stationPaused;this.textContent=state.stationPaused?'继续公转':'暂停公转';this.classList.toggle('active',state.stationPaused);needsRender=true;};document.getElementById('btnDirect').onclick=function(){state.direct=!state.direct;this.classList.toggle('active',state.direct);needsRender=true;};
+const raycaster=new THREE.Raycaster(),mouse=new THREE.Vector2();let clickOrigin=null;canvas.addEventListener('pointerdown',e=>{clickOrigin={x:e.clientX,y:e.clientY};});canvas.addEventListener('pointerup',e=>{if(state.topic!=='tiangong'||state.stationView!=='structure'||!clickOrigin||Math.hypot(e.clientX-clickOrigin.x,e.clientY-clickOrigin.y)>5)return;const r=canvas.getBoundingClientRect();mouse.set((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1);raycaster.setFromCamera(mouse,camera);const hits=raycaster.intersectObject(tiangong.group,true);for(const h of hits){let o=h.object;while(o&&o!==tiangong.group){if(o.userData.part){selectPart(o.userData.part);return;}o=o.parent;}}});
+function updateStationLabels(){if(stationLabels.hidden)return;const r=viewport.getBoundingClientRect(),placed=[];leaderSVG.setAttribute('viewBox','0 0 '+r.width+' '+r.height);tiangong.group.updateMatrixWorld(true);for(const x of labels){const anchor=x.anchor.clone(),family=tiangong.parts[x.id].family;if(family)anchor.x+=(family==='wentian'?-1:1)*state.explosion*6;if(x.id==='solar')anchor.x-=state.explosion*6;if(x.id==='ships')anchor.z-=state.explosion*3;const p=tiangong.group.localToWorld(anchor).project(camera),showDetail=['tianhe','wentian','mengtian','solar'].includes(x.id)||x.id===state.selected||(x.id==='ports'&&state.explosion>.05),visible=showDetail&&p.z<1&&p.z> -1&&Math.abs(p.x)<1.05&&Math.abs(p.y)<1.05&&(x.id!=='ships'||state.visitors);x.el.hidden=!visible;x.line.style.display=visible?'block':'none';if(!visible)continue;const sx=(p.x*.5+.5)*r.width,sy=(-p.y*.5+.5)*r.height,w=x.el.offsetWidth||95,h=29;let xx=clamp(sx+12,8,r.width-w-8),yy=clamp(sy-34,8,r.height-h-60);for(let i=0;i<8&&placed.some(b=>xx<b.x+b.w&&xx+w>b.x&&yy<b.y+b.h&&yy+h>b.y);i++)yy=clamp(yy+32,8,r.height-h-60);placed.push({x:xx,y:yy,w,h});x.el.style.transform='translate('+xx+'px,'+yy+'px)';x.line.setAttribute('x1',sx);x.line.setAttribute('y1',sy);x.line.setAttribute('x2',xx);x.line.setAttribute('y2',yy+h/2);}}
+function clearEarth(a,b){const d=b.clone().sub(a),u=clamp(-a.dot(d)/d.lengthSq(),0,1);return a.clone().addScaledVector(d,u).length()>EARTH_R*1.003;}
+let commStatus={direct:false,relay:false,relayIndex:-1};
+function updateSpaceCommunication(t,earthAngle){const a=t*.015*(1436/92)+.72,pos=new THREE.Vector3(3.4*Math.cos(a),3.4*Math.sin(a)*Math.sin(.7243),3.4*Math.sin(a)*Math.cos(.7243));tiangong.group.position.copy(pos);tiangong.group.quaternion.setFromUnitVectors(AXIS_Y,pos.clone().normalize());tiangong.group.updateMatrixWorld(true);let antenna=tiangong.getAntennaPosition();let relayIndex=sats.findIndex(s=>clearEarth(antenna,s.pos)&&clearEarth(s.pos,geoPos(stations[0].lat,stations[0].lon+earthAngle*180/Math.PI,EARTH_R*1.04)));const target=relayIndex>=0?sats[relayIndex].pos:sats[0].pos;tiangong.pointAntenna(target);antenna=tiangong.getAntennaPosition();updateStation(stations[0],earthAngle,target);updateStation(stations[1],earthAngle,antenna);const directVisible=clearEarth(stations[1].feed,antenna),relayVisible=relayIndex>=0;relayG.visible=relayVisible;if(relayVisible){setLine(uplinkLine,antenna,target);setLine(downlinkLine,target,stations[0].feed);for(const o of relayArrows){const p=o.userData.kind==='up'?antenna:target,q=o.userData.kind==='up'?target:stations[0].feed,d=q.clone().sub(p).normalize(),u=(o.userData.phase+t*.22)%1;o.position.copy(p).lerp(q,u);o.quaternion.setFromUnitVectors(AXIS_X,d);}}
+ directG.visible=state.direct&&directVisible;setLine(directLine,antenna,stations[1].feed);for(const o of directArrows){const u=(o.userData.phase+t*.22)%1;o.position.copy(antenna).lerp(stations[1].feed,u);o.quaternion.setFromUnitVectors(AXIS_X,stations[1].feed.clone().sub(antenna).normalize());}spaceLabel.position.copy(pos).add(new THREE.Vector3(0,.65,0));relayLabel.position.copy(target).add(new THREE.Vector3(0,.65,0));relayLabel.visible=relayVisible;relayGroundLabel.position.copy(stations[0].label.position);directGroundLabel.position.copy(stations[1].label.position);document.getElementById('directStatus').textContent=directVisible?'当前可见，可直接通信':'地球遮挡，当前无法直连';document.getElementById('relayStatus').textContent=relayVisible?'经中继卫星连接地面站':'当前示意几何无可用通路';commStatus={direct:directVisible,relay:relayVisible,relayIndex};}
+function setPanel(open){document.querySelector('.panel').classList.toggle('collapsed',!open);document.getElementById('btnOpenPanel').hidden=open;}document.getElementById('btnOpenPanel').onclick=()=>setPanel(true);document.getElementById('btnClosePanel').onclick=()=>setPanel(false);setPanel(innerWidth>760);
+document.querySelector('.panel').addEventListener('click',()=>needsRender=true);document.querySelector('.panel').addEventListener('input',()=>needsRender=true);
+selectPart('all');syncVisibility();resetTopicView();
+window.SpaceDemo={getState:()=>({...state,model:tiangong.getStatus(),communication:commStatus,camera:{theta:view.theta,phi:view.phi,distance:view.dist},drawCalls:renderer.info.render.calls}),selectPart,focusPart:()=>fitStation(state.selected),setSimulationTime:t=>{simulationTime=t;needsRender=true;},getLinkData:()=>({earthRadius:EARTH_R,relayVisible:relayG.visible,directVisible:directG.visible,relay:Array.from(uplinkLine.geometry.attributes.position.array),downlink:Array.from(downlinkLine.geometry.attributes.position.array),direct:Array.from(directLine.geometry.attributes.position.array)})};
+function animate(ms){requestAnimationFrame(animate);const dt=lastTime?Math.min((ms-lastTime)*.001,.1):0;lastTime=ms;const isStructure=state.topic==='tiangong'&&state.stationView==='structure',running=!isStructure&&state.speed>0&&!(state.topic==='tiangong'&&state.stationPaused);if(running)simulationTime+=dt*state.speed;const t=simulationTime,rate=state.topic==='tiangong'?.015:.12,earthAngle=t*rate,satAngle=earthAngle*(state.topic==='satellite'&&state.mode==='drift'?1.3:1);const movingCamera=Math.abs(view.distTarget-view.dist)>.001;view.dist+=(view.distTarget-view.dist)*.11;applyCamera();if(!isStructure){earthMesh.rotation.y=-earthAngle;gridG.rotation.y=-earthAngle;cloudG.rotation.y=-earthAngle*.965;sats.forEach(s=>updateSatellite(s,satAngle));covers.forEach(c=>updateCoverage(c,satAngle));if(state.topic==='tiangong')updateSpaceCommunication(t,earthAngle);else{updateStation(stations[0],earthAngle,sats[0].pos);updateStation(stations[1],earthAngle,sats[0].pos);updateRelay(t,sats[0].pos);}}
+ if(running||needsRender||movingCamera){renderer.render(scene,camera);if(isStructure)updateStationLabels();needsRender=false;}}
 requestAnimationFrame(animate);
+
 })();
 </script>
 </body>

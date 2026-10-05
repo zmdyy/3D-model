@@ -80,7 +80,7 @@ input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:5px;
 
   <div class="grp eye-only">
     <div class="lbl">成像结果</div>
-    <div id="focusStatus" class="status">焦点落在视网膜上，成像清晰。</div><canvas id="focusDiagram" width="600" height="270" aria-label="理论清晰像平面与固定视网膜像面的对照"></canvas><p class="note">绿色表示理论清晰像；橙色线固定为视网膜像面。视网膜后方的虚线是光路延长，真实视网膜上接收的是散开的光斑。</p>
+    <div id="focusStatus" class="status">焦点落在视网膜上，成像清晰。</div><canvas id="focusDiagram" width="600" height="270" aria-label="理论清晰像平面与固定视网膜像面的对照"></canvas><p class="note">主图中的唯一绿色箭头表示理论清晰像；橙色线固定为视网膜像面。实际接收结果见左下小图。视网膜后方的虚线是光路延长，真实视网膜上接收的是散开的光斑。</p>
   </div>
 
   <div class="grp eye-only">
@@ -89,8 +89,8 @@ input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:5px;
       <button id="sectionBtn" class="active">半剖切</button>
       <button id="rayBtn" class="active">光路</button>
       <button id="labelBtn" class="active">结构标注</button>
-      <button id="imageBtn" class="active">视网膜像</button>
-      <button id="resetViewBtn">默认视角</button><button id="sideViewBtn">成像侧视</button><button id="imageFocusBtn">近看成像位置</button><button id="irisViewBtn">虹膜正视</button>
+      <button id="imageBtn" class="active">理论成像</button>
+      <button id="resetViewBtn">默认视角</button><button id="sideViewBtn">成像侧视</button><button id="imageFocusBtn">近看成像位置</button><button id="irisViewBtn">虹膜正视</button><button id="structureFocusBtn">近看调节结构</button>
     </div>
   </div>
 
@@ -150,7 +150,7 @@ const M={
   iris:new THREE.MeshPhysicalMaterial({map:irisTexture,bumpMap:irisTexture,bumpScale:.018,color:0xffffff,roughness:.62,metalness:0,clearcoat:.14,side:THREE.DoubleSide}),
   lens:new THREE.MeshPhysicalMaterial({color:0x91d9ed,transparent:true,opacity:.72,roughness:.12,metalness:0,transmission:.18,clearcoat:.65,clearcoatRoughness:.10,side:THREE.DoubleSide}),
   ciliary:new THREE.MeshPhysicalMaterial({color:0x9e4b51,roughness:.46,metalness:.02,clearcoat:.08}),
-  zonule:new THREE.MeshBasicMaterial({color:0xd4b15b}),
+  zonule:new THREE.MeshBasicMaterial({color:0xa77a22}),
   nerve:new THREE.MeshPhysicalMaterial({color:0xe3ba64,roughness:.58,metalness:.02}),
   ray:new THREE.MeshBasicMaterial({color:0xd50072,depthTest:false,depthWrite:false,toneMapped:false,transparent:true,opacity:1}),
   ray2:new THREE.MeshBasicMaterial({color:0xd50072,depthTest:false,depthWrite:false,toneMapped:false,transparent:true,opacity:.86}),
@@ -165,7 +165,7 @@ const shellG=new THREE.Group(),insideG=new THREE.Group(),rayG=new THREE.Group(),
 root.add(shellG,insideG,rayG,labelG,objectG,imageG);
 
 function applyClip(mat,on){mat.clippingPlanes=on?[clipPlane]:[];mat.clipShadows=!!on;mat.needsUpdate=true}
-[M.sclera,M.choroid,M.retina,M.vitreous,M.cornea,M.iris].forEach(m=>applyClip(m,true));
+[M.sclera,M.choroid,M.retina,M.vitreous,M.cornea,M.iris,M.ciliary,M.zonule].forEach(m=>applyClip(m,true));
 function put(parent,geo,mat,pos,rot){const m=new THREE.Mesh(geo,mat);if(pos)m.position.set(...pos);if(rot)m.rotation.set(...rot);m.castShadow=true;m.receiveShadow=true;parent.add(m);return m}
 function tubeLine(parent,pts,r,mat){const curve=new THREE.CatmullRomCurve3(pts,false,'centripetal',.08);return put(parent,new THREE.TubeGeometry(curve,34,r,7,false),mat)}
 function label(text,color,h,pos){
@@ -204,22 +204,22 @@ const pupilRing=put(insideG,new THREE.TorusGeometry(.34,.025,8,48),new THREE.Mes
 
 const pupilMaterial=new THREE.MeshBasicMaterial({color:0x070706,side:THREE.DoubleSide});applyClip(pupilMaterial,true);const pupil=put(insideG,new THREE.CircleGeometry(.335,64),pupilMaterial,[-1.67,0,0],[0,Math.PI/2,0]);annulusX(CORNEA_RIM_R,1.18,.035,M.sclera,-1.72);
 // ciliary body
-const ciliaryRing=put(insideG,new THREE.TorusGeometry(1.02,.17,16,80),M.ciliary,[-1.02,0,0],[0,Math.PI/2,0]);
+const ciliaryRing=put(insideG,new THREE.TorusGeometry(1.15,.115,16,80),M.ciliary,[-1.02,0,0],[0,Math.PI/2,0]);
 
 // lens group
 const lensG=new THREE.Group();lensG.position.set(-.92,0,0);insideG.add(lensG);
 const lens=put(lensG,new THREE.SphereGeometry(1,64,48),M.lens,[0,0,0]);
 
 // zonules, dynamically rebuilt
-const zonuleG=new THREE.Group();insideG.add(zonuleG);
+const zonuleLeaderAnchor=new THREE.Vector3();const zonuleG=new THREE.Group();insideG.add(zonuleG);
 function rebuildZonules(accom){
   while(zonuleG.children.length){const o=zonuleG.children.pop();if(o.geometry)o.geometry.dispose()}
-  const outerR=1.02-.09*accom,innerR=.78-.02*accom;
+  const outerR=1.15*(1-.085*accom),innerR=.91-.07*accom;
   for(let i=0;i<12;i++){
     const a=i/12*Math.PI*2,y1=outerR*Math.cos(a),z1=outerR*Math.sin(a),y2=innerR*Math.cos(a),z2=innerR*Math.sin(a);
     const sag=.05+.10*accom;
     const pts=[new THREE.Vector3(-1.03,y1,z1),new THREE.Vector3(-.98-sag,(y1+y2)*.5,(z1+z2)*.5),new THREE.Vector3(-.86,y2,z2)];
-    tubeLine(zonuleG,pts,.010,M.zonule);
+    const tube=tubeLine(zonuleG,pts,.016,M.zonule);if(i===7)zonuleLeaderAnchor.copy(tube.geometry.parameters.path.getPointAt(.76));
   }
 }
 
@@ -235,9 +235,9 @@ const retinaMark=put(insideG,new THREE.TorusGeometry(.34,.016,8,56),new THREE.Me
 label('角膜','#2e718d',.34,[-3.05,1.56,.40]);
 label('前房','#4b8ca4',.25,[-2.25,-1.04,.40]);
 const irisLabel=label('虹膜 / 瞳孔','#6f5635',.28,[-1.92,.98,.72]);
-label('晶状体','#2e7d9b',.30,[-.84,1.34,.72]);
-label('睫状体','#8d444a',.28,[-.98,-1.48,.72]);
-label('悬韧带','#a9852e',.27,[-.30,-1.18,.72]);
+const lensLabel=label('晶状体','#2e7d9b',.30,[-.34,1.43,.72]);
+const ciliaryLabel=label('睫状体','#8d444a',.28,[-1.68,-1.75,.72]);
+const zonuleLabel=label('悬韧带','#89601b',.27,[.06,-1.22,.72]);
 label('视网膜','#c45d28',.30,[1.66,1.74,.72]);
 label('玻璃体','#4b8ca4',.28,[.70,-1.72,.72]);
 label('视神经','#aa7c31',.28,[3.18,-1.83,.72]);
@@ -251,6 +251,9 @@ function makeArrowObject(){
   return g;
 }
 const objectArrow=makeArrowObject();
+const structureLeaders=new THREE.Group();root.add(structureLeaders);const structureCallouts=[];
+for(const [label,color] of [[lensLabel,0x297e9c],[ciliaryLabel,0x91494f],[zonuleLabel,0x936721]]){const mat=new THREE.LineBasicMaterial({color,depthTest:false,depthWrite:false,transparent:true,toneMapped:false}),line=new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(),new THREE.Vector3(),new THREE.Vector3()]),mat);line.renderOrder=60;structureLeaders.add(line);const dot=put(structureLeaders,new THREE.SphereGeometry(.033,12,8),new THREE.MeshBasicMaterial({color,depthTest:false,depthWrite:false,transparent:true,toneMapped:false}));dot.renderOrder=61;structureCallouts.push({label,line,dot});}
+function updateStructureLeaders(have){const targets=[new THREE.Vector3(-.92+(.37+.17*have)*.777,.43,.40),new THREE.Vector3(-.97,-1.245*(1-.085*have),-.17),zonuleLeaderAnchor.clone()];structureCallouts.forEach((o,i)=>{const a=o.label.position.clone();a.y+=i===0?-.16:.16;const t=targets[i],elbow=new THREE.Vector3(a.x,t.y+(i===0?.24:-.16),.74);const v=o.line.geometry.attributes.position;[a,elbow,t].forEach((p,j)=>v.setXYZ(j,p.x,p.y,p.z));o.line.geometry.computeBoundingSphere();v.needsUpdate=true;o.dot.position.copy(t);});}
 const objectLabel=label('物体','#335f87',.28,[-5.15,2.12,.65]);
 
 // inverted image arrow near retina
@@ -268,14 +271,12 @@ const rayMeshes=[];
 function clearRays(){while(rayG.children.length){const o=rayG.children[0];rayG.remove(o);o.traverse(x=>{if(x.geometry)x.geometry.dispose()});}rayMeshes.length=0}
 function addRay(points,mat=M.ray){const group=new THREE.Group();rayG.add(group);for(let i=0;i<points.length-1;i++){const a=points[i].clone(),b=points[i+1].clone();a.z=b.z=.075;const d=b.clone().sub(a),len=d.length();if(len<.001)continue;const line=put(group,new THREE.CylinderGeometry(.014,.014,len,8),mat);line.position.copy(a).lerp(b,.5);line.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),d.clone().normalize());line.renderOrder=30;for(const f of (len>2?[.40,.75]:[.55])){if(len<.35)continue;const shape=new THREE.Shape();shape.moveTo(.105,0);shape.lineTo(-.075,.067);shape.lineTo(-.025,0);shape.lineTo(-.075,-.067);shape.closePath();const arrow=put(group,new THREE.ShapeGeometry(shape),mat);arrow.position.copy(a).lerp(b,f);arrow.rotation.z=Math.atan2(d.y,d.x);arrow.renderOrder=31;}}rayMeshes.push(group);return group;}
 const focusDot=put(insideG,new THREE.SphereGeometry(.06,16,10),M.focusGood,[retinaX,0,0]);
-const retinalImageMaterial=new THREE.MeshBasicMaterial({transparent:true,opacity:.92,depthTest:false,depthWrite:false,side:THREE.DoubleSide});
-const retinalImage=put(insideG,new THREE.PlaneGeometry(.60,.95),retinalImageMaterial,[retinaX,0,.02],[0,Math.PI/2,0]);
 const imageLabel=label('理论清晰像','#007659',.27,[2.6,-.90,.15]);imageLabel.renderOrder=70;
 const focusPlaneLine=put(insideG,new THREE.BoxGeometry(.012,1.38,.022),new THREE.MeshBasicMaterial({color:0x28a47b,transparent:true,opacity:.6,depthTest:false}),[retinaX,0,0]);
-M.image.depthTest=false;M.image.depthWrite=false;imageArrow.traverse(o=>o.renderOrder=50);retinalImage.renderOrder=45;focusPlaneLine.renderOrder=40;focusDot.renderOrder=50;focusDot.material.depthTest=false;
+M.image.depthTest=false;M.image.depthWrite=false;imageArrow.traverse(o=>o.renderOrder=50);focusPlaneLine.renderOrder=40;focusDot.renderOrder=50;focusDot.material.depthTest=false;
 const diagram=document.getElementById('focusDiagram'),dc=diagram.getContext('2d');
 const retinalCanvas=document.createElement('canvas');retinalCanvas.width=192;retinalCanvas.height=288;const retinalContext=retinalCanvas.getContext('2d');
-const retinalTexture=new THREE.CanvasTexture(retinalCanvas);retinalTexture.encoding=THREE.sRGBEncoding;retinalImageMaterial.map=retinalTexture;
+const retinalTexture=new THREE.CanvasTexture(retinalCanvas);retinalTexture.encoding=THREE.sRGBEncoding;
 
 // state / UI
 const state={distanceCm:600,auto:true,lockedAccom:0,lockDistance:600,section:true,rays:true,labels:true,image:true,view:'eye',inspect:'whole',heightCm:10,grid:true};
@@ -292,12 +293,12 @@ function drawFocusDiagram(o){const w=diagram.width,h=diagram.height;dc.clearRect
  dc.strokeStyle='#df7a37';dc.lineWidth=5;dc.beginPath();dc.moveTo(retinaP,63);dc.lineTo(retinaP,205);dc.stroke();dc.strokeStyle='#259978';dc.lineWidth=2;dc.setLineDash([4,3]);dc.beginPath();dc.moveTo(focusP,75);dc.lineTo(focusP,200);dc.stroke();dc.setLineDash([]);
  dc.fillStyle='#247e62';dc.beginPath();dc.moveTo(focusP,imageY-23);dc.lineTo(focusP,imageY+10);dc.lineTo(focusP-7,imageY+1);dc.moveTo(focusP,imageY+10);dc.lineTo(focusP+7,imageY+1);dc.strokeStyle='#247e62';dc.lineWidth=4;dc.stroke();
  dc.font='23px "Noto Sans CJK SC","Microsoft YaHei",sans-serif';dc.fillStyle='#54768c';dc.fillText('等效透镜',23,35);dc.fillStyle='#b5652e';dc.fillText('视网膜像面',retinaP-74,35);dc.font='21px "Noto Sans CJK SC","Microsoft YaHei",sans-serif';dc.fillStyle='#267858';dc.fillText('理论像距 '+o.vMM.toFixed(2)+' mm',23,245);dc.fillStyle='#86684c';dc.fillText('视网膜距离 17.00 mm',315,245);}
-function drawRetinalImage(o,scale){retinalContext.clearRect(0,0,192,288);retinalContext.save();const blur=Math.min(14,Math.abs(o.deltaMM)*9);retinalContext.filter=blur>.3?'blur('+blur+'px)':'none';retinalContext.strokeStyle='#268769';retinalContext.fillStyle='#268769';retinalContext.lineWidth=12;retinalContext.beginPath();retinalContext.moveTo(96,69);retinalContext.lineTo(96,223);retinalContext.stroke();retinalContext.beginPath();retinalContext.moveTo(96,238);retinalContext.lineTo(58,185);retinalContext.lineTo(134,185);retinalContext.closePath();retinalContext.fill();retinalContext.restore();retinalTexture.needsUpdate=true;retinalImage.scale.set(scale,scale,1);}
+function drawRetinalImage(o,scale){retinalContext.clearRect(0,0,192,288);retinalContext.save();const blur=Math.min(14,Math.abs(o.deltaMM)*9);retinalContext.filter=blur>.3?'blur('+blur+'px)':'none';retinalContext.strokeStyle='#268769';retinalContext.fillStyle='#268769';retinalContext.lineWidth=12;retinalContext.beginPath();retinalContext.moveTo(96,69);retinalContext.lineTo(96,223);retinalContext.stroke();retinalContext.beginPath();retinalContext.moveTo(96,238);retinalContext.lineTo(58,185);retinalContext.lineTo(134,185);retinalContext.closePath();retinalContext.fill();retinalContext.restore();retinalTexture.needsUpdate=true;}
 function applyEye(){
  dirty=true;const o=opticalState(),have=o.have,D=demandForDistance(state.distanceCm);
  distanceText.textContent=state.distanceCm+' cm · '+(state.distanceCm<=40?'近处':state.distanceCm>=550?'远处':'中距离');diopterText.textContent=D.toFixed(2)+' D';modeText.textContent=state.auto?'自动调焦':'固定晶状体';
  document.getElementById('lockInfo').style.display=state.auto?'none':'block';document.getElementById('lockInfo').textContent='固定在 '+state.lockDistance+' cm 时的晶状体状态。';
- lens.scale.set(.37+.17*have,.93-.07*have,.93-.07*have);ciliaryRing.scale.set(1,1-.085*have,1-.085*have);rebuildZonules(have);lensText.textContent=have>.65?'较厚':have>.25?'中等':'较薄';ciliaryText.textContent=have>.65?'收缩':have>.25?'部分收缩':'放松';zonuleText.textContent=have>.65?'较松':have>.25?'中等':'较紧';
+ lens.scale.set(.37+.17*have,.93-.07*have,.93-.07*have);ciliaryRing.scale.set(1,1-.085*have,1-.085*have);rebuildZonules(have);updateStructureLeaders(have);lensText.textContent=have>.65?'较厚':have>.25?'中等':'较薄';ciliaryText.textContent=have>.65?'收缩':have>.25?'部分收缩':'放松';zonuleText.textContent=have>.65?'较松':have>.25?'中等':'较紧';
  const u=clamp((Math.log(state.distanceCm)-Math.log(25))/(Math.log(600)-Math.log(25)),0,1),objX=-4.4-3.25*u;objectArrow.position.set(objX,0,0);objectLabel.position.set(objX,2.12,.4);
  const focusX=o.focusX,imageScale=THREE.MathUtils.lerp(.65,1.05,1-u),imgY=-.76*imageScale;
  imageArrow.position.set(focusX,0,.14);imageArrow.scale.set(imageScale,imageScale,imageScale);imageLabel.position.set(focusX+.15,-.99,.18);imageLabel.visible=state.labels&&state.image;focusPlaneLine.position.x=focusX;focusPlaneLine.visible=state.image;
@@ -305,7 +306,7 @@ function applyEye(){
  clearRays();const top=new THREE.Vector3(objX,1.50,0),bottom=new THREE.Vector3(objX,-.45,0),lensX=-.92;
  function rayFrom(source,yy,targetY,mat){const lensPoint=new THREE.Vector3(lensX,yy,0),fy=targetY;const retinaY=yy+(fy-yy)*(retinaX-lensX)/(focusX-lensX);if(focusX<=retinaX){addRay([source,lensPoint,new THREE.Vector3(focusX,fy,0),new THREE.Vector3(retinaX,retinaY,0)],mat);}else{addRay([source,lensPoint,new THREE.Vector3(retinaX,retinaY,0)],mat);const line=new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(retinaX,retinaY,0),new THREE.Vector3(focusX,fy,0)]),M.rayDash);line.computeLineDistances();rayG.add(line);}}
  [-.25,.18].forEach(yy=>rayFrom(top,yy,imgY,M.ray));[-.18,.25].forEach(yy=>rayFrom(bottom,yy,.228*imageScale,M.ray2));
- focusDot.position.set(focusX,imgY,.14);focusDot.material=Math.abs(o.deltaMM)<.03?M.focusGood:M.focusBad;focusDot.visible=state.rays;retinalImage.visible=state.image;drawRetinalImage(o,imageScale);drawFocusDiagram(o);drawImageInspector(o);
+ focusDot.position.set(focusX,imgY,.14);focusDot.material=Math.abs(o.deltaMM)<.03?M.focusGood:M.focusBad;focusDot.visible=state.rays;drawRetinalImage(o,imageScale);drawFocusDiagram(o);drawImageInspector(o);
  if(Math.abs(o.deltaMM)<.03){focusStatus.className='status';focusStatus.textContent='理论清晰像与视网膜像面重合，正确聚焦。';}else if(o.deltaMM>0){focusStatus.className='status bad';focusStatus.textContent='理论清晰像在视网膜后 '+o.deltaMM.toFixed(2)+' mm；视网膜上的光斑散开。';}else{focusStatus.className='status warn';focusStatus.textContent='理论清晰像在视网膜前 '+(-o.deltaMM).toFixed(2)+' mm；光线会聚后又散开，落到视网膜。';}
  rayG.visible=state.rays;imageG.visible=state.image;labelG.visible=state.labels;syncEyeVisibility();if(state.view==='angle')drawAngleView();
 }
@@ -318,7 +319,7 @@ function updatePresetState(){if(state.distanceCm>=550)setPresetButtons('far');el
 distanceRange.addEventListener('input',updatePresetState);
 document.getElementById('autoBtn').addEventListener('click',()=>{state.auto=true;document.getElementById('autoBtn').classList.add('active');document.getElementById('lockBtn').classList.remove('active');applyEye();});
 document.getElementById('lockBtn').addEventListener('click',()=>{state.lockedAccom=currentAccom();state.lockDistance=state.distanceCm;state.auto=false;document.getElementById('lockBtn').classList.add('active');document.getElementById('autoBtn').classList.remove('active');applyEye();});
-document.getElementById('sectionBtn').addEventListener('click',function(){const wasIris=state.inspect==='iris';if(wasIris)leaveInspection();state.section=wasIris?true:!state.section;this.classList.toggle('active',state.section);[M.sclera,M.choroid,M.retina,M.vitreous,M.cornea,M.iris,pupilMaterial].forEach(m=>applyClip(m,state.section));corneaSection.visible=state.section;dirty=true;});
+document.getElementById('sectionBtn').addEventListener('click',function(){const wasIris=state.inspect==='iris';if(wasIris)leaveInspection();state.section=wasIris?true:!state.section;this.classList.toggle('active',state.section);[M.sclera,M.choroid,M.retina,M.vitreous,M.cornea,M.iris,M.ciliary,M.zonule,pupilMaterial].forEach(m=>applyClip(m,state.section));corneaSection.visible=state.section;dirty=true;});
 document.getElementById('rayBtn').addEventListener('click',function(){state.rays=!state.rays;this.classList.toggle('active',state.rays);syncEyeVisibility();});
 document.getElementById('labelBtn').addEventListener('click',function(){state.labels=!state.labels;this.classList.toggle('active',state.labels);syncEyeVisibility();});
 document.getElementById('imageBtn').addEventListener('click',function(){state.image=!state.image;this.classList.toggle('active',state.image);syncEyeVisibility();});
@@ -331,8 +332,8 @@ function drawImageInspector(o){const svg=document.getElementById('imageLocation'
 const view={theta:.12,phi:1.32,dist:18.8,distTarget:18.8,target:new THREE.Vector3(-2.0,0,0)};const DEF={theta:.12,phi:1.32,dist:18.8,target:[-2.0,0,0]};
 function clamp(v,a,b){return v<a?a:(v>b?b:v)}
 function applyCamera(){const sp=Math.sin(view.phi),cp=Math.cos(view.phi),dist=view.dist*Math.max(1,1/camera.aspect);camera.position.set(view.target.x+dist*sp*Math.sin(view.theta),view.target.y+dist*cp,view.target.z+dist*sp*Math.cos(view.theta));camera.lookAt(view.target)}
-function syncEyeVisibility(){const irisView=state.inspect==='iris';vitreousMesh.visible=!irisView;M.cornea.opacity=irisView?.065:.18;objectG.visible=!irisView;rayG.visible=state.rays&&!irisView;imageG.visible=state.image&&!irisView;retinalImage.visible=state.image&&!irisView;focusPlaneLine.visible=state.image&&!irisView;focusDot.visible=state.rays&&!irisView;labelG.visible=state.labels;for(const l of labelG.children)l.visible=irisView?l===irisLabel:state.inspect==='image'?['视网膜','理论清晰像','视神经'].includes(l.userData.text):true;imageLabel.visible=state.image&&state.labels&&!irisView;document.getElementById('imageInspector').hidden=!state.image||state.view!=='eye'||irisView;dirty=true;}
-function leaveInspection(){if(state.inspect==='iris'){state.section=state.savedSection;document.getElementById('sectionBtn').classList.toggle('active',state.section);[M.sclera,M.choroid,M.retina,M.vitreous,M.cornea,M.iris,pupilMaterial].forEach(m=>applyClip(m,state.section));corneaSection.visible=state.section;irisLabel.position.set(-1.92,.98,.72);}state.inspect='whole';syncEyeVisibility();}
+function syncEyeVisibility(){const irisView=state.inspect==='iris',structureView=state.inspect==='structure';vitreousMesh.visible=!irisView;M.cornea.opacity=irisView?.065:.18;objectG.visible=!irisView&&!structureView;rayG.visible=state.rays&&!irisView&&!structureView;imageG.visible=state.image&&!irisView&&!structureView;focusPlaneLine.visible=state.image&&!irisView&&!structureView;focusDot.visible=state.rays&&!irisView&&!structureView;labelG.visible=state.labels;for(const l of labelG.children)l.visible=irisView?l===irisLabel:structureView?['角膜','虹膜 / 瞳孔','晶状体','睫状体','悬韧带'].includes(l.userData.text):state.inspect==='image'?['视网膜','理论清晰像','视神经'].includes(l.userData.text):true;imageLabel.visible=state.image&&state.labels&&!irisView&&!structureView;structureLeaders.visible=state.labels&&!irisView&&state.inspect!=='image';document.getElementById('imageInspector').hidden=!state.image||state.view!=='eye'||irisView||structureView;dirty=true;}
+function leaveInspection(){if(state.inspect==='iris'){state.section=state.savedSection;document.getElementById('sectionBtn').classList.toggle('active',state.section);[M.sclera,M.choroid,M.retina,M.vitreous,M.cornea,M.iris,M.ciliary,M.zonule,pupilMaterial].forEach(m=>applyClip(m,state.section));corneaSection.visible=state.section;irisLabel.position.set(-1.92,.98,.72);}state.inspect='whole';syncEyeVisibility();}
 function resetView(){leaveInspection();dirty=true;view.theta=DEF.theta;view.phi=DEF.phi;view.dist=view.distTarget=DEF.dist;view.target.set(...DEF.target)}
 resetView();document.getElementById('resetViewBtn').addEventListener('click',resetView);
 const pointers=new Map();let dragging=false,dragMode=null,pinchStart=0,pinchDist=0;
@@ -344,8 +345,9 @@ canvas.addEventListener('pointerup',endPointer);canvas.addEventListener('pointer
 function resize(){const rect=document.getElementById('stage').getBoundingClientRect();renderer.setSize(rect.width,rect.height,false);camera.aspect=rect.width/rect.height;camera.updateProjectionMatrix();dirty=true;if(state.view==='angle')drawAngleView();}addEventListener('resize',resize);resize();
 document.getElementById('sideViewBtn').onclick=()=>{leaveInspection();view.theta=0;view.phi=Math.PI/2;view.distTarget=18.8;view.target.set(-2.0,0,0);dirty=true;};
 
+document.getElementById('structureFocusBtn').onclick=()=>{leaveInspection();state.inspect='structure';syncEyeVisibility();view.theta=.08;view.phi=Math.PI/2;view.dist=view.distTarget=9;view.target.set(-1.03,-.05,0);dirty=true;};
 document.getElementById('imageFocusBtn').onclick=()=>{leaveInspection();state.inspect='image';syncEyeVisibility();view.theta=0;view.phi=Math.PI/2;view.dist=view.distTarget=8;view.target.set(1.7,-.1,0);dirty=true;};
-document.getElementById('irisViewBtn').onclick=()=>{if(state.inspect!=='iris')state.savedSection=state.section;state.inspect='iris';irisLabel.position.set(-2.0,1.42,.05);view.theta=-Math.PI/2;view.phi=Math.PI/2;view.dist=view.distTarget=6;view.target.set(-1.63,0,0);state.section=false;document.getElementById('sectionBtn').classList.remove('active');[M.sclera,M.choroid,M.retina,M.vitreous,M.cornea,M.iris,pupilMaterial].forEach(m=>applyClip(m,false));corneaSection.visible=false;syncEyeVisibility();dirty=true;};
+document.getElementById('irisViewBtn').onclick=()=>{if(state.inspect!=='iris')state.savedSection=state.section;state.inspect='iris';irisLabel.position.set(-2.0,1.42,.05);view.theta=-Math.PI/2;view.phi=Math.PI/2;view.dist=view.distTarget=6;view.target.set(-1.63,0,0);state.section=false;document.getElementById('sectionBtn').classList.remove('active');[M.sclera,M.choroid,M.retina,M.vitreous,M.cornea,M.iris,M.ciliary,M.zonule,pupilMaterial].forEach(m=>applyClip(m,false));corneaSection.visible=false;syncEyeVisibility();dirty=true;};
 
 // Visual-angle comparison: both objects are assumed to be correctly focused.
 const RETINAL_PATCH_MM=10,SAMPLE_COUNT=64;
@@ -391,7 +393,7 @@ document.getElementById('closePanel').onclick=()=>hideMobilePanel(true);openPane
 
 applyEye();
 function animate(){requestAnimationFrame(animate);const change=Math.abs(view.distTarget-view.dist);view.dist+=(view.distTarget-view.dist)*.12;if(state.view==='eye'&&(dirty||change>.0001)){applyCamera();renderer.render(scene,camera);dirty=false;}}requestAnimationFrame(animate);
-window.EyeDemo={getState:()=>({...state,...opticalState(),corneaApex:CORNEA_APEX_X,corneaRim:CORNEA_RIM_X,imageX:imageArrow.position.x,retinaX,nearAngle:angleData(25),currentAngle:angleData(state.distanceCm),geometryCount:renderer.info.memory.geometries,rayStyle:'solid-arrow',raySegments:rayMeshes.length,irisTextureSize:irisTexture.image.width,retinaTextureSize:retinaTexture.image.width,camera:{theta:view.theta,phi:view.phi,distance:view.dist},imageInspectorVisible:!document.getElementById('imageInspector').hidden,objectVisible:objectG.visible,raysVisible:rayG.visible}),setDistance:cm=>{state.distanceCm=cm;distanceRange.value=cm;applyEye();}};
+window.EyeDemo={getState:()=>({...state,...opticalState(),corneaApex:CORNEA_APEX_X,corneaRim:CORNEA_RIM_X,imageX:imageArrow.position.x,retinaX,nearAngle:angleData(25),currentAngle:angleData(state.distanceCm),geometryCount:renderer.info.memory.geometries,rayStyle:'solid-arrow',raySegments:rayMeshes.length,irisTextureSize:irisTexture.image.width,retinaTextureSize:retinaTexture.image.width,mainImageCount:imageG.visible?1:0,structureLeadersVisible:structureLeaders.visible,structureTargets:structureCallouts.map(o=>({name:o.label.userData.text,target:o.dot.position.toArray()})),camera:{theta:view.theta,phi:view.phi,distance:view.dist},imageInspectorVisible:!document.getElementById('imageInspector').hidden,objectVisible:objectG.visible,raysVisible:rayG.visible}),setDistance:cm=>{state.distanceCm=cm;distanceRange.value=cm;applyEye();}};
 })();
 </script>
 </body>

@@ -233,7 +233,7 @@
       <div class="lbl">视角 / 导出</div>
       <div class="toggles">
         <button id="btnReset">默认视角</button>
-        <button id="btnFront">正视图</button><button id="btnMirror">近看定日镜</button><button id="btnReceiver">近看吸热器</button><button id="btnMaterial" class="active">实景材质</button>
+        <button id="btnFront">正视图</button><button id="btnMirror">近看定日镜</button><button id="btnReceiver">近看吸热器</button><button id="btnMaterial" class="active">实景材质</button><button id="btnBrand">近看塔身</button>
         <button id="btnTop">俯视图</button>
         <button id="btnShot">导出 PNG</button>
       </div>
@@ -416,6 +416,7 @@
   desertTex.wrapS=desertTex.wrapT=THREE.RepeatWrapping;desertTex.repeat.set(32,32);desertTex.anisotropy=8;
   const claddingTex=texFrom((ctx,w,h)=>{ctx.fillStyle='#c3c6c4';ctx.fillRect(0,0,w,h);for(let x=0;x<w;x+=32){const g=ctx.createLinearGradient(x,0,x+32,0);g.addColorStop(0,'#a9adaa');g.addColorStop(.3,'#e1e3df');g.addColorStop(1,'#b2b7b3');ctx.fillStyle=g;ctx.fillRect(x,0,32,h);ctx.fillStyle='#747c78';for(let y=16;y<h;y+=64)ctx.fillRect(x+2,y,2,2);}ctx.strokeStyle='#9ca29e';for(let y=0;y<h;y+=128){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke();}},512,512);
   const receiverTex=texFrom((ctx,w,h)=>{ctx.fillStyle='#1d2329';ctx.fillRect(0,0,w,h);for(let x=0;x<w;x+=8){ctx.fillStyle=x%24===0?'#42494c':'#292f34';ctx.fillRect(x,0,2,h);}for(let y=0;y<h;y+=85){ctx.fillStyle='#10171d';ctx.fillRect(0,y,w,3);}},1024,512);
+  const receiverFluxTex=texFrom((ctx,w,h)=>{const g=ctx.createLinearGradient(0,0,0,h);for(const [t,c] of [[0,'#000000'],[.14,'#141414'],[.29,'#7b7b7b'],[.43,'#ffffff'],[.57,'#ffffff'],[.71,'#7b7b7b'],[.86,'#141414'],[1,'#000000']])g.addColorStop(t,c);ctx.fillStyle=g;ctx.fillRect(0,0,w,h);},128,512);
   ground.material.map=desertTex;ground.material.bumpMap=desertTex;ground.material.bumpScale=.055;ground.material.color.set(0xffffff);ground.material.needsUpdate=true;
   // 7 × 5 子镜：银白玻璃底色，天空反射由环境贴图生成。
   const mirrorTex=texFrom((ctx,w,h)=>{ctx.fillStyle='#7e8585';ctx.fillRect(0,0,w,h);const cols=7,rows=5,m=3,gap=1.6,cw=(w-m*2)/cols,ch=(h-m*2)/rows;for(let i=0;i<cols;i++)for(let j=0;j<rows;j++){const v=242+((i*11+j*7)%9);ctx.fillStyle='rgb('+v+','+v+','+v+')';ctx.fillRect(m+i*cw,m+j*ch,cw-gap,ch-gap);ctx.strokeStyle='rgba(255,255,255,.7)';ctx.lineWidth=.7;ctx.strokeRect(m+i*cw,m+j*ch,cw-gap,ch-gap);}},1024,720);
@@ -471,7 +472,7 @@
     concrete: new THREE.MeshStandardMaterial({ map:concreteTex,bumpMap:concreteTex,bumpScale:.035,color: 0xffffff, roughness: 0.92, metalness: 0.0, envMapIntensity: 0.35 }),
     concreteDark: new THREE.MeshStandardMaterial({ map:concreteTex,color: 0xbebbad, roughness: 0.9, metalness: 0.0, envMapIntensity: 0.3 }),
     panelDark: new THREE.MeshStandardMaterial({ color: 0x2c3540, roughness: 0.55, metalness: 0.35 }),
-    receiver: new THREE.MeshStandardMaterial({ map:receiverTex,bumpMap:receiverTex,bumpScale:.025,color: 0xffffff, roughness: 0.68, metalness: 0.32, emissive: 0x000000 }),
+    receiver: new THREE.MeshStandardMaterial({ map:receiverTex,bumpMap:receiverTex,bumpScale:.025,color: 0xffffff, roughness: 0.68, metalness: 0.32, emissive: 0x000000,emissiveMap:receiverFluxTex }),
     pole: new THREE.MeshStandardMaterial({ color: 0x9b9e96, roughness: 0.37, metalness: 0.82, envMapIntensity: 0.5 }),
     frame: new THREE.MeshStandardMaterial({ color: 0xa9afab, roughness: 0.30, metalness: 0.86, envMapIntensity: 0.5 }),
     frameDark: new THREE.MeshStandardMaterial({ color: 0x7b8b9e, roughness: 0.55, metalness: 0.3, envMapIntensity: 0.4 }),
@@ -521,19 +522,24 @@
       g.add(ring);
     }
 
+    // Vertical lettering follows the taper of the concrete tower.
+    const brandTex=texFrom((ctx,w,h)=>{ctx.clearRect(0,0,w,h);ctx.fillStyle='#17517d';ctx.font='bold 360px "Noto Sans CJK SC","Microsoft YaHei",sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';[..."首航高科"].forEach((c,i)=>ctx.fillText(c,w/2,256+i*512));},512,2048);
+    brandTex.anisotropy=8;
+    const brandMat=new THREE.MeshBasicMaterial({map:brandTex,transparent:true,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-2,toneMapped:false,side:THREE.FrontSide});
+    for(const az of [.62,.62+Math.PI]){const ps=[],uv=[],idx=[],cols=32,rows=8,hh=Math.min(6,TOWER_H*.25),cy=.6+TOWER_H*.56;for(let j=0;j<=rows;j++)for(let i=0;i<=cols;i++){const u=i/cols,v=j/rows,y=cy+(v-.5)*hh,r=1.65-(y-.6)/TOWER_H*.6+.007,a=az+(u-.5)*1.5/r;ps.push(r*Math.sin(a),y,r*Math.cos(a));uv.push(u,v);}for(let j=0;j<rows;j++)for(let i=0;i<cols;i++){const k=j*(cols+1)+i;idx.push(k,k+1,k+cols+1,k+1,k+cols+2,k+cols+1);}const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.Float32BufferAttribute(ps,3));geo.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));geo.setIndex(idx);geo.computeVertexNormals();const mark=new THREE.Mesh(geo,brandMat);mark.name='首航高科';g.add(mark);}
     const top=new THREE.Mesh(new THREE.CylinderGeometry(1.85,1.85,.9,64),M.concrete);top.position.y=.6+TOWER_H;g.add(top);
     const recv=new THREE.Mesh(new THREE.CylinderGeometry(1.55,1.55,5.2,96),M.receiver);recv.position.y=RECEIVER_Y;recv.castShadow=true;g.add(recv);
     for(const dy of [-2.7,2.7]){const collar=new THREE.Mesh(new THREE.CylinderGeometry(1.85,1.85,.35,64),M.concrete);collar.position.y=RECEIVER_Y+dy;g.add(collar);const rail=new THREE.Mesh(new THREE.TorusGeometry(1.95,.045,8,64),M.frame);rail.rotation.x=Math.PI/2;rail.position.y=RECEIVER_Y+dy+.30;g.add(rail);}
     const cap=new THREE.Mesh(new THREE.CylinderGeometry(1.5,1.8,.6,64),M.concrete);cap.position.y=RECEIVER_Y+3.25;g.add(cap);
-    const tubes=[];for(let i=0;i<96;i++){const a=i/96*Math.PI*2,t=new THREE.CylinderGeometry(.022,.022,4.95,6);t.translate(1.565*Math.cos(a),RECEIVER_Y,1.565*Math.sin(a));tubes.push(t);}const bundle=new THREE.Mesh(mergeGeos(tubes),M.panelDark);g.add(bundle);
-    // 沿塔身的熔盐立管
+    const tubes=[];for(let i=0;i<96;i++){const a=i/96*Math.PI*2,t=new THREE.CylinderGeometry(.022,.022,4.95,6);t.translate(1.565*Math.cos(a),RECEIVER_Y,1.565*Math.sin(a));tubes.push(t);}const bundle=new THREE.Mesh(mergeGeos(tubes),M.panelDark);bundle.material=M.receiver;g.add(bundle);
+    // 塔内熔盐立管，避免穿出塔身遮挡外墙文字
     const riserH = RECEIVER_Y - 1.2;
     const hotRiser = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.28, riserH, 12), M.pipe);
-    hotRiser.position.set(.65, 0.6 + riserH / 2, 0.9);
+    hotRiser.position.set(.38, 0.6 + riserH / 2, .2);
     hotRiser.castShadow = true;
     g.add(hotRiser);
     const coldRiser = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.28, riserH, 12), M.pipeCold);
-    coldRiser.position.set(-.65, 0.6 + riserH / 2, 0.9);
+    coldRiser.position.set(-.38, 0.6 + riserH / 2, .2);
     coldRiser.castShadow = true;
     g.add(coldRiser);
 
@@ -548,14 +554,14 @@
     scene.add(g);
     towerGroup = g;
 
-    recvGlow.position.set(0, RECEIVER_Y, 1.5);
+    recvGlow.position.set(0, RECEIVER_Y, 0);
     updateTargets();
     updateLabelPositions();
   }
 
   /* ================= 吸热器辉光 / 蒸汽 ================= */
   const recvGlow = new THREE.Sprite(new THREE.SpriteMaterial({
-    map: glowTex, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending
+    map: makeGlowTexture('rgba(255,255,245,0.72)','rgba(255,242,202,0.17)'), transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending
   }));
   recvGlow.scale.set(8, 8, 1);
   scene.add(recvGlow);
@@ -818,7 +824,7 @@
     turbine: makeLabel('汽轮机 · 发电机', 'rgba(255,255,255,.92)', '#15406f')
   };
   labelGroup.add(LBL.recv, LBL.hot, LBL.cold, LBL.turbine,LBL.cooling);
-  scene.add(labelGroup);
+  scene.add(labelGroup);for(const o of Object.values(LBL))o.userData.originalScale=o.scale.clone();
 
   function updateLabelPositions() {
     LBL.cooling.position.set(52,8,-12);
@@ -943,10 +949,12 @@
   let clock0 = performance.now();
   function updateHeat(dt) {
     const p = state.power;
-    M.receiver.emissive.setRGB(.075*p,.033*p,.008*p);
-    recvGlow.material.opacity = 0.16 * p * (0.9 + 0.1 * Math.sin(clock0 * 0.006));
+    // Strong incident concentrated sunlight is represented as a surface radiance term.
+    // The black absorber is preserved when aiming misses; this is not white-hot salt.
+    M.receiver.emissive.setRGB(3.8*p,3.2*p,2.4*p);
+    recvGlow.material.opacity = 0.26 * p;
     const gs = 7 + 5 * p;
-    recvGlow.scale.set(gs, gs, 1);
+    recvGlow.scale.set(5+3*p,8+4*p,1);
 
     for (let i = 0; i < STEAM_N; i++) {
       const s = steams[i];
@@ -1103,7 +1111,7 @@
   document.getElementById('btnMaterial').onclick=function(){state.realistic=!state.realistic;this.classList.toggle('active',state.realistic);for(const a of originalSurfaces){a.m.map=state.realistic?a.map:null;a.m.bumpMap=state.realistic?a.bump:null;a.m.needsUpdate=true;}ground.material.color.set(state.realistic?0xffffff:0xd6d3c8);};
   /* ================= 相机控制 ================= */
   const view = {
-    theta: 0.62, phi: 1.08, dist: 165, distTarget: 165, baseDist: 165,
+    focus:'whole',theta: 0.62, phi: 1.08, dist: 165, distTarget: 165, baseDist: 165,
     target: new THREE.Vector3(6, 10, -7)
   };
 
@@ -1183,20 +1191,21 @@
   canvas.addEventListener('contextmenu', function (e) { e.preventDefault(); });
 
   /* ================= 视角 / 导出 ================= */
-  document.getElementById('btnReset').addEventListener('click', function () {
+  document.getElementById('btnReset').addEventListener('click', function () {view.focus='whole';
     view.theta = 0.62; view.phi = 1.08; view.distTarget = 165;
     view.target.set(6, 10, -7);
   });
-  document.getElementById('btnFront').addEventListener('click', function () {
+  document.getElementById('btnFront').addEventListener('click', function () {view.focus='whole';
     view.theta = 0; view.phi = 1.40; view.distTarget = 135;
     view.target.set(0, TOWER_H * 0.55 + 2, 0);
   });
-  document.getElementById('btnTop').addEventListener('click', function () {
+  document.getElementById('btnTop').addEventListener('click', function () {view.focus='whole';
     view.theta = 0.02; view.phi = 0.16; view.distTarget = 165;
     view.target.set(0, 2, 0);
   });
-  document.getElementById('btnMirror').onclick=()=>{const h=heliostats.find(h=>h.z>10&&h.x>5)||heliostats[0];view.target.set(h.x,MIRROR_Y,h.z);view.theta=.4;view.phi=1.08;view.dist=view.distTarget=13;};
-  document.getElementById('btnReceiver').onclick=()=>{view.target.set(0,RECEIVER_Y,0);view.theta=.72;view.phi=1.20;view.dist=view.distTarget=22;};
+  document.getElementById('btnMirror').onclick=()=>{view.focus='mirror';const h=heliostats.find(h=>h.z>10&&h.x>5)||heliostats[0];view.target.set(h.x,MIRROR_Y,h.z);view.theta=.4;view.phi=1.08;view.dist=view.distTarget=13;};
+  document.getElementById('btnReceiver').onclick=()=>{view.focus='receiver';view.target.set(0,RECEIVER_Y,0);view.theta=.72;view.phi=1.20;view.dist=view.distTarget=22;};
+  document.getElementById('btnBrand').onclick=()=>{view.focus='brand';view.target.set(0,.6+TOWER_H*.56,0);view.theta=.62;view.phi=1.50;view.dist=view.distTarget=18;};
   document.getElementById('btnShot').addEventListener('click', function () {
     renderer.render(scene, camera);
     const url = renderer.domElement.toDataURL('image/png');
@@ -1227,7 +1236,7 @@
   let readoutTick = 0;
   let lastT = performance.now();
 
-  function tick() {
+  function tick() {for(const [id,o] of Object.entries(LBL)){o.visible=view.focus==='whole'||view.focus==='receiver'&&id==='recv';o.scale.copy(o.userData.originalScale).multiplyScalar(Math.min(1,view.dist/110));}
     const now = performance.now();
     const dt = Math.min(0.05, (now - lastT) / 1000);
     lastT = now;
@@ -1279,7 +1288,7 @@
     power: function () { return +state.power.toFixed(3); },
     mirrors: function () { return heliostats.length; },
     tower: function () { return { h:TOWER_H,receiverY:RECEIVER_Y,receiverRadius:1.58 }; },
-    tracking:()=>{const a=[];for(let i=0;i<heliostats.length;i++){const m=new THREE.Matrix4();inst.meshes[4].getMatrixAt(i,m);a.push(new THREE.Vector3(0,1,0).transformDirection(m).toArray());}return {sun:sunDir.toArray(),normals:a};},targets:()=>heliostats.map(h=>({mirror:[h.x,MIRROR_Y,h.z],target:h.target.toArray()})),materialInfo:()=>({submirrors:35,steamAtTower:false,cooling:'air',realistic:state.realistic,drawCalls:renderer.info.render.calls})
+    tracking:()=>{const a=[];for(let i=0;i<heliostats.length;i++){const m=new THREE.Matrix4();inst.meshes[4].getMatrixAt(i,m);a.push(new THREE.Vector3(0,1,0).transformDirection(m).toArray());}return {sun:sunDir.toArray(),normals:a};},targets:()=>heliostats.map(h=>({mirror:[h.x,MIRROR_Y,h.z],target:h.target.toArray()})),materialInfo:()=>({brand:'首航高科',brandCount:towerGroup.children.filter(x=>x.name==='首航高科').length,receiverRadiance:M.receiver.emissive.toArray(),submirrors:35,steamAtTower:false,cooling:'air',realistic:state.realistic,drawCalls:renderer.info.render.calls})
   };
 })();
 </script>

@@ -78,14 +78,28 @@ input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:5px;
 .angle-controls input[type=range]::-moz-range-progress{height:5px;background:#2f7de1;border-radius:4px}
 .angle-controls input[type=range]::-moz-range-thumb{width:20px;height:20px;border:0;border-radius:50%;background:#2f7de1}
 
+
+/* Large illustrations and only the controls / distance titles remain. */
+#angleView,.embedded #angleView{grid-template-rows:minmax(195px,.70fr) minmax(260px,1fr);gap:12px}
+.angle-card{grid-template-rows:auto minmax(0,1fr);gap:8px;padding:12px 16px}
+.angle-card h2{font-size:27px;line-height:1.25}
+.angle-diagrams .angle-diagram{padding:0 10px}
+.angle-images{min-height:0}.retina-grid{max-width:100%;max-height:100%}
+.angle-controls label{font-size:17px}.angle-controls input[type=number]{font-size:17px;width:76px}
+.angle-controls output{font-size:19px;min-width:76px}.angle-controls button{font-size:16px}
+.angle-page .head p{display:none}
+@media(max-width:1100px){#angleView,.embedded #angleView{top:150px;grid-template-rows:minmax(170px,.65fr) minmax(220px,1fr)}.angle-card h2{font-size:22px}.angle-controls label{font-size:15px}.angle-controls output{font-size:17px}}
+@media(max-width:680px){.angle-card h2{font-size:18px}.angle-card{padding:8px}.angle-controls label,.angle-controls button{font-size:14px}.angle-controls input[type=number]{width:58px;font-size:15px}}
+@media(max-height:650px){#angleView,.embedded #angleView{grid-template-rows:minmax(100px,.60fr) minmax(145px,1fr)}.angle-card h2{font-size:19px}.angle-card{padding:8px;gap:4px}}
+
 </style>
 </head>
 <body>
 <div id="stage"><canvas id="scene"></canvas><nav class="view-tabs" aria-label="教学视图"><button id="eyeViewBtn" class="active">3D 调焦</button><button id="angleViewBtn">视角</button></nav>
-<div class="angle-controls"><label class="distance-control">当前距离 <input id="angleDistance" type="range" min="25" max="600" step="5" value="600" aria-label="当前观察距离"><output id="angleDistanceText" for="angleDistance">600 cm</output></label><label class="height-control">物体高度 <input id="angleHeight" type="number" min="2" max="14" step="1" value="10" inputmode="numeric"> cm</label><div class="btns"><button id="gridBtn" class="active">显示采样格</button></div></div><section id="angleView" hidden><div class="angle-intro"><b>先让两种距离都正确聚焦。</b>比较同一个物体：近处的视角更大，视网膜像覆盖的区域更大；远处的像更小，细小纹理可能落在同一采样格内，难以分开。</div><div class="angle-diagrams"><svg preserveAspectRatio="xMinYMid meet" id="nearAngleDiagram" class="angle-diagram" role="img" aria-label="近处25厘米物体的视角"></svg><svg preserveAspectRatio="xMinYMid meet" id="farAngleDiagram" class="angle-diagram" role="img" aria-label="当前距离物体的视角"></svg></div>
-<div class="angle-cards"><article class="angle-card"><h2>近处 · 25 cm</h2><p>视网膜像与右图使用同一比例尺。</p><div class="angle-images"><canvas id="nearRetina" class="retina-grid" width="384" height="384" aria-label="近处物体的视网膜像及采样格"></canvas></div><div class="angle-facts" id="nearFacts"></div></article>
-<article class="angle-card"><h2 id="farTitle">当前距离 · 600 cm</h2><p>物体本身的大小与左图相同。</p><div class="angle-images"><canvas id="farRetina" class="retina-grid" width="384" height="384" aria-label="当前距离物体的视网膜像及采样格"></canvas></div><div class="angle-facts" id="farFacts"></div></article></div>
-<p class="angle-foot"><b>每个小格代表一组感光采样单元，间距经过放大，并非真实单个细胞或实际细胞数量。</b>像覆盖的区域变小后，更多细节落入同一采样格。这说明分辨细节受限制，不等于远处物体必然失焦；实际视力还受光学成像质量、细胞分布和神经处理等影响。</p></section></div>
+<div class="angle-controls"><label class="distance-control">当前距离 <input id="angleDistance" type="range" min="25" max="600" step="5" value="600" aria-label="当前观察距离"><output id="angleDistanceText" for="angleDistance">600 cm</output></label><label class="height-control">物体高度 <input id="angleHeight" type="number" min="2" max="14" step="1" value="10" inputmode="numeric"> cm</label><div class="btns"><button id="gridBtn" class="active">显示采样格</button></div></div><section id="angleView" hidden><div class="angle-diagrams"><svg preserveAspectRatio="xMinYMid meet" id="nearAngleDiagram" class="angle-diagram" role="img" aria-label="近处25厘米物体的视角"></svg><svg preserveAspectRatio="xMinYMid meet" id="farAngleDiagram" class="angle-diagram" role="img" aria-label="当前距离物体的视角"></svg></div>
+<div class="angle-cards"><article class="angle-card"><h2>近处 · 25 cm</h2><div class="angle-images"><canvas id="nearRetina" class="retina-grid" width="384" height="384" aria-label="近处物体的视网膜像及采样格"></canvas></div></article>
+<article class="angle-card"><h2 id="farTitle">当前距离 · 600 cm</h2><div class="angle-images"><canvas id="farRetina" class="retina-grid" width="384" height="384" aria-label="当前距离物体的视网膜像及采样格"></canvas></div></article></div>
+</section></div>
 
 <section class="head">
   <h1>眼睛的调节 <span>· 成像、矫正与视角</span></h1>
@@ -455,26 +469,23 @@ function drawRetina(canvasId,data){
  ctx.clearRect(0,0,size,size);ctx.imageSmoothingEnabled=false;ctx.drawImage(sampled,0,0,size,size);
  if(state.grid){ctx.strokeStyle='rgba(167,115,63,.20)';ctx.lineWidth=.65;ctx.beginPath();for(let k=0;k<=SAMPLE_COUNT;k++){const a=k*pitch;ctx.moveTo(a,0);ctx.lineTo(a,size);ctx.moveTo(0,a);ctx.lineTo(size,a);}ctx.stroke();}
  ctx.strokeStyle='#3b829d';ctx.lineWidth=1.5;ctx.setLineDash([4,4]);ctx.strokeRect(size/2-wp/2-2,size/2-hp/2-2,wp+4,hp+4);ctx.setLineDash([]);
- ctx.fillStyle='#fff';ctx.fillRect(7,7,205,36);ctx.fillStyle='#576c81';ctx.font='23px "Noto Sans CJK SC",sans-serif';ctx.fillText('固定视网膜区域',13,29);ctx.fillStyle='#fff';ctx.fillRect(7,size-47,257,40);ctx.fillStyle='#876646';ctx.fillText('同一比例尺 · 10 mm',13,size-20);
 
 }
 
-function drawAngularGeometry(near,far){const W=820,H=175,eyeX=104,end=W-96,unit=Math.min(5.6,(end-eyeX)/Math.max(near.distance,far.distance)),objectH=state.heightCm*unit;
- function drawPanel(id,d,title){const svg=document.getElementById(id);let content='<rect width="'+W+'" height="'+H+'" rx="14" fill="white"/>';
- function text(x,y,t,color='#233d54',size=20){return '<text x="'+x+'" y="'+y+'" fill="'+color+'" font-size="'+size+'" font-family="Microsoft YaHei,Noto Sans CJK SC,sans-serif">'+t+'</text>';}
- function row(y,d,title){const ox=eyeX+d.distance*unit,hh=objectH/2,slope=state.heightCm/(2*d.distance);content+=text(18,y-49,title+' · 距离 '+d.distance+' cm · 视角 '+d.angleDeg.toFixed(2)+'°','#17688d',21);
- content+='<ellipse cx="'+(eyeX-31)+'" cy="'+y+'" rx="29" ry="20" fill="#edf4f8" stroke="#607f97" stroke-width="2"/><ellipse cx="'+(eyeX-3)+'" cy="'+y+'" rx="5" ry="14" fill="#ade0e8" stroke="#607f97" stroke-width="2"/>';
- content+='<path d="M'+eyeX+' '+y+' L'+ox+' '+(y-hh)+' L'+ox+' '+(y+hh)+' Z" fill="#d8edf5" stroke="#247b9b" stroke-width="2.2"/><path d="M'+eyeX+' '+y+' L'+ox+' '+y+'" stroke="#7897a9" stroke-width="1" stroke-dasharray="4 4"/>';
- const r=Math.min(35,(ox-eyeX)*.62),phi=Math.atan(slope),ax=eyeX+r*Math.cos(phi),dy=r*Math.sin(phi);content+='<path d="M'+ax+' '+(y-dy)+' A'+r+' '+r+' 0 0 1 '+ax+' '+(y+dy)+'" fill="none" stroke="#006b95" stroke-width="2.5"/>';
+// Readable teaching geometry: horizontal distance is compressed smoothly,
+// with enlarged eye/object symbols. The retinal samples retain their true ratio.
+function drawAngularGeometry(near,far){const W=800,H=235,ex=125,y=115,objectH=112*state.heightCm/10;
+ function drawPanel(id,d){const svg=document.getElementById(id),gap=200+380*Math.log(d.distance/25)/Math.log(600/25),ox=ex+gap,hh=objectH/2;
+ let content='<rect width="'+W+'" height="'+H+'" rx="14" fill="white"/>';
+ content+='<path d="M'+ex+' '+y+' L'+ox+' '+(y-hh)+' L'+ox+' '+(y+hh)+' Z" fill="#c6e5f1" stroke="#247b9b" stroke-width="4"/><path d="M'+ex+' '+y+' L'+ox+' '+y+'" stroke="#8aafbf" stroke-width="2" stroke-dasharray="8 6"/>';
+ content+='<ellipse cx="77" cy="'+y+'" rx="46" ry="36" fill="#e7f1f6" stroke="#597a91" stroke-width="4"/><ellipse cx="118" cy="'+y+'" rx="9" ry="28" fill="#9bd7e5" stroke="#597a91" stroke-width="3"/>';
+ const r=58,phi=Math.atan(hh/gap),ax=ex+r*Math.cos(phi),dy=r*Math.sin(phi);content+='<path d="M'+ax+' '+(y-dy)+' A'+r+' '+r+' 0 0 1 '+ax+' '+(y+dy)+'" fill="none" stroke="#006b95" stroke-width="5"/>';
  content+='<g fill="#247891"><rect x="'+ox+'" y="'+(y-hh)+'" width="'+(objectH*.22)+'" height="'+objectH+'"/>';for(const q of [0,.39,.78])content+='<rect x="'+ox+'" y="'+(y-hh+objectH*q)+'" width="'+(objectH*.6)+'" height="'+(objectH*.22)+'"/>';content+='</g>';
- content+='<path d="M'+eyeX+' '+(y+hh+14)+' L'+ox+' '+(y+hh+14)+' M'+eyeX+' '+(y+hh+9)+' v10 M'+ox+' '+(y+hh+9)+' v10" stroke="#93a6b6" stroke-width="1.5" fill="none"/>';
- }
- row(83,d,title);content+=text(18,H-12,'同一物体：高 '+state.heightCm+' cm · 距离完整绘制','#667c8c',16);svg.setAttribute('viewBox','0 0 '+W+' '+H);svg.innerHTML=content;}
- drawPanel('nearAngleDiagram',near,'近处');drawPanel('farAngleDiagram',far,'当前');}
+ svg.setAttribute('viewBox','0 0 '+W+' '+H);svg.setAttribute('aria-label',(id==='nearAngleDiagram'?'近处25厘米':'当前'+d.distance+'厘米')+'物体的视角示意，距离采用显示压缩');svg.innerHTML=content;}
+ drawPanel('nearAngleDiagram',near);drawPanel('farAngleDiagram',far);}
 
 function drawAngleView(){const near=angleData(25),far=angleData(state.distanceCm);drawAngularGeometry(near,far);drawRetina('nearRetina',near);drawRetina('farRetina',far);document.getElementById('angleDistance').value=state.distanceCm;document.getElementById('angleDistanceText').textContent=state.distanceCm+' cm';document.getElementById('angleDistance').style.setProperty('--distance-progress',((state.distanceCm-25)/575*100)+'%');document.getElementById('angleHeight').value=state.heightCm;document.querySelectorAll('[data-angle-distance]').forEach(b=>b.classList.toggle('active',+b.dataset.angleDistance===state.distanceCm));
- function facts(d){return '视角 <b>'+d.angleDeg.toFixed(2)+'°</b> · 视网膜像高 <b>'+d.heightMM.toFixed(2)+' mm</b><br>覆盖约 <b>'+d.rows.toFixed(1)+' 格高 × '+d.columns.toFixed(1)+' 格宽</b>（示意采样格）';}
- document.getElementById('nearFacts').innerHTML=facts(near);document.getElementById('farFacts').innerHTML=facts(far);document.getElementById('farTitle').textContent='当前距离 · '+state.distanceCm+' cm';
+ document.getElementById('farTitle').textContent='当前距离 · '+state.distanceCm+' cm';
 }
 function setView(name){leaveInspection();state.view=name;document.body.classList.toggle('angle-page',name==='angle');document.getElementById('angleView').hidden=name!=='angle';canvas.style.visibility=name==='eye'?'visible':'hidden';document.getElementById('eyeViewBtn').classList.toggle('active',name==='eye');document.getElementById('angleViewBtn').classList.toggle('active',name==='angle');document.getElementById('controlPanel').classList.toggle('angle-mode',name==='angle');document.getElementById('viewIntro').textContent=name==='eye'?'点击“像在前方 / 后方”直接观察，再加入透镜将像移回视网膜。正常调节与固定晶状体仍可操作。':'同样正确调焦时，用同一比例尺比较近、远物体的像与可辨细节。';document.querySelector('.tip').textContent=name==='eye'?'拖拽旋转 · 滚轮缩放 · Shift + 拖拽平移 · 绿色：理论像 · 橙色：视网膜':'两种距离均正确调焦 · 改变观察距离和物体高度 · 小格为放大的采样示意';dirty=true;resize();if(name==='angle')drawAngleView();}
 document.getElementById('eyeViewBtn').onclick=()=>setView('eye');document.getElementById('angleViewBtn').onclick=()=>setView('angle');

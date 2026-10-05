@@ -359,10 +359,12 @@
   function seaY(x) { return -x * x / (2 * R_EARTH); }
 
   const X_SEA0 = -72, X_SEA1 = 140;          // 海面左右边界（物体移远后要盖住它）
-  const EYE_X = -44;                         // 观察者
-  const DECK_H = 0.50;                       // 甲板高出水面
-  const EYE_LOCAL = 2.80;                    // 眼睛在人身上的高度（局部坐标，人整体按 0.7 缩放）
-  const EYE_ABOVE = 2.52;                    // 眼睛高出水面（= 0.70 + 2.60×0.7，见 buildPerson）
+  const OBSERVER_SCALE=2,PERSON_SCALE=.7*OBSERVER_SCALE;
+  const DECK_H=.50,EYE_LOCAL=2.80;
+  const EYE_ABOVE=.70+(EYE_LOCAL-.20)*PERSON_SCALE;
+  // Keep the original horizon and building size when the observer grows;
+  // move back along the same horizon tangent, and trace rays into the actual eye.
+  const EYE_X=-44+Math.sqrt(2*R_EARTH*2.52)-Math.sqrt(2*R_EARTH*EYE_ABOVE);
   const EYE_Y = seaY(EYE_X) + EYE_ABOVE;
   const EYE = new THREE.Vector3(EYE_X, EYE_Y, 0);
 
@@ -701,11 +703,11 @@
 
   (function buildPerson() {
     const p = new THREE.Group();
-    // 人按 0.7 缩放，把眼睛降到 EYE_ABOVE（眼越低，地平线越近，隐藏带越厚）
-    p.scale.set(0.7, 0.7, 0.7);
-    // 眼睛球心在局部 (0.33, EYE_LOCAL-0.20=2.60)，缩放后偏移 (0.231, 1.82)，
+    // 人物显示尺寸为上一版的两倍，脚底仍落在甲板上。
+    p.name="observer-person";p.scale.set(PERSON_SCALE,PERSON_SCALE,PERSON_SCALE);
+    // 眼睛球心在局部 (0.33, EYE_LOCAL-0.20=2.60)，随 PERSON_SCALE 缩放。
     // 要让它正好落在 (EYE_X, seaY+EYE_ABOVE)：
-    p.position.set(EYE_X - 0.33 * 0.7, seaY(EYE_X) + EYE_ABOVE - 2.60 * 0.7, 0);
+    p.position.set(EYE_X-.33*PERSON_SCALE,seaY(EYE_X)+EYE_ABOVE-2.60*PERSON_SCALE,0);
     gObserver.add(p);
 
     // 腿
@@ -908,7 +910,7 @@
      ========================================================= */
 
   const D_FLAT = function () { return 0; };          // 平地（近距离，地球曲率可忽略）
-  const D_EYE_X = -30, D_EYE_Y = 1.70;               // 观察者站在路面上（拉近些，卡车才看得清）
+  const D_EYE_X = -30, D_EYE_Y = 1.72*OBSERVER_SCALE;               // 观察者站在路面上（拉近些，卡车才看得清）
   const D_OBJ_X = 52, D_OBJ_BASE = 0.0;
   const D_TRUCK_K = 2.35;                             // 卡车整体放大倍数（便于观察）
   const D_DESIGN_TOP = 3.44;                         // 设计尺寸下的最高点（车顶行李上表面）
@@ -972,7 +974,7 @@
   /* ---- 观察者（站在路面上的人） ---- */
   (function buildDesertObserver() {
     const p = new THREE.Group();
-    p.position.set(D_EYE_X, 0, 0);
+    p.name="observer-person-inferior";p.scale.setScalar(OBSERVER_SCALE);p.position.set(D_EYE_X-.19*OBSERVER_SCALE,0,0);
     gDesert.add(p);
     // 腿
     put(p, new THREE.BoxGeometry(0.20, 0.86, 0.20), M.hull, [-0.20, 0.43, 0]);
@@ -1042,6 +1044,21 @@
     gGhost2.add(c);
   })();
 
+  // Set real-object materials only AFTER cloning both virtual images.
+  // Each virtual material has its own colour/map, so its old appearance stays intact.
+  function surfaceTexture(kind){const c=document.createElement('canvas');c.width=c.height=512;const x=c.getContext('2d');let seed=71323;
+    const random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};
+    const im=x.createImageData(512,512);for(let j=0;j<512;j++)for(let i=0;i<512;i++){const k=(j*512+i)*4,v=kind==='bark'?154+28*Math.sin(i*.23+9*Math.sin(j*.017))+random()*35:182+random()*52;im.data[k]=im.data[k+1]=im.data[k+2]=v;im.data[k+3]=255;}x.putImageData(im,0,0);
+    if(kind==='stone'){x.strokeStyle='rgba(73,69,59,.50)';x.lineWidth=4;for(let j=0;j<8;j++){const yy=j*64;x.beginPath();x.moveTo(0,yy);x.lineTo(512,yy);x.stroke();for(let i=0;i<4;i++){const xx=i*128+(j%2)*64;x.beginPath();x.moveTo(xx,yy);x.lineTo(xx,yy+64);x.stroke();}}}
+    if(kind==='leaves'){x.fillStyle='#a7b896';x.fillRect(0,0,512,512);for(let i=0;i<2100;i++){x.fillStyle=['#58784d','#b7c49c','#729267','#d2d4b1'][i%4];x.beginPath();x.ellipse(random()*512,random()*512,3+random()*8,2+random()*3,random()*Math.PI,0,Math.PI*2);x.fill();}}
+    const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.encoding=THREE.sRGBEncoding;t.anisotropy=4;return t;}
+  const stoneTexture=surfaceTexture('stone'),barkTexture=surfaceTexture('bark'),leafTexture=surfaceTexture('leaves');
+  function realSurface(m,color,map,bump){m.color.setHex(color);m.map=map;m.bumpMap=map;m.bumpScale=bump;m.roughness=.96;m.metalness=0;m.envMapIntensity=.20;m.transparent=true;m.opacity=1;m.depthWrite=true;m.needsUpdate=true;}
+  realSurface(M.land,0x777466,stoneTexture,.10);realSurface(M.landDark,0x454a50,stoneTexture,.07);
+  realSurface(M.trunk,0x705032,barkTexture,.09);realSurface(M.leaf,0x3a702e,leafTexture,.065);
+  M.carBody.color.setHex(0x852e25);
+  [gObject,gObject2].forEach(g=>g.traverse(o=>{if(o.isMesh){o.renderOrder=18;o.material.transparent=true;o.material.needsUpdate=true;}}));
+
   /* ---- 下蜃场景的锚点 ---- */
   let anchor2 = null, gAnchor2 = null;
   (function initInferiorAnchors() {
@@ -1065,7 +1082,7 @@
     key: 'inferior', name: '下蜃', full: '下现蜃景',
     tagline: '下热上冷 · 下疏上密 → 光向上弯 → 像压低且倒立',
     flip: 1, dirSign: -1, imgFlip: -1, imgMode: 'ground',
-    airH: 6.0, dLo: 0.0086, dHi: 0.0295, slider: 80,
+    airH: 6.0, dLo: 0.0086, dHi: 0.041, slider: 80,
     groundY: D_FLAT,
     groundName: '路面',
     eye: new THREE.Vector3(D_EYE_X, D_EYE_Y, 0), eyeY: D_EYE_Y,
@@ -2042,7 +2059,7 @@
 
   window.__dbg = {
     state: state, view: view, OPT: OPT, SCENES: SCENES, camera: camera,
-    virtualMaterials:virtualMaterials, objectGroundThickness:.12, superiorRockCount:0, objectSize:{superior:OBJ_K,inferior:D_TRUCK_K},
+    virtualMaterials:virtualMaterials,observerScale:OBSERVER_SCALE,observerPeople:[gObserver.getObjectByName("observer-person"),gDesert.getObjectByName("observer-person-inferior")],realSurfaces:{stone:M.land,bark:M.trunk,leaf:M.leaf},objectGroundThickness:.12, superiorRockCount:0, objectSize:{superior:OBJ_K,inferior:D_TRUCK_K},
     get CUR() { return CUR; },            // 必须用取值器，否则切场景后会拿到旧快照
     eye: CUR.eye, imgTop: IMG_TOP, objTip: objTip,
     seaY: seaY, nAt: nAt, traceRay: traceRay, solveLaunch: solveLaunch,

@@ -480,7 +480,7 @@ function drawAngularGeometry(near,far){const W=800,H=235,ex=125,y=115,objectH=11
  content+='<path d="M'+ex+' '+y+' L'+ox+' '+(y-hh)+' L'+ox+' '+(y+hh)+' Z" fill="#c6e5f1" stroke="#247b9b" stroke-width="4"/><path d="M'+ex+' '+y+' L'+ox+' '+y+'" stroke="#8aafbf" stroke-width="2" stroke-dasharray="8 6"/>';
  content+='<ellipse cx="77" cy="'+y+'" rx="46" ry="36" fill="#e7f1f6" stroke="#597a91" stroke-width="4"/><ellipse cx="118" cy="'+y+'" rx="9" ry="28" fill="#9bd7e5" stroke="#597a91" stroke-width="3"/>';
  const r=58,phi=Math.atan(hh/gap),ax=ex+r*Math.cos(phi),dy=r*Math.sin(phi);content+='<path d="M'+ax+' '+(y-dy)+' A'+r+' '+r+' 0 0 1 '+ax+' '+(y+dy)+'" fill="none" stroke="#006b95" stroke-width="5"/>';
- content+='<text x="'+(ex+r+18)+'" y="'+(y+43)+'" fill="#de4747" font-size="26" font-weight="600">角度</text>';
+ content+='<text x="'+(ex+r+18)+'" y="'+(y+82)+'" fill="#de4747" font-size="26" font-weight="600">'+d.angleDeg.toFixed(2)+'°</text>';
  content+='<g fill="#247891"><rect x="'+ox+'" y="'+(y-hh)+'" width="'+(objectH*.22)+'" height="'+objectH+'"/>';for(const q of [0,.39,.78])content+='<rect x="'+ox+'" y="'+(y-hh+objectH*q)+'" width="'+(objectH*.6)+'" height="'+(objectH*.22)+'"/>';content+='</g>';
  svg.setAttribute('viewBox','0 0 '+W+' '+H);svg.setAttribute('aria-label',(id==='nearAngleDiagram'?'近处25厘米':'当前'+d.distance+'厘米')+'物体的视角示意，距离采用显示压缩');svg.innerHTML=content;}
  drawPanel('nearAngleDiagram',near);drawPanel('farAngleDiagram',far);}

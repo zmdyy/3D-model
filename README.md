@@ -53,11 +53,15 @@ python scripts/add-model.py ./新案例.html --id new-demo --category 电学元�
 
 ## 天宫空间站：结构观察与天地通信
 
-- 在 `models/communication-satellite.html` 内切换通信卫星与中国空间站；几何模型由 `shared/tiangong-model.js` 建立。
+- `models/communication-satellite.html` 将地球、地面站、同步卫星和中国空间站放在一个通信场景中；“近看空间站”只改变观察尺度，详细几何由 `shared/tiangong-model.js` 建立。
 - 依据用户提供的三舱参考图及中国载人航天工程办公室资料，重建天和的小/大柱段、球形节点舱、问天气闸、梦天货物气闸与舱外载荷面；加入对接环、隔热表面、扶手、设备盖板、天线馈源、四片双毯面柔性太阳翼及大小机械臂。
 - 舱段长度按天和 16.6 m、实验舱约 17.9 m 和舱体直径 4.2 m 建立。外部附件、局部比例与机械臂姿态为教学简化，不是工程 CAD。
 - 可点击模型或部件列表查看功能、聚焦放大、俯视 T 字构型、分解舱段、转动太阳翼、开关标注及来访飞船。模型用材质批次合并几何体，完整结构约 80 次绘制；没有以图片代替 3D 模型。
 - 两艘神舟、一艘天舟及核心舱小太阳翼是参考构型示例，界面明确说明其不代表当前停靠和外部配置。分解视图用红线区分永久连接、蓝线区分来访停靠。
-- 天地通信展示约 400 km 低轨空间站与 GEO 中继的几何关系。直连与中继路径通过球体遮挡判断；地面天线分别跟踪中继卫星和空间站；示意不预测真实通信调度。
+- 所有天体使用同一时钟：地球与地面站一起自转，GEO 同向、同周期公转，空间站以约 1436.068 / 92 的角速度比绕行。可切换太空视角和随地球观察，也可暂停整个系统。结构近看仍保留系统时钟。
+- 地面抛物面凹口朝目标，馈源位于焦点（f = R² / 4d），三根支撑杆从正向碗沿连接馈源。目标低于地平线时，天线向上待机。可近看天线和金色指向箭头。
+- 切换“地面站间通信”与“空间站天地通信”只选择高亮路径与跟踪目标，所有航天器继续在同一场景显示。地平线判断使用球面站点，不以放大天线的高度扩大可见范围；所有可见信号段还进行球体遮挡检查。轨道间距压缩、模型尺寸放大，覆盖时间与中继调度不是实况预测。
 - Three.js 和 Earth / cloud 纹理使用本地资源，模型不依赖 CDN。地球纹理源自 `mrdoob/three.js` r144 的 `examples/textures/planets/`；Three.js 的 MIT 许可见 `shared/vendor/THREE-LICENSE.txt`。
 - 资料：CMSE [天和核心舱](https://www.cmse.gov.cn/xwzx/zhxw/202105/t20210507_47814.html)、[实验舱与 T 字构型](https://www.cmse.gov.cn/xwzx/202211/t20221107_51360.html)、[机械臂](https://www.cmse.gov.cn/xwzx/202401/t20240108_54902.html)、[天地通信](https://www.cmse.gov.cn/xwzx/202301/t20230103_52072.html)；用户提供的[维基百科构型参考](https://zh.wikipedia.org/zh-cn/天宫空间站)。
+
+- 天线与同步轨道原理：NASA [抛物面天线](https://www.nasa.gov/general/what-is-an-antenna/)、ESA [Geostationary orbit](https://www.esa.int/ESA_Multimedia/Images/2020/03/Geostationary_orbit)。

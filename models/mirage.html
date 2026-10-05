@@ -734,6 +734,12 @@
   const OBJ_DESIGN_H = 4.4;                  // 造型是按这个高度设计的
   const OBJ_K = OBJ_H / OBJ_DESIGN_H;        // 整体放大倍数（宽高同比例，不走样）
 
+  // A thin patch of terrain supports the real buildings. It belongs to the
+  // ground, outside gObject, so cloning the image never duplicates a pedestal.
+  const objectGroundMaterial=new THREE.MeshStandardMaterial({color:0x819b85,roughness:.95,metalness:0});
+  put(gSea,new THREE.BoxGeometry(OBJ_K*4.8,.12,OBJ_K*2.7),objectGroundMaterial,
+    [OBJ_X,OBJ_BASE+.50,0],[0,0,Math.atan(-OBJ_X/R_EARTH)]);
+
   (function buildObject() {
     const g = new THREE.Group();
     g.position.set(OBJ_X, OBJ_BASE, 0);
@@ -741,19 +747,9 @@
     g.scale.set(OBJ_K, OBJ_K, OBJ_K);        // 设计尺寸 → 实际尺寸
     gObject.add(g);
 
-    // 礁石基座
-    const base = new THREE.SphereGeometry(3.6, 40, 24);
-    const bm = put(g, base, M.landDark, [0, -1.85, 0]);
-    bm.scale.set(1.05, 0.62, 0.95);
-
-    // 坡地
-    const mound = new THREE.SphereGeometry(2.9, 40, 26);
-    const mm = put(g, mound, M.land, [-0.6, -1.30, 0]);
-    mm.scale.set(1.15, 0.78, 1.0);
-
     // 三座塔（远处物体剪影）；最高那座锥顶落在 OBJ_DESIGN_H，
     // 经 OBJ_K 放大后正好到 OBJ_TOP，保证整体在地平线下
-    const Y0 = -0.62;
+    const Y0 = 0.14;
     const tw = [
       { x: -1.62, w: 0.78, tip: OBJ_DESIGN_H - 0.95, roof: 0.52 },
       { x: -0.26, w: 0.92, tip: OBJ_DESIGN_H, roof: 0.62 },
@@ -772,7 +768,7 @@
     });
     // 圆顶
     const dome = new THREE.SphereGeometry(0.7, 28, 18, 0, Math.PI * 2, 0, Math.PI / 2);
-    put(g, dome, M.landDark, [0.52, -0.62, 0.30]);
+    put(g, dome, M.landDark, [0.52, 0.14, 0.30]);
   })();
 
   /* =========================================================
@@ -801,7 +797,7 @@
      ========================================================= */
   addLabel('observer', '观察者', '#15406f', 2.05, [EYE_X - 0.4, EYE_Y + 4.5, 0]);
   addLabel('obj', '真实物体（在地平线以下）', '#1c4a6e', 2.5,
-    [OBJ_X - 1.0, OBJ_BASE + OBJ_H + 1.5, 0]);
+    [OBJ_X - 13, OBJ_BASE + OBJ_H*.40, 0]);
   addLabel('ghost', '虚像（蜃景）', '#1b7bbd', 2.6, [OBJ_X, 24, 0]);
   addLabel('horizon', '地平线', '#1d7a4c', 2.0, [HORIZON.x, HORIZON.y + 0.75, 0]);
   addLabel('cold', '冷空气 · 密 · n 大', '#2a63b8', 2.2, [-62, seaY(-62) + 1.15, 0]);
@@ -2046,7 +2042,7 @@
 
   window.__dbg = {
     state: state, view: view, OPT: OPT, SCENES: SCENES, camera: camera,
-    virtualMaterials:virtualMaterials, objectSize:{superior:OBJ_K,inferior:D_TRUCK_K},
+    virtualMaterials:virtualMaterials, objectGroundThickness:.12, superiorRockCount:0, objectSize:{superior:OBJ_K,inferior:D_TRUCK_K},
     get CUR() { return CUR; },            // 必须用取值器，否则切场景后会拿到旧快照
     eye: CUR.eye, imgTop: IMG_TOP, objTip: objTip,
     seaY: seaY, nAt: nAt, traceRay: traceRay, solveLaunch: solveLaunch,

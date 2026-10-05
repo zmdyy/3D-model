@@ -169,7 +169,7 @@
 
   <div class="head">
     <h1>海市蜃楼 <span>· 上蜃 / 下蜃 · 3D 光学演示</span></h1>
-    <p>光只在<b>均匀</b>介质里才走直线。空气疏密不匀时，光一路折射、走出弧线，眼睛却仍旧「以为」光是直着来的，于是看见<b>虚像</b>。决定蜃景是哪一种的，不是「地面热不热」，而是<b>折射率随高度的梯度 dn/dy 的符号</b>：<span style="color:#1b7bbd">dn/dy&lt;0 → 光向下弯 → 上蜃（像抬高、正立）</span>；<span style="color:#c8521c">dn/dy&gt;0 → 光向上弯 → 下蜃（像压低、倒立）</span>。在右侧面板顶部切换场景看两种对比。</p>
+    <p>光只在<b>均匀</b>介质里才走直线。空气疏密不匀时，光一路折射、走出弧线，眼睛却仍旧「以为」光是直着来的，于是看见<b>虚像</b>。决定蜃景是哪一种的，不是「地面热不热」，而是<b>折射率随高度的梯度 dn/dy 的符号</b>：<span style="color:#1b7bbd">dn/dy&lt;0 → 光向下弯 → 上蜃（像抬高、正立）</span>；<span style="color:#c8521c">dn/dy&gt;0 → 光向上弯 → 下蜃（像压低、倒立）</span>。在右侧面板顶部切换场景看两种对比。作图按人教版规范：<b>实线＋箭头</b>画光线，光线进眼睛后沿原方向<b>用虚线反向延长</b>，<b>延长线的交点即像点 S′</b>。</p>
   </div>
 
   <div class="panel" id="panel">
@@ -246,13 +246,13 @@
       <div class="lbl">显示项</div>
       <div class="toggles">
         <button id="btnRay" class="active">弯曲光线</button>
-        <button id="btnSight" class="active">视线</button>
+        <button id="btnSight" class="active">反向延长线</button>
         <button id="btnBundle">光线束</button>
         <button id="btnNoRefr">直线对比</button>
         <button id="btnLayers" class="active">温度分层</button>
         <button id="btnMarks" class="active">结构标注</button>
       </div>
-      <div class="mini">「视线」是眼睛逆着光看出去的那条<b>直线</b>——虚像就落在这条线上；「直线对比」画的是假设空气均匀时光线走的直路：上蜃里它被海面挡住（实物本来看不见），下蜃里它一路畅通（实物本来就看得见，蜃景只是<b>多出来</b>的倒像）。</div>
+      <div class="mini">按人教版画法：<b>红色实线是弯曲光线</b>（箭头指传播方向），光进了眼睛之后，眼睛只会"逆着光看回去"——<b>虚线就是这条反向延长线</b>，它与过物体的竖直线（上蜃）或路面（下蜃）相交，<b>交点就是像点 S′</b>。「光线束」让物的上、中、下各点各发一条光，各自延长出一串像点，正好拼出完整的虚像；「直线对比」画假设空气均匀时的直路：上蜃里它被海面挡住（实物本来看不见），下蜃里它一路畅通（实物本来就看得见，蜃景只是<b>多出来</b>的倒像）。</div>
     </div>
 
     <div class="grp">
@@ -286,8 +286,8 @@
       <span><i class="amber"></i><b>光总是朝 n 大（更密）的那一侧弯</b> —— 这是唯一的判据</span>
       <span><i class="red"></i>下密上疏 → 光向下弯 → 像抬高正立 = <b>上蜃</b>（海面、冰面）</span>
       <span><i class="red"></i>下疏上密 → 光向上弯 → 像压低倒立 = <b>下蜃</b>（烈日公路、沙漠）</span>
-      <span class="ok">✓ 眼睛逆着光看去 → 就在那个方向上「看见」物体</span>
-      <span class="bad">✗ 那里并没有物体：上蜃的天上没有城堡，下蜃的路面上也没有水</span>
+      <span class="ok">✓ 人教版画法：<b>实线+箭头</b>画光线，<b>虚线</b>沿到达方向反向延长，<b>交点就是像点 S′</b></span>
+      <span class="bad">✗ 虚像不是光真的汇聚成的：那里并没有光，也没有物体</span>
       <span class="bad">✗ 「地面热、上层冷」不是矛盾，它正是下蜃；只是要贴地那一薄层够热才看得见</span>
     </div>
   </div>
@@ -358,14 +358,17 @@
   const R_EARTH = 420;                       // 海面曲率半径（示意值）
   function seaY(x) { return -x * x / (2 * R_EARTH); }
 
-  const X_SEA0 = -72, X_SEA1 = 84;           // 海面左右边界
+  const X_SEA0 = -72, X_SEA1 = 140;          // 海面左右边界（物体移远后要盖住它）
   const EYE_X = -44;                         // 观察者
   const DECK_H = 0.50;                       // 甲板高出水面
-  const EYE_LOCAL = 2.80;                    // 眼睛在人身上的高度
-  const EYE_Y = seaY(EYE_X) + DECK_H + EYE_LOCAL;
+  const EYE_LOCAL = 2.80;                    // 眼睛在人身上的高度（局部坐标，人整体按 0.7 缩放）
+  const EYE_ABOVE = 2.52;                    // 眼睛高出水面（= 0.70 + 2.60×0.7，见 buildPerson）
+  const EYE_Y = seaY(EYE_X) + EYE_ABOVE;
   const EYE = new THREE.Vector3(EYE_X, EYE_Y, 0);
 
-  const OBJ_X = 62;                          // 远处物体（真实位置）
+  const OBJ_X = 120;                         // 远处物体（真实位置）。
+  // 为什么放这么远：地平线以下的「隐藏带」厚度随距离平方增长，
+  // 物体移远 → 可以做得更高 → 屏幕上反而更大、更清晰。
 
   // 观察者眼睛 → 海面的切线（地平线）
   const TAN = (function () {
@@ -465,12 +468,12 @@
       transparent: true, opacity: 0.52, depthWrite: false
     }),
     ray: new THREE.MeshStandardMaterial({
-      color: 0xff6b8a, roughness: 0.34, metalness: 0.0,
-      emissive: 0xe8365f, emissiveIntensity: 0.62
+      color: 0xf04438, roughness: 0.34, metalness: 0.0,
+      emissive: 0xd93a2b, emissiveIntensity: 0.55
     }),
     rayDim: new THREE.MeshStandardMaterial({
-      color: 0xffb0c0, roughness: 0.4, metalness: 0.0,
-      emissive: 0xd94f74, emissiveIntensity: 0.35, transparent: true, opacity: 0.5
+      color: 0xf2a699, roughness: 0.4, metalness: 0.0,
+      emissive: 0xd9755e, emissiveIntensity: 0.30, transparent: true, opacity: 0.55
     }),
     pulse: new THREE.MeshBasicMaterial({ color: 0xfff0a8 }),
     sight: new THREE.MeshStandardMaterial({ color: 0x5c6b7a, roughness: 0.6, metalness: 0.0 }),
@@ -496,6 +499,17 @@
       transparent: true, opacity: 0.5, depthWrite: false
     })
   };
+
+  function clearVirtualMaterial(source) {
+    const m=source.clone();
+    m.color.lerp(new THREE.Color(0x6aa9cd),.12);
+    m.emissive.setHex(0x000000);m.emissiveIntensity=0;
+    m.transparent=true;m.opacity=source===M.carGlass?.88:.96;
+    m.depthWrite=true;m.roughness=Math.max(.35,m.roughness);
+    return m;
+  }
+  const virtualMaterials=new Map();
+  function virtualMaterial(source){if(!virtualMaterials.has(source))virtualMaterials.set(source,clearVirtualMaterial(source));return virtualMaterials.get(source);}
 
   /* ================= 工具 ================= */
   function clamp(v, a, b) { return v < a ? a : (v > b ? b : v); }
@@ -583,7 +597,7 @@
   scene.add(gSea);
 
   (function buildSea() {
-    const deep = -16;
+    const deep = -26;                        // 要比 seaY(X_SEA1)≈-18.3 还低
 
     // 水体（从海面曲线到底部）
     const body = new THREE.Shape();
@@ -610,7 +624,7 @@
     gSea.add(deepMesh);
 
     // 地平线附近的水汽雾带
-    const hazeBand = bandGeo(-6, 60, 0.02, 1.05, 60);
+    const hazeBand = bandGeo(-8, 96, 0.02, 1.05, 60);
     const hazeMesh = new THREE.Mesh(extrudeZ(hazeBand, 20, 0), M.haze);
     hazeMesh.renderOrder = 4;
     gSea.add(hazeMesh);
@@ -645,7 +659,7 @@
         depthWrite: false, side: THREE.DoubleSide,
         emissive: col.clone(), emissiveIntensity: 0.12
       });
-      const geo = extrudeZ(bandGeo(-70, 80, 0.30 + i * step, step * 0.80, 56, gf), 3.0, 0);
+      const geo = extrudeZ(bandGeo(-72, 138, 0.30 + i * step, step * 0.80, 56, gf), 3.0, 0);
       const m = new THREE.Mesh(geo, mat);
       m.renderOrder = 5 + i;
       gAir.add(m);
@@ -687,7 +701,11 @@
 
   (function buildPerson() {
     const p = new THREE.Group();
-    p.position.set(EYE_X, seaY(EYE_X) + DECK_H + 0.20, 0);
+    // 人按 0.7 缩放，把眼睛降到 EYE_ABOVE（眼越低，地平线越近，隐藏带越厚）
+    p.scale.set(0.7, 0.7, 0.7);
+    // 眼睛球心在局部 (0.33, EYE_LOCAL-0.20=2.60)，缩放后偏移 (0.231, 1.82)，
+    // 要让它正好落在 (EYE_X, seaY+EYE_ABOVE)：
+    p.position.set(EYE_X - 0.33 * 0.7, seaY(EYE_X) + EYE_ABOVE - 2.60 * 0.7, 0);
     gObserver.add(p);
 
     // 腿
@@ -712,12 +730,15 @@
      ========================================================= */
   const gObject = new THREE.Group();
   scene.add(gObject);
-  const OBJ_H = OBJ_TOP - OBJ_BASE;
+  const OBJ_H = OBJ_TOP - OBJ_BASE;          // 物体实际可用高度（随距离平方增长）
+  const OBJ_DESIGN_H = 4.4;                  // 造型是按这个高度设计的
+  const OBJ_K = OBJ_H / OBJ_DESIGN_H;        // 整体放大倍数（宽高同比例，不走样）
 
   (function buildObject() {
     const g = new THREE.Group();
     g.position.set(OBJ_X, OBJ_BASE, 0);
     g.rotation.z = Math.atan(-OBJ_X / R_EARTH);
+    g.scale.set(OBJ_K, OBJ_K, OBJ_K);        // 设计尺寸 → 实际尺寸
     gObject.add(g);
 
     // 礁石基座
@@ -730,12 +751,13 @@
     const mm = put(g, mound, M.land, [-0.6, -1.30, 0]);
     mm.scale.set(1.15, 0.78, 1.0);
 
-    // 三座塔（远处物体剪影）；最高那座锥顶落在 OBJ_TOP，保证整体在地平线下
+    // 三座塔（远处物体剪影）；最高那座锥顶落在 OBJ_DESIGN_H，
+    // 经 OBJ_K 放大后正好到 OBJ_TOP，保证整体在地平线下
     const Y0 = -0.62;
     const tw = [
-      { x: -1.62, w: 0.78, tip: OBJ_H - 0.95, roof: 0.52 },
-      { x: -0.26, w: 0.92, tip: OBJ_H, roof: 0.62 },
-      { x: 1.16, w: 0.70, tip: OBJ_H - 1.55, roof: 0.44 }
+      { x: -1.62, w: 0.78, tip: OBJ_DESIGN_H - 0.95, roof: 0.52 },
+      { x: -0.26, w: 0.92, tip: OBJ_DESIGN_H, roof: 0.62 },
+      { x: 1.16, w: 0.70, tip: OBJ_DESIGN_H - 1.55, roof: 0.44 }
     ];
     tw.forEach(function (t) {
       const h = Math.max(0.35, t.tip - Y0 - t.roof);
@@ -765,8 +787,8 @@
     const c = gObject.clone(true);
     c.traverse(function (o) {
       if (o.isMesh) {
-        o.material = M.ghost;
-        o.renderOrder = 12;
+        o.material = virtualMaterial(o.material);
+        o.renderOrder = 20;
         o.castShadow = false; o.receiveShadow = false;
       }
     });
@@ -785,8 +807,8 @@
   addLabel('cold', '冷空气 · 密 · n 大', '#2a63b8', 2.2, [-62, seaY(-62) + 1.15, 0]);
   addLabel('warm', '热空气 · 疏 · n 小', '#c8761c', 2.2, [-62, seaY(-62) + 10.2, 0]);
   addLabel('sea', '海面（夏天比空气凉）', '#1b5a93', 2.2, [-62, seaY(-62) - 3.2, 0]);
-  addLabel('ray', '弯曲光线 · 折射', '#c62a4e', 2.4, [0, 0, 0]);
-  addLabel('sight', '视线 · 逆着光看出去', '#3f4c5a', 2.25, [0, 0, 0]);
+  addLabel('ray', '弯曲光线 · 折射', '#c0392b', 2.4, [0, 0, 0]);
+  addLabel('sight', '反向延长线（虚线）', '#3f4c5a', 2.25, [0, 0, 0]);
   addLabel('blocked', '光被海面挡住', '#b43123', 2.1, [0, 0, 0]);
 
   /* 地平线标记 */
@@ -839,21 +861,21 @@
      上蜃场景：直接复用 02 里已经建好的海面 / 小船 / 三座塔
      --------------------------------------------------------- */
   (function initSuperior() {
-    const inner = gObject.children[0];                 // 塔所在的内层 group
+    const inner = gObject.children[0];                 // 塔所在的内层 group（已按 OBJ_K 放大）
     const anchor = new THREE.Object3D();
-    anchor.position.set(-0.26, OBJ_H, 0);              // 最高那座塔的锥顶（局部坐标）
+    anchor.position.set(-0.26, OBJ_DESIGN_H, 0);       // 最高那座塔的锥顶（设计坐标，放大后正好到 OBJ_TOP）
     inner.add(anchor);
 
     const gInner = gGhost.children[0].children[0];     // 虚像里对应的位置
     const gAnchor = new THREE.Object3D();
-    gAnchor.position.set(-0.26, OBJ_H, 0);
+    gAnchor.position.set(-0.26, OBJ_DESIGN_H, 0);
     gInner.add(gAnchor);
 
     SCENES.superior = {
       key: 'superior', name: '上蜃', full: '上现蜃景',
       tagline: '下冷上热 · 下密上疏 → 光向下弯 → 像抬高',
       flip: 0, dirSign: 1, imgFlip: 1,
-      airH: 6.0, dLo: 0.0022, dHi: 0.045, slider: 66,
+      airH: 6.0, dLo: 0.00055, dHi: 0.045, slider: 66,
       groundY: seaY,
       groundName: '海面',
       eye: EYE, eyeY: EYE_Y, objX: OBJ_X, objBase: OBJ_BASE, objTop: OBJ_TOP,
@@ -862,9 +884,9 @@
       objectMat: M.ghost,
       groups: [gSea, gObserver, gObject, gGhost],
       labelKeys: ['observer', 'obj', 'ghost', 'horizon', 'cold', 'warm', 'sea', 'ray', 'sight', 'blocked'],
-      camDefault: { theta: 0.40, phi: 1.32, dist: 152, fov: 38, tx: 24, ty: 3.2, tz: 0 },
-      camSide: { theta: 0.0, phi: Math.PI / 2 - 0.001, dist: 154, fov: 34, tx: 22, ty: 3.6, tz: 0 },
-      camObj: { theta: -0.55, phi: 1.24, dist: 46, fov: 38, tx: OBJ_X - 1, ty: OBJ_BASE + OBJ_H * 0.5, tz: 0 },
+      camDefault: { theta: 0.40, phi: 1.40, dist: 160, fov: 38, tx: 73, ty: 8, tz: 0 },
+      camSide: { theta: 0.0, phi: Math.PI / 2 - 0.001, dist: 220, fov: 34, tx: 54, ty: 10, tz: 0 },
+      camObj: { theta: -0.55, phi: 1.30, dist: 90, fov: 38, tx: OBJ_X - 1, ty: OBJ_BASE + OBJ_H * 0.45, tz: 0 },
       tip: '<b>上现蜃景</b>（海面 / 冰面）：水面比空气凉 → 贴着水面那层空气' +
         '<b>冷而密</b>（n 大），越往上越暖、越疏（n 小）。光一路被拉向' +
         '<b>下方</b>，走出一道拱形 ∩，把地平线以下物体的光送进眼睛 → 虚像被' +
@@ -890,8 +912,11 @@
      ========================================================= */
 
   const D_FLAT = function () { return 0; };          // 平地（近距离，地球曲率可忽略）
-  const D_EYE_X = -44, D_EYE_Y = 1.70;               // 观察者站在路面上
-  const D_OBJ_X = 62, D_OBJ_BASE = 0.0, D_OBJ_TOP = 3.10;   // 远处卡车（车厢顶）
+  const D_EYE_X = -30, D_EYE_Y = 1.70;               // 观察者站在路面上（拉近些，卡车才看得清）
+  const D_OBJ_X = 52, D_OBJ_BASE = 0.0;
+  const D_TRUCK_K = 2.35;                             // 卡车整体放大倍数（便于观察）
+  const D_DESIGN_TOP = 3.44;                         // 设计尺寸下的最高点（车顶行李上表面）
+  const D_OBJ_TOP = D_DESIGN_TOP * D_TRUCK_K;        // 放大后的车顶最高点，锚点也使用同一比例
 
   const gDesert = new THREE.Group();
   scene.add(gDesert);
@@ -974,6 +999,7 @@
   (function buildTruck() {
     const g = new THREE.Group();
     g.position.set(D_OBJ_X, D_OBJ_BASE, 0);
+    g.scale.set(D_TRUCK_K, D_TRUCK_K, D_TRUCK_K);    // 整体放大，宽高同比例
     gObject2.add(g);
 
     // 车厢（货箱）：顶 3.10
@@ -994,7 +1020,8 @@
 
   (function buildTree() {
     const g = new THREE.Group();
-    g.position.set(D_OBJ_X - 9.5, 0, 5.2);
+    g.position.set(D_OBJ_X - 12.5, 0, 6.4);
+    g.scale.set(1.6, 1.6, 1.6);
     gObject2.add(g);
     put(g, new THREE.CylinderGeometry(0.20, 0.30, 2.60, 14), M.trunk, [0, 1.30, 0]);
     put(g, new THREE.SphereGeometry(1.35, 22, 16), M.leaf, [0, 3.10, 0]);
@@ -1010,8 +1037,8 @@
     const c = gObject2.clone(true);
     c.traverse(function (o) {
       if (o.isMesh) {
-        o.material = M.ghost2;
-        o.renderOrder = 12;
+        o.material = virtualMaterial(o.material);
+        o.renderOrder = 20;
         o.castShadow = false; o.receiveShadow = false;
       }
     });
@@ -1023,10 +1050,10 @@
   let anchor2 = null, gAnchor2 = null;
   (function initInferiorAnchors() {
     anchor2 = new THREE.Object3D();
-    anchor2.position.set(0.80, D_OBJ_TOP - D_OBJ_BASE, 0);      // 车厢顶（局部）
+    anchor2.position.set(0.80, D_DESIGN_TOP, 0);     // 车顶行李上表面（设计坐标，放大后 = D_OBJ_TOP）
     gObject2.children[0].add(anchor2);
     gAnchor2 = new THREE.Object3D();
-    gAnchor2.position.set(0.80, D_OBJ_TOP - D_OBJ_BASE, 0);
+    gAnchor2.position.set(0.80, D_DESIGN_TOP, 0);
     gGhost2.children[0].children[0].add(gAnchor2);
   })();
 
@@ -1042,7 +1069,7 @@
     key: 'inferior', name: '下蜃', full: '下现蜃景',
     tagline: '下热上冷 · 下疏上密 → 光向上弯 → 像压低且倒立',
     flip: 1, dirSign: -1, imgFlip: -1, imgMode: 'ground',
-    airH: 6.0, dLo: 0.0018, dHi: 0.014, slider: 66,
+    airH: 6.0, dLo: 0.0086, dHi: 0.0295, slider: 80,
     groundY: D_FLAT,
     groundName: '路面',
     eye: new THREE.Vector3(D_EYE_X, D_EYE_Y, 0), eyeY: D_EYE_Y,
@@ -1053,9 +1080,9 @@
     groups: [gDesert, gObject2, gGhost2],
     hotBands: HOT_BANDS,
     labelKeys: ['obs2', 'obj2', 'gh2', 'hot2', 'cool2', 'road2', 'ray', 'sight', 'blocked'],
-    camDefault: { theta: 0.40, phi: 1.30, dist: 150, fov: 38, tx: 20, ty: 3.0, tz: 0 },
-    camSide: { theta: 0.0, phi: Math.PI / 2 - 0.001, dist: 152, fov: 34, tx: 18, ty: 3.2, tz: 0 },
-    camObj: { theta: -0.55, phi: 1.25, dist: 44, fov: 38, tx: D_OBJ_X - 2, ty: 2.0, tz: 0 },
+    camDefault: { theta: 0.40, phi: 1.30, dist: 90, fov: 38, tx: 30, ty: 8, tz: 0 },
+    camSide: { theta: 0.0, phi: Math.PI / 2 - 0.001, dist: 120, fov: 34, tx: 24, ty: 10, tz: 0 },
+    camObj: { theta: -0.55, phi: 1.25, dist: 52, fov: 38, tx: D_OBJ_X - 2, ty: 3.2, tz: 0 },
     tip: '<b>下现蜃景</b>（夏天正午的公路 / 沙漠）：地面被烤到 60 ℃ 以上 → ' +
       '贴地那一薄层空气被加热得<b>热而疏</b>（n 最小），往上迅速变凉变密（n 变大）。' +
       '光被拉向<b>上方</b>，走出一道碗形 ∪，还没碰到地就被顶回来 → 虚像被' +
@@ -1244,6 +1271,29 @@
     return l;
   }
 
+  // 人教版画法的箭头：圆锥沿光线切线方向，指向下游（传播方向）
+  function arrowOn(curve, u, r, h, mat) {
+    const p = curve.getPoint(u), t = curve.getTangent(u).normalize();
+    const cone = new THREE.Mesh(new THREE.ConeGeometry(r, h, 12), mat);
+    cone.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), t);
+    cone.position.copy(p);
+    return cone;
+  }
+
+  // 像点：人教版规定「虚像 = 光线反向延长线的交点」。
+  // 上蜃：反向延长线与「过物体的竖直线」相交，像就在物的正上方；
+  // 下蜃：反向延长线与路面相交，像趴在实物前方的路面上。
+  function imagePointOf(look) {
+    if (CUR.imgMode === 'ground') {
+      const tG = CUR.eyeY / Math.max(1e-4, -look.y);
+      const ip = CUR.eye.clone().add(look.clone().multiplyScalar(tG));
+      ip.y = CUR.groundY(ip.x);
+      return ip;
+    }
+    const tS = (objTip.x - CUR.eye.x) / Math.max(1e-6, look.x);
+    return CUR.eye.clone().add(look.clone().multiplyScalar(tS));
+  }
+
   const gRay = new THREE.Group();       // 弯曲光线
   const gSight = new THREE.Group();     // 视线（直线）
   const gStraight = new THREE.Group();  // 直线对比
@@ -1295,11 +1345,13 @@
     CUR.tipAnchor.getWorldPosition(objTip);
     const sol = solveLaunch(dDelta, objTip.x, objTip.y);
 
-    /* ---- 1. 弯曲光线 ---- */
+    /* ---- 1. 弯曲光线（红色实线 + 箭头，人教版画法的传播方向） ---- */
     if (sol.ok) {
       const t = tubeFrom(sol.ray.rec, 0.115, M.ray, 8, 460);
       if (t) {
         gRay.add(t.mesh);
+        gRay.add(arrowOn(t.curve, 0.45, 0.34, 1.05, M.ray));   // 中段箭头
+        gRay.add(arrowOn(t.curve, 0.94, 0.34, 1.05, M.ray));   // 近眼箭头，指进眼睛
         mainCurve = t.curve;
         OPT.ok = true; OPT.reason = '';
         OPT.phi = sol.phi;
@@ -1313,20 +1365,16 @@
         OPT.look = look;
         OPT.kappa = dDelta / AIR_H;
 
-        // 虚像位置
+        // 虚像位置：反向延长线的交点（人教版画法的像点 S′）
         const L = objTip.distanceTo(CUR.eye);
         let sc = 1;
         if (CUR.imgMode === 'ground') {
-          // 下蜃：虚像落在视线与地面的交点上（比实物近得多），
+          // 下蜃：虚像落在反向延长线与路面的交点上（比实物近得多），
           // 并按距离比缩小，这样张角才和实物对得上
-          const ly = Math.min(-1e-4, look.y);
-          const tG = clamp(CUR.eyeY / (-ly), 8, 400);
-          IMG_TOP.copy(CUR.eye).add(look.clone().multiplyScalar(tG));
-          IMG_TOP.y = CUR.groundY(IMG_TOP.x);
+          const tG = clamp(CUR.eyeY / Math.max(1e-4, -look.y), 8, 400);
           sc = clamp(tG / L, 0.10, 1.0);
-        } else {
-          IMG_TOP.copy(CUR.eye).add(look.clone().multiplyScalar(L));
         }
+        IMG_TOP.copy(imagePointOf(look));
         OPT.imgScale = sc;
         fitGhost(CUR, IMG_TOP, sc);
       }
@@ -1339,9 +1387,18 @@
       fitGhost(CUR, new THREE.Vector3(objTip.x, CUR.objBase - 9000, 0), 1);
     }
 
-    /* ---- 2. 视线（眼睛 → 虚像的直线） ---- */
+    /* ---- 2. 反向延长线（人教版：沿光线到达方向的虚线反向延长，交点即像点 S′） ---- */
     if (OPT.ok) {
       gSight.add(dashedLine(CUR.eye, IMG_TOP, 0x5c6b7a, 2.0, 1.25, 0.9));
+      if (CUR.imgMode !== 'ground') {
+        // 物—像之间的竖直参照虚线：一眼看出「像就在物的正上方」
+        gSight.add(dashedLine(objTip, IMG_TOP, 0x9aa8b8, 1.4, 1.1, 0.55));
+        // 像点 S′ 标记
+        const ipd = new THREE.Mesh(new THREE.SphereGeometry(0.22, 14, 10),
+          new THREE.MeshBasicMaterial({ color: 0x1b7bbd }));
+        ipd.position.copy(IMG_TOP);
+        gSight.add(ipd);
+      }
     }
 
     /* ---- 3. 直线对比（假设空气均匀） ---- */
@@ -1381,7 +1438,7 @@
       }
     })();
 
-    /* ---- 4. 光线束 ---- */
+    /* ---- 4. 光线束：物的不同点各发一条光，各自反向延长出自己的像点 ---- */
     (function bundle() {
       const fr = [0.10, 0.32, 0.54, 0.76, 1.00];
       fr.forEach(function (f) {
@@ -1389,7 +1446,19 @@
         const s2 = solveLaunch(dDelta, objTip.x, y0);
         if (s2.ok) {
           const t = tubeFrom(s2.ray.rec, 0.055, M.rayDim, 6, 300);
-          if (t) gBundle.add(t.mesh);
+          if (t) {
+            gBundle.add(t.mesh);
+            gBundle.add(arrowOn(t.curve, 0.5, 0.20, 0.62, M.rayDim));
+            // 这条光线自己的反向延长线 → 自己的像点
+            const e2 = t.curve.getPoint(1), p2 = t.curve.getPoint(0.97);
+            const look2 = e2.clone().sub(p2).normalize().multiplyScalar(-1);
+            const ip2 = imagePointOf(look2);
+            gBundle.add(dashedLine(CUR.eye, ip2, 0x8a97a5, 1.1, 0.85, 0.55));
+            const d2 = new THREE.Mesh(new THREE.SphereGeometry(0.15, 12, 10),
+              new THREE.MeshBasicMaterial({ color: 0x1b7bbd }));
+            d2.position.copy(ip2);
+            gBundle.add(d2);
+          }
         } else {
           const a = new THREE.Vector3(objTip.x, y0, 0), b = CUR.eye.clone();
           const dir = b.clone().sub(a).normalize();
@@ -1448,7 +1517,7 @@
     play: true,
     t: 0,
     delta: 0.016,
-    slider: { superior: 66, inferior: 66 },
+    slider: { superior: 66, inferior: 80 },
     explode: 0, explodeShown: 0,
     airOp: 1,
     showRay: true, showSight: true, showBundle: false, showNoRefr: false,
@@ -1593,11 +1662,13 @@
       if (up) {
         el.verdict.textContent = '光线以 ' + p.toFixed(1) + '° 仰角离开物体 → 升到离海面 ' +
           OPT.apex.toFixed(1) + ' 处转平 → 折返下落，以 ' + b.toFixed(1) +
-          '° 仰角拐进眼睛。眼睛逆着光看去 → 就在那个方向上「看见」物体。';
+          '° 仰角拐进眼睛。把到达方向反向画虚线延长，它与过物体的竖直线交于一点' +
+          '——那就是像点 S′，眼睛在这个方向上「看见」物体。';
       } else {
         el.verdict.textContent = '光线以 ' + p.toFixed(1) + '° 俯角从车顶射向路面 → 在离路面 ' +
           OPT.apex.toFixed(2) + ' 处被顶回去 → 一路抬升，从下方斜插进眼睛。' +
-          '眼睛逆着光看去 → 在前方路面上「看见」一辆倒立的车，位置比实物近得多。';
+          '把到达方向反向画虚线延长，它与路面交于一点 —— 那就是倒立像所在的像点 S′，' +
+          '位置比实物近得多。';
       }
     } else {
       el.beta.textContent = '—'; el.apex.textContent = '—'; el.phi.textContent = '—';
@@ -1645,8 +1716,9 @@
   }
 
   function applyAirOpacity(v) {
-    AIR_BANDS.forEach(function (b) { b.mat.opacity = b.baseOpacity * (0.35 + 0.65 * v) * 1.7; });
-    HOT_BANDS_CUR.forEach(function (b) { b.base = b.base; b.mat.opacity = b.base * (0.4 + 0.6 * v) * 1.6; });
+    // v=1 → 当前的满效果；v=0 → 几乎透明（还留一点轮廓，不至于凭空消失）
+    AIR_BANDS.forEach(function (b) { b.mat.opacity = b.baseOpacity * (0.12 + 0.88 * v) * 1.7; });
+    HOT_BANDS_CUR.forEach(function (b) { b.mat.opacity = b.base * (0.15 + 0.85 * v) * 1.6; });
     el.airLabel.textContent = Math.round(v * 100) + '%';
   }
 
@@ -1743,7 +1815,10 @@
                    : '气层拉开：下密上疏，折射率逐层变小');
   });
 
-  el.airOp.addEventListener('input', function () { state.airOp = +el.airOp.value / 100; });
+  el.airOp.addEventListener('input', function () {
+    state.airOp = +el.airOp.value / 100;
+    applyAirOpacity(state.airOp);          // 之前漏了这句：值改了却没人应用
+  });
 
   function bindToggle(id, key, onMsg, offMsg) {
     const b = document.getElementById(id);
@@ -1755,7 +1830,7 @@
     });
   }
   bindToggle('btnRay', 'showRay', '显示弯曲光线', '隐藏弯曲光线');
-  bindToggle('btnSight', 'showSight', '显示视线（逆着光看出去的直线）', '隐藏视线');
+  bindToggle('btnSight', 'showSight', '显示反向延长线（虚线，交点即像点 S′）', '隐藏反向延长线');
   bindToggle('btnBundle', 'showBundle', '光线束：只有某个高度以上的光才拐得进眼睛', '隐藏光线束');
   bindToggle('btnNoRefr', 'showNoRefr', '直线对比：如果空气是均匀的', '隐藏直线对比');
   bindToggle('btnLayers', 'showLayers', '显示空气分层', '隐藏空气分层');
@@ -1763,8 +1838,8 @@
 
   /* ================= 相机 ================= */
   const view = {
-    theta: 0.40, phi: 1.32, dist: 152, distTarget: 152, baseDist: 152,
-    target: new THREE.Vector3(24, 3.2, 0),
+    theta: 0.40, phi: 1.40, dist: 160, distTarget: 160, baseDist: 160,
+    target: new THREE.Vector3(66, 8, 0),
     fov: 38, fovTarget: 38
   };
 
@@ -1930,13 +2005,13 @@
     // 虚像轻微抖动（蜃景本来就不稳定）
     if (CUR.gGhost && OPT.ok) {
       const w = Math.sin(now * 0.0016) * 0.06 + Math.sin(now * 0.0037) * 0.03;
-      CUR.gGhost.position.y += w * 0.016;
-      CUR.gGhost.position.x += Math.sin(now * 0.0021) * 0.010;
+      CUR.gGhost.position.y = OPT.ghostBaseY + w * 0.02;
+      CUR.gGhost.position.x = OPT.ghostBaseX + Math.sin(now * 0.0021) * 0.015;
     }
 
     // 贴地热浪（下蜃）
     HOT_BANDS_CUR.forEach(function (b) {
-      b.mat.opacity = b.base * (0.55 + 0.45 * Math.sin(now * 0.0022 + b.ph)) * (0.4 + 0.6 * state.airOp) * 1.6;
+      b.mat.opacity = b.base * (0.55 + 0.45 * Math.sin(now * 0.0022 + b.ph)) * (0.15 + 0.85 * state.airOp) * 1.6;
     });
 
     state.explodeShown += (state.explode - state.explodeShown) * 0.12;
@@ -1971,6 +2046,7 @@
 
   window.__dbg = {
     state: state, view: view, OPT: OPT, SCENES: SCENES, camera: camera,
+    virtualMaterials:virtualMaterials, objectSize:{superior:OBJ_K,inferior:D_TRUCK_K},
     get CUR() { return CUR; },            // 必须用取值器，否则切场景后会拿到旧快照
     eye: CUR.eye, imgTop: IMG_TOP, objTip: objTip,
     seaY: seaY, nAt: nAt, traceRay: traceRay, solveLaunch: solveLaunch,

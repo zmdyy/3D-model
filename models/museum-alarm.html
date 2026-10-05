@@ -314,12 +314,13 @@ function makeTextSprite(text,color,scaleX){
 const ROOT=new THREE.Group();scene.add(ROOT);
 
 /* 实验板：所有器件与导线都落在同一平面 */
-const board=box(19,.34,12,0,0,0,M.base,'experiment-board');board.position.y=0;ROOT.add(board);
-const boardEdge=box(19.12,.16,12.12,0,-.17,0,M.edge);ROOT.add(boardEdge);
-const PLANE_Y=.26;
+const board=box(21.6,.34,13.4,0,0,0,M.base,'experiment-board');board.position.y=0;ROOT.add(board);
+const boardEdge=box(21.72,.16,13.52,0,-.17,0,M.edge);ROOT.add(boardEdge);
+const PLANE_Y=.32;
+grid.visible=false;
 
 /* 文物展台 */
-const mech=new THREE.Group();mech.position.set(-1.5,.18,-.15);ROOT.add(mech);
+const mech=new THREE.Group();mech.position.set(-6.45,.18,-2.45);ROOT.add(mech);
 const WT=1.12;
 const woodGroup=new THREE.Group();mech.add(woodGroup);
 woodGroup.add(box(2.75,WT,4.25,-2.15,WT/2,0,M.wood));
@@ -353,9 +354,11 @@ artifact.add(cylinder(.55,.61,.16,0,-.06,0,M.steel,40));
 
 const contactL=cylinder(.085,.085,.15,-.93,B_PRESSED+.01,.25,M.brass,18);contactL.rotation.x=Math.PI/2;mech.add(contactL);
 const contactR=cylinder(.085,.085,.15,.93,B_PRESSED+.01,.25,M.brass,18);contactR.rotation.x=Math.PI/2;mech.add(contactR);
+const termA=terminal(mech,-2.32,.34,'red');termA.position.y=WT;
+const termC=terminal(mech, 2.32,.34,'red');termC.position.y=WT;
 
 /* 单个电源盒，仅一对正负极 */
-const battery=new THREE.Group();battery.position.set(-6.9,.34,3.75);ROOT.add(battery);
+const battery=new THREE.Group();battery.position.set(7.35,.34,3.50);ROOT.add(battery);
 battery.add(box(3.25,1.35,2.05,0,.68,0,M.edge));
 battery.add(box(3.25,.28,2.05,0,1.49,0,M.base));
 const batNeg=terminal(battery,-1.05,.15,'black');
@@ -365,7 +368,7 @@ const pPos=makeTextSprite('+', '#c63e34',.62);pPos.position.set(1.05,1.22,-1.08)
 const pPower=makeTextSprite('电 源','#60758f',1.80);pPower.position.set(0,.72,-1.09);battery.add(pPower);
 
 /* 灯泡：底板 + 接线柱 + 灯座 + 玻璃泡壳 + 灯丝 */
-const lamp=new THREE.Group();lamp.position.set(-4.45,.34,-3.65);ROOT.add(lamp);
+const lamp=new THREE.Group();lamp.position.set(1.95,.34,3.55);ROOT.add(lamp);
 lamp.add(box(3.45,.28,2.15,0,.14,0,M.base));
 const lampL=terminal(lamp,-1.20,0,'red'), lampR=terminal(lamp,1.20,0,'red');
 const pedestal=cylinder(.66,.82,.70,0,.62,0,M.base,42);lamp.add(pedestal);
@@ -382,7 +385,7 @@ const filamentCurve=new THREE.CatmullRomCurve3([
 const filament=new THREE.Mesh(new THREE.TubeGeometry(filamentCurve,30,.022,8,false),M.yellow);lamp.add(filament);
 
 /* 标准刀开关 */
-const sw=new THREE.Group();sw.name='switch';sw.position.set(5.7,.34,3.65);ROOT.add(sw);
+const sw=new THREE.Group();sw.name='switch';sw.position.set(6.35,.34,-3.35);ROOT.add(sw);
 sw.add(box(3.65,.28,2.0,0,.14,0,M.base));
 const swL=terminal(sw,-1.28,0,'red'),swR=terminal(sw,1.28,0,'red');
 const supportL=box(.36,.76,.50,-.78,.66,0,M.steel);sw.add(supportL);
@@ -394,9 +397,9 @@ const handle=box(.62,.20,.34,-.18,.05,0,M.steel);bladePivot.add(handle);
 const bladeTip=sphere(.12,1.60,0,0,M.brass);bladePivot.add(bladeTip);
 
 /* 电铃：整体固定在平面底座上 */
-const bell=new THREE.Group();bell.position.set(5.15,.34,-.60);ROOT.add(bell);
+const bell=new THREE.Group();bell.position.set(-1.70,.34,-.20);ROOT.add(bell);
 bell.add(box(3.55,.30,2.55,0,.15,0,M.base));
-const bellT1=terminal(bell,-1.20,.67,'red'),bellT2=terminal(bell,1.20,.67,'red');
+const bellT1=terminal(bell,0,-.95,'red'),bellT2=terminal(bell,-1.20,.67,'red');
 const bellPed=cylinder(.62,.72,.42,0,.46,-.15,M.black,36);bell.add(bellPed);
 const bellDome=new THREE.Mesh(new THREE.SphereGeometry(.78,42,22,0,Math.PI*2,0,Math.PI*.56),M.brass);
 bellDome.scale.y=.78;bellDome.position.set(0,1.22,-.15);bellDome.castShadow=true;bell.add(bellDome);
@@ -407,44 +410,85 @@ hammerPivot.add(sphere(.12,.76,0,0,M.steel));
 
 /* 标签 */
 const labels=new THREE.Group();ROOT.add(labels);
-const labBattery=makeTextSprite('单电源盒','#4d5e73',2.1);labBattery.position.set(-6.9,2.65,3.75);labels.add(labBattery);
-const labLamp=makeTextSprite('灯泡（干路限流）','#8e5b23',2.7);labLamp.position.set(-4.45,3.23,-3.65);labels.add(labLamp);
-const labSwitch=makeTextSprite('刀开关','#4d5e73',1.8);labSwitch.position.set(5.7,2.25,3.65);labels.add(labSwitch);
-const labBell=makeTextSprite('电铃','#765b22',1.5);labBell.position.set(5.15,2.45,-.60);labels.add(labBell);
-const labA=makeTextSprite('A','#9b5c25',.70);labA.position.set(-2.93,2.15,.10);labels.add(labA);
-const labB=makeTextSprite('B','#425165',.70);labels.add(labB);
-const labC=makeTextSprite('C','#9b5c25',.70);labC.position.set(-.07,2.15,.10);labels.add(labC);
-const labSpring=makeTextSprite('弹簧','#536071',1.35);labSpring.position.set(-1.5,1.05,1.45);labels.add(labSpring);
+const labBattery=makeTextSprite('电源','#4d5e73',1.45);labBattery.position.set(7.35,2.35,3.50);labels.add(labBattery);
+const labLamp=makeTextSprite('灯泡','#8e5b23',1.35);labLamp.position.set(1.95,2.92,3.55);labels.add(labLamp);
+const labSwitch=makeTextSprite('刀开关','#4d5e73',1.65);labSwitch.position.set(6.35,2.24,-3.35);labels.add(labSwitch);
+const labBell=makeTextSprite('电铃','#765b22',1.30);labBell.position.set(-1.70,2.40,-.20);labels.add(labBell);
+const labA=makeTextSprite('A','#9b5c25',.62);labA.position.set(-8.77,2.05,-2.10);labels.add(labA);
+const labB=makeTextSprite('B','#425165',.62);labels.add(labB);
+const labC=makeTextSprite('C','#9b5c25',.62);labC.position.set(-4.13,2.05,-2.10);labels.add(labC);
+const labSpring=makeTextSprite('弹簧','#536071',1.22);labSpring.position.set(-6.45,1.04,-.96);labels.add(labSpring);
 
-/* 平面接线坐标 */
+/* 平面接线坐标：严格按确认图的元件位置与单线路径布置 */
 function wp(x,z,y){return new THREE.Vector3(x,y===undefined?PLANE_Y:y,z)}
-const BAT_POS=wp(-5.85,3.90,.82);
-const BAT_NEG=wp(-7.95,3.90,.82);
-const SW_IN=wp(4.42,3.65,.82);
-const SW_OUT=wp(6.98,3.65,.82);
-const C_PT=wp(-.08,.10,1.47);
-const A_PT=wp(-2.92,.10,1.47);
-const BELL_TOP=wp(3.95,.07,.82);
-const BELL_BOTTOM=wp(6.35,.07,.82);
-const LAMP_IN=wp(-5.65,-3.65,.82);
-const LAMP_OUT=wp(-3.25,-3.65,.82);
-const TOP_NODE=wp(6.98,1.10);
-const LOW_NODE=wp(-2.92,-2.40);
 
-/* 导线全部沿实验板平面铺设，仅端子处短距离抬起 */
+const A_TERM=wp(-8.77,-2.11,1.80);
+const C_TERM=wp(-4.13,-2.11,1.80);
+
+const TOP_NODE=wp(-1.70,-2.11,.48);
+const LOW_NODE=wp(-2.90,3.34,.48);
+
+const SW_IN=wp(5.07,-3.35,.84);
+const SW_OUT=wp(7.63,-3.35,.84);
+
+const BELL_TOP=wp(-1.70,-1.15,.84);
+const BELL_BOTTOM=wp(-2.90,.47,.84);
+
+const LAMP_IN=wp(.75,3.55,.84);
+const LAMP_OUT=wp(3.15,3.55,.84);
+
+const BAT_NEG=wp(6.30,3.65,.84);
+const BAT_POS=wp(8.40,3.65,.84);
+
+/* 导线全部沿实验板表面走线，只连接可见接线柱，不从器件内部穿出 */
 const wires=new THREE.Group();ROOT.add(wires);
-wires.add(tube([BAT_POS,wp(-5.85,4.75),wp(3.70,4.75),SW_IN],M.wireRed,.050));
-wires.add(tube([SW_OUT,wp(7.55,3.65),wp(7.55,1.10),TOP_NODE],M.wire,.050));
-wires.add(tube([TOP_NODE,wp(2.20,1.10),wp(2.20,.10),C_PT],M.wire,.050));
-wires.add(tube([TOP_NODE,wp(7.55,-.60),BELL_TOP],M.wire,.050));
-wires.add(tube([BELL_BOTTOM,wp(7.55,-2.40),LOW_NODE],M.wire,.050));
-wires.add(tube([A_PT,wp(-2.92,-2.40),LOW_NODE],M.wire,.050));
-wires.add(tube([LOW_NODE,wp(-5.65,-2.40),LAMP_IN],M.wire,.050));
-wires.add(tube([LAMP_OUT,wp(-3.25,-4.75),wp(-7.95,-4.75),BAT_NEG],M.wire,.050));
 
-/* 触点到平面导线的短引线 */
-wires.add(tube([C_PT,wp(-.08,.10,1.47),wp(-.08,.10,.46)],M.wire,.040));
-wires.add(tube([A_PT,wp(-2.92,.10,1.47),wp(-2.92,.10,.46)],M.wire,.040));
+wires.add(tube([
+  A_TERM,
+  wp(-8.77,3.34,.48),
+  LOW_NODE
+],M.wireRed,.050));
+
+wires.add(tube([
+  C_TERM,
+  wp(-4.13,-2.11,.48),
+  TOP_NODE,
+  wp(4.50,-2.11,.48),
+  wp(4.50,-3.35,.48),
+  SW_IN
+],M.wireRed,.050));
+
+wires.add(tube([
+  TOP_NODE,
+  wp(-1.70,-.85,.48),
+  BELL_TOP
+],M.wireRed,.050));
+
+wires.add(tube([
+  BELL_BOTTOM,
+  wp(-2.90,3.34,.48),
+  LOW_NODE
+],M.wireRed,.050));
+
+wires.add(tube([
+  LOW_NODE,
+  wp(.20,3.34,.48),
+  LAMP_IN
+],M.wireRed,.050));
+
+wires.add(tube([
+  LAMP_OUT,
+  wp(5.55,3.55,.48),
+  wp(5.55,3.65,.48),
+  BAT_NEG
+],M.wireRed,.050));
+
+wires.add(tube([
+  BAT_POS,
+  wp(9.25,3.65,.48),
+  wp(9.25,-3.35,.48),
+  SW_OUT
+],M.wireRed,.050));
 
 /* 电流箭头 */
 const flowStyle=window.CurrentFlowStyle||{
@@ -466,19 +510,29 @@ function setFlow(mode){
   if(mode==='bridge'){
     const by=B.position.y+.03;
     pts=[
-      BAT_POS,wp(-5.85,4.75),wp(3.70,4.75),SW_IN,SW_OUT,wp(7.55,3.65),wp(7.55,1.10),TOP_NODE,
-      wp(2.20,1.10),wp(2.20,.10),C_PT,
-      wp(-.08,.10,by),wp(-1.50,.10,by),wp(-2.92,.10,by),A_PT,
-      wp(-2.92,-2.40),LOW_NODE,wp(-5.65,-2.40),LAMP_IN,LAMP_OUT,wp(-3.25,-4.75),wp(-7.95,-4.75),BAT_NEG
+      BAT_POS,wp(9.25,3.65,.48),wp(9.25,-3.35,.48),SW_OUT,SW_IN,
+      wp(4.50,-3.35,.48),wp(4.50,-2.11,.48),TOP_NODE,
+      C_TERM,
+      wp(-4.13,-2.11,by),
+      wp(-6.45,-2.11,by),
+      wp(-8.77,-2.11,by),
+      A_TERM,
+      wp(-8.77,3.34,.48),LOW_NODE,
+      wp(.20,3.34,.48),LAMP_IN,LAMP_OUT,
+      wp(5.55,3.55,.48),wp(5.55,3.65,.48),BAT_NEG
     ];
   }else{
     pts=[
-      BAT_POS,wp(-5.85,4.75),wp(3.70,4.75),SW_IN,SW_OUT,wp(7.55,3.65),wp(7.55,1.10),TOP_NODE,
-      wp(7.55,-.60),BELL_TOP,BELL_BOTTOM,wp(7.55,-2.40),LOW_NODE,
-      wp(-5.65,-2.40),LAMP_IN,LAMP_OUT,wp(-3.25,-4.75),wp(-7.95,-4.75),BAT_NEG
+      BAT_POS,wp(9.25,3.65,.48),wp(9.25,-3.35,.48),SW_OUT,SW_IN,
+      wp(4.50,-3.35,.48),wp(4.50,-2.11,.48),TOP_NODE,
+      wp(-1.70,-.85,.48),BELL_TOP,BELL_BOTTOM,
+      wp(-2.90,3.34,.48),LOW_NODE,
+      wp(.20,3.34,.48),LAMP_IN,LAMP_OUT,
+      wp(5.55,3.55,.48),wp(5.55,3.65,.48),BAT_NEG
     ];
   }
-  flowCurve=new THREE.CatmullRomCurve3(pts,false,'catmullrom',.055);flowLen=flowCurve.getLength();
+  flowCurve=new THREE.CatmullRomCurve3(pts,false,'catmullrom',.055);
+  flowLen=flowCurve.getLength();
 }
 function updateFlow(t){
   if(!state.showFlow||!flowCurve||flowLen<=0){flowGroup.visible=false;return}
@@ -543,7 +597,7 @@ function applyState(){
 
   bladePivot.rotation.z=state.armed?0:.52;
 
-  labB.position.set(-1.5,by+.43,.10);
+  labB.position.set(-6.45,by+.43,-2.20);
   labels.visible=state.showLabels;
 
   const bellI=(state.armed&&!state.contact)?.188:0;
@@ -591,10 +645,10 @@ function setArmed(on){
 
 /* 相机控制：直接按油量测量装置的旋转/平移/缩放逻辑 */
 const view={
-  theta:0.58,phi:1.15,dist:23.5,distTarget:23.5,
-  target:new THREE.Vector3(-.15,1.55,.05)
+  theta:0.50,phi:1.08,dist:26.2,distTarget:26.2,
+  target:new THREE.Vector3(-.15,1.45,.10)
 };
-const DEF={theta:0.58,phi:1.15,dist:23.5,target:[-.15,1.55,.05]};
+const DEF={theta:0.50,phi:1.08,dist:26.2,target:[-.15,1.45,.10]};
 function applyCamera(){
   const sp=Math.sin(view.phi),cp=Math.cos(view.phi);
   camera.position.set(
@@ -681,7 +735,7 @@ document.getElementById('btnFlow').onclick=function(){
   state.showFlow=!state.showFlow;this.classList.toggle('active',state.showFlow);flowGroup.visible=state.showFlow&&state.armed;
 };
 document.getElementById('btnFocus').onclick=function(){
-  view.target.set(-1.5,1.30,.05);view.distTarget=9.2;toast('已聚焦 A—B—C 与弹簧');
+  view.target.set(-6.45,1.28,-2.20);view.distTarget=9.2;toast('已聚焦 A—B—C 与弹簧');
 };
 document.getElementById('btnReset').onclick=function(){
   view.theta=DEF.theta;view.phi=DEF.phi;view.distTarget=DEF.dist;view.target.set(DEF.target[0],DEF.target[1],DEF.target[2]);toast('已恢复整体视图');

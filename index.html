@@ -68,6 +68,7 @@
   .spinner{width:28px;height:28px;border:3px solid #d9e3ef;border-top-color:#3775cf;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 10px}@keyframes spin{to{transform:rotate(360deg)}}
   @media(max-width:900px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.toolbar{align-items:flex-start;flex-direction:column}.search{max-width:none;width:100%}.filters{justify-content:flex-start}.hero{padding:34px 28px}}
   @media(max-width:620px){.shell{width:min(100% - 24px,1180px);padding-top:18px}.hero{padding:28px 20px;border-radius:20px}.grid{grid-template-columns:1fr}.cover{height:132px}.viewer-bar{left:8px;right:8px;top:8px}.viewer-title span{display:none}.viewer-action.hide-mobile{display:none}}
+.viewer-eye-heading{display:none}.eye-model .viewer-eye-heading{display:flex;align-items:center;justify-content:center;gap:14px;flex:1;min-width:0}.viewer-eye-heading b{font-size:22px;color:#243a55}.viewer-eye-heading span{font-size:13px;color:#6a7f98}.eye-model .viewer-title{flex:0 1 300px}.eye-model .viewer-title b{display:none}.eye-model .viewer-title span{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}@media(max-width:1100px){.eye-model .viewer-title{flex:0 1 190px}.viewer-eye-heading b{font-size:20px}.viewer-eye-heading span{display:none}}@media(max-width:720px){.eye-model .viewer-title{display:none}.viewer-eye-heading b{font-size:18px}}
 </style>
 </head>
 <body>
@@ -101,6 +102,7 @@
   <iframe id="viewerFrame" title="3D 交互模型"></iframe>
   <div class="viewer-bar">
     <div class="viewer-title"><b id="viewerTitle">3D 模型</b><span>在下方场景中直接操作 · Esc 返回作品集</span></div>
+    <div class="viewer-eye-heading"><b>眼睛的调节</b><span>成像、矫正与视角</span></div>
     <button class="viewer-action hide-mobile" id="newTabBtn">新窗口打开</button>
     <button class="viewer-action hide-mobile" id="fullBtn">全屏</button>
     <button class="viewer-action primary" id="closeBtn">返回作品集</button>
@@ -167,9 +169,9 @@
 
   function openModel(id){
     const item = data.find(x=>x.id===id); if(!item) return;
-    active = item; viewerTitle.textContent = item.title; loading.classList.remove('hide');
+    active = item; viewer.classList.toggle('eye-model',item.id==='eye-accommodation'); viewerTitle.textContent = item.title; loading.classList.remove('hide');
     viewer.classList.add('open'); viewer.setAttribute('aria-hidden','false'); document.body.style.overflow='hidden';
-    frame.src = item.path; location.hash = 'model=' + encodeURIComponent(id);
+    frame.src = item.path+(item.id==='eye-accommodation'?'?embedded=1':''); location.hash = 'model=' + encodeURIComponent(id);
   }
   function closeModel(){
     viewer.classList.remove('open'); viewer.setAttribute('aria-hidden','true'); document.body.style.overflow='';

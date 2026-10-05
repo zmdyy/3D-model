@@ -75,6 +75,23 @@ window.MODEL_CATALOG = [
     "accent": "green"
   },
   {
+    "id": "museum-alarm",
+    "title": "文物展台防盗报警装置",
+    "subtitle": "弹簧触点、短路旁路与电铃报警",
+    "category": "综合应用",
+    "summary": "拖动或取走展品，观察弹簧推动金属片 B、A—B—C 触点、电流路径和电铃状态的连续变化，理解“在位时短路电铃、离位后触发报警”的设计。",
+    "tags": [
+      "防盗报警",
+      "电铃",
+      "短路",
+      "弹簧",
+      "电路状态"
+    ],
+    "path": "models/museum-alarm.html",
+    "symbol": "🔔",
+    "accent": "orange"
+  },
+  {
     "id": "speaker",
     "title": "扬声器结构与振动",
     "subtitle": "纸盆、音圈与磁隙的装配关系",

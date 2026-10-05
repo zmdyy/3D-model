@@ -26,7 +26,7 @@ button:hover{border-color:#b9cce6}button.active{background:#2d5f9d;color:#fff;bo
 kbd{font:inherit;font-weight:800;background:#eef3f8;border:1px solid #dce5ef;border-bottom-width:2px;border-radius:7px;padding:1px 6px}
 @media(max-width:720px){.panel{left:12px;top:12px;width:min(380px,calc(100vw - 24px));padding:15px}.hint{left:12px;right:12px;transform:none;text-align:center}}
 
-#viewport{position:fixed;inset:0 0 0 410px}#scene{width:100%;height:100%}.panel{width:370px}.lead,.row,.value{font-size:14px}button{font-size:14px}.tile b{font-size:12px}.tip span{font-size:13px}.hint{left:430px;right:20px;transform:none;text-align:center;border-radius:12px;font-size:13px}.topic-seg{padding:8px 0 4px}.topic-seg button{flex:1;font-size:15px}.part-tools button{font-size:13px;padding:7px 9px}.part-info{margin-top:13px;padding:13px;border:1px solid #ceddeb;border-radius:13px;background:#edf4fb}.part-info h2{font-size:18px;margin:0 0 7px}.part-info p{font-size:14px;line-height:1.75;margin:0;color:#40546b}.small-note{font-size:13px;color:#63738a;line-height:1.7;margin:7px 0}.model-note{padding-top:12px;border-top:1px dashed #cbd8e8}.comm-readout{margin-top:16px;padding:12px;background:#edf5fc;border:1px solid #d6e2ef;border-radius:12px;font-size:14px}.comm-readout p{font-size:14px;line-height:1.6;margin:5px 0 13px}.sources{font-size:13px;color:#61758a;line-height:1.7;margin-top:13px}.sources a{display:block;color:#336ca4;margin:7px 0}.sources summary{cursor:pointer}button:disabled{opacity:.5;cursor:default}#stationLabels,#stationLeaders,#groundLabels,#groundLeaders{position:absolute;inset:0;pointer-events:none;z-index:4;width:100%;height:100%}.station-label{transition:none;position:absolute;left:0;top:0;white-space:nowrap;padding:4px 9px;border-radius:6px;background:rgba(13,29,45,.87);border:1px solid #638097;color:#edf6fd;font-size:14px;font-weight:600;pointer-events:auto}.station-label:hover{background:#264f72}.station-label[hidden],[hidden]{display:none!important}#btnOpenPanel{position:fixed;top:12px;left:12px;z-index:30}#btnClosePanel{display:none}.panel.collapsed{display:none}
+#viewport{position:fixed;inset:0 0 0 410px}#scene{width:100%;height:100%}.panel{width:370px}.lead,.row,.value{font-size:14px}button{font-size:14px}.tile b{font-size:12px}.tip span{font-size:13px}.hint{left:430px;right:20px;transform:none;text-align:center;border-radius:12px;font-size:13px}.topic-seg{padding:8px 0 4px}.topic-seg button{flex:1;font-size:15px}.part-tools button{font-size:13px;padding:7px 9px}.part-info{margin-top:13px;padding:13px;border:1px solid #ceddeb;border-radius:13px;background:#edf4fb}.part-info h2{font-size:18px;margin:0 0 7px}.part-info p{font-size:14px;line-height:1.75;margin:0;color:#40546b}.small-note{font-size:13px;color:#63738a;line-height:1.7;margin:7px 0}.model-note{padding-top:12px;border-top:1px dashed #cbd8e8}.comm-readout{margin-top:16px;padding:12px;background:#edf5fc;border:1px solid #d6e2ef;border-radius:12px;font-size:14px}.comm-readout p{font-size:14px;line-height:1.6;margin:5px 0 13px}.sources{font-size:13px;color:#61758a;line-height:1.7;margin-top:13px}.sources a{display:block;color:#336ca4;margin:7px 0}.sources summary{cursor:pointer}select{width:100%;padding:8px;border:1px solid #c6d5e4;border-radius:9px;background:#fff;color:#243d58;font:inherit;font-size:14px}.site-selectors{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}.site-selectors label{font-size:13px;color:#52667c}.site-selectors select{margin-top:5px}button:disabled{opacity:.5;cursor:default}#stationLabels,#stationLeaders,#groundLabels,#groundLeaders{position:absolute;inset:0;pointer-events:none;z-index:4;width:100%;height:100%}.station-label{transition:none;position:absolute;left:0;top:0;white-space:nowrap;padding:4px 9px;border-radius:6px;background:rgba(13,29,45,.87);border:1px solid #638097;color:#edf6fd;font-size:14px;font-weight:600;pointer-events:auto}.station-label:hover{background:#264f72}.station-label[hidden],[hidden]{display:none!important}#btnOpenPanel{position:fixed;top:12px;left:12px;z-index:30}#btnClosePanel{display:none}.panel.collapsed{display:none}
 #motionBadge{position:fixed;top:18px;right:18px;z-index:6;max-width:calc(100vw - 460px);background:rgba(12,30,48,.88);border:1px solid #405e79;color:#d8eaf8;padding:9px 13px;border-radius:11px;font-size:13px;line-height:1.6;pointer-events:none}
 @media(max-width:760px){#motionBadge{top:auto;bottom:55px;right:12px;max-width:calc(100vw - 24px);font-size:11px}#viewport{left:0}.panel{left:12px;right:12px;top:12px;width:auto;max-height:calc(100vh - 24px)}#btnClosePanel{display:block;float:right;padding:5px 8px}.hint{left:12px;right:12px;font-size:11px;bottom:10px;padding:7px}.station-label{font-size:11px;padding:3px 6px}}
 
@@ -44,12 +44,12 @@ kbd{font:inherit;font-weight:800;background:#eef3f8;border:1px solid #dce5ef;bor
 <div class="grp"><div class="row"><label for="speedRange">整个系统的演示速度</label><span class="value" id="speedValue">1.0×</span></div><input id="speedRange" type="range" min="0" max="30" value="10"></div>
 <div class="tools"><button id="btnStationPause">暂停整个系统</button><button id="btnEarthFrame">随地球观察</button><button id="btnReset">整体视角</button><button id="btnGroundFocus">近看地面天线</button></div>
 <p class="small-note" id="frameNote">从太空观察：地球与地面站一起自转，同步卫星同向、同周期公转；空间站绕行更快。</p>
-<div class="grp"><div class="row">观察通信链路</div><nav class="seg" id="linkSeg"><button data-link="ground" class="active">地面站间通信</button><button data-link="space">空间站天地通信</button></nav><p class="small-note">只改变天线跟踪的目标与高亮链路，所有航天器始终在同一场景中。</p></div>
-<div class="comm-readout"><b id="routeTitle">地面站 A → 同步卫星 → 地面站 B</b><p id="relayStatus"></p><div id="directReadout" hidden><b>空间站 → 地面站 B：直连</b><p id="directStatus"></p></div><b>地面天线朝向</b><p id="pointingStatus"></p></div>
+<div class="grp"><div class="row">观察通信链路</div><nav class="seg" id="linkSeg"><button data-link="ground" class="active">全球地面中继</button><button data-link="space">空间站天地通信</button></nav><p class="small-note">只改变天线跟踪的目标与高亮链路，所有航天器始终在同一场景中。</p></div>
+<div class="site-selectors"><label>发送地面站<select id="sourceSite"></select></label><label>接收 / 直连站<select id="destinationSite"></select></label></div><p class="small-note">6 个区域站为教学布站。紫色连接表示星间转发；可选择跨洲路径，比较 1 颗与 3 颗卫星。</p><div class="comm-readout"><b id="routeTitle">地面站 A → 同步卫星 → 地面站 B</b><p id="relayStatus"></p><div id="directReadout" hidden><b>空间站 → 地面站 B：直连</b><p id="directStatus"></p></div><b>地面天线朝向</b><p id="pointingStatus"></p></div>
 <div class="seg" id="modeSeg"><button data-mode="sync" class="active">同步运行</button><button data-mode="drift">不同步对比</button></div>
 <div class="tools"><button id="btnThree" class="active">3 颗同步卫星</button><button id="btnCoverage">覆盖示意</button><button id="btnRelay" class="active">中继链路</button><button id="btnDirect" class="active">空间站直连</button><button id="btnOrbit" class="active">两条轨道</button><button id="btnLabels" class="active">名称标注</button></div>
 <div class="stats"><div class="tile"><b>地球自转 / GEO 周期</b><span id="periodValue">23 h 56 min</span></div><div class="tile"><b>GEO 相对地面</b><span id="relativeValue">近似静止</span></div><div class="tile"><b>空间站轨道 / 周期</b><span>约 400 km / 92 min</span></div><div class="tile"><b>3 星覆盖（理想示意）</b><span id="coverValue">近全球，极区除外</span></div></div>
-<div class="tip"><span><i class="dot earth"></i>地面站固定在地球表面，与地球一起转动；蓝色倾斜轨道上的天宫空间站持续绕行。</span><span><i class="dot sat"></i>同步卫星位于赤道上空约 35,786 km。对它的固定指向是相对地面固定，不是在太空中固定。</span><span><i class="dot beam"></i>凹面开口朝向目标，馈源在凹面一侧的焦点。目标落到地平线以下时，天线向上待机，链路关闭。</span><span><i class="dot cover"></i>橙色为上传，蓝色为中继下传，绿色为空间站直连。轨道距离经教学压缩、航天器及地面天线放大，不能据此读取真实覆盖时间。</span></div>
+<div class="tip"><span><i class="dot earth"></i>地面站固定在地球表面，与地球一起转动；蓝色倾斜轨道上的天宫空间站持续绕行。</span><span><i class="dot sat"></i>同步卫星位于赤道上空约 35,786 km。对它的固定指向是相对地面固定，不是在太空中固定。</span><span><i class="dot beam"></i>凹面开口朝向目标，馈源在凹面一侧的焦点。目标落到地平线以下时，天线向上待机，链路关闭。</span><span><i class="dot cover"></i>橙色为上传，蓝色为中继下传，绿色为空间站直连，紫色为星间转发。轨道距离经教学压缩、航天器及地面天线放大，不能据此读取真实覆盖时间。</span></div>
 <details class="sources"><summary>天线与轨道原理资料</summary><a href="https://www.nasa.gov/general/what-is-an-antenna/" target="_blank" rel="noopener">NASA：抛物面天线与焦点</a><a href="https://www.esa.int/ESA_Multimedia/Images/2020/03/Geostationary_orbit" target="_blank" rel="noopener">ESA：同步轨道与地球自转</a></details></div>
 <div id="tiangongControls" hidden><div id="stationStructureControls"><div class="stats"><div class="tile"><b>天和核心舱</b><span>16.6 m</span></div><div class="tile"><b>实验舱长度</b><span>约 17.9 m</span></div><div class="tile"><b>舱体最大直径</b><span>4.2 m</span></div><div class="tile"><b>实验舱太阳翼</b><span>4 片</span></div></div>
 <div class="grp"><div class="row">选择部件</div><div class="tools part-tools" id="stationParts"></div></div>
@@ -158,7 +158,7 @@ const orbitG=new THREE.Group();root.add(orbitG);
 const orbitMesh=new THREE.Mesh(new THREE.TorusGeometry(ORBIT_R,.035,8,320),M.orbit);orbitMesh.rotation.x=Math.PI/2;orbitG.add(orbitMesh);
 for(let i=0;i<36;i++){
   const a=i/36*Math.PI*2;const tick=new THREE.Mesh(new THREE.BoxGeometry(.018,.10,.12),new THREE.MeshBasicMaterial({color:0xe6c767,transparent:true,opacity:.55}));
-  tick.position.set(ORBIT_R*Math.cos(a),0,ORBIT_R*Math.sin(a));tick.rotation.y=-a;orbitG.add(tick);
+  tick.position.set(ORBIT_R*Math.cos(a),0,-ORBIT_R*Math.sin(a));tick.rotation.y=-a;orbitG.add(tick);
 }
 
 function put(parent,geo,mat,pos,rot){const m=new THREE.Mesh(geo,mat);if(pos)m.position.set(...pos);if(rot)m.rotation.set(...rot);m.castShadow=true;m.receiveShadow=true;parent.add(m);return m}
@@ -271,13 +271,16 @@ function makeStation(lat,lon,color,name){
   }
   const lbl=label(name,color===0xc16b4c?'#ff9b77':'#7bd5ff',.34,new THREE.Vector3(),labelG);
   base.scale.setScalar(.62);dish.scale.setScalar(.62);
-  return {lat,lon,base,dish,label:lbl,scale:.62,focus,surface:new THREE.Vector3(),normal:new THREE.Vector3(),pos:new THREE.Vector3(),axis:new THREE.Vector3(),feed:new THREE.Vector3(),visible:false};
+  return {lat,lon,name,base,dish,label:lbl,scale:.62,focus,surface:new THREE.Vector3(),normal:new THREE.Vector3(),pos:new THREE.Vector3(),axis:new THREE.Vector3(),feed:new THREE.Vector3(),visible:false};
 }
 const stations=[
-  makeStation(10,-32,0xc16b4c,'地面站 A'),
-  makeStation(-5,30,0x4e92c8,'地面站 B')
+  makeStation(32,110,0xc16b4c,'亚洲站'),
+  makeStation(35,-105,0x4e92c8,'北美站'),
+  makeStation(48,12,0x708d9e,'欧洲站'),
+  makeStation(-5,25,0x708d9e,'非洲站'),
+  makeStation(-18,-55,0x708d9e,'南美站'),
+  makeStation(-24,134,0x708d9e,'大洋洲站')
 ];
-
 const relayG=new THREE.Group();root.add(relayG);
 const uplinkLine=new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(),new THREE.Vector3()]),new THREE.LineBasicMaterial({color:0xff704d,transparent:true,opacity:.84}));
 const downlinkLine=new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(),new THREE.Vector3()]),new THREE.LineBasicMaterial({color:0x48c6ff,transparent:true,opacity:.84}));
@@ -307,7 +310,7 @@ document.getElementById('btnLabels').addEventListener('click',function(){state.l
 const view={theta:.66,phi:1.08,dist:18.8,distTarget:18.8,target:new THREE.Vector3(0,.05,0)};
 const DEF={theta:.66,phi:1.08,dist:18.8,target:[0,.05,0]};
 function clamp(v,a,b){return v<a?a:(v>b?b:v)}
-function applyCamera(){const sp=Math.sin(view.phi),cp=Math.cos(view.phi),theta=view.theta+((state.frame==='earth'||state.focus==='ground')&&state.view!=='structure'?-currentEarthAngle:0);camera.position.set(view.target.x+view.dist*sp*Math.sin(theta),view.target.y+view.dist*cp,view.target.z+view.dist*sp*Math.cos(theta));camera.lookAt(view.target)}
+function applyCamera(){const sp=Math.sin(view.phi),cp=Math.cos(view.phi),theta=view.theta+((state.frame==='earth'||state.focus==='ground')&&state.view!=='structure'?currentEarthAngle:0);camera.position.set(view.target.x+view.dist*sp*Math.sin(theta),view.target.y+view.dist*cp,view.target.z+view.dist*sp*Math.cos(theta));camera.lookAt(view.target)}
 function reset(){if(state.view){resetTopicView();return;}view.theta=DEF.theta;view.phi=DEF.phi;view.dist=view.distTarget=DEF.dist;view.target.set(...DEF.target)}
 reset();document.getElementById('btnReset').addEventListener('click',reset);
 const pointers=new Map();let dragging=false,dragMode=null,pinchStart=0,pinchDist=0;
@@ -322,7 +325,7 @@ function resize(){const r=document.getElementById('viewport').getBoundingClientR
 const AXIS_X=new THREE.Vector3(1,0,0),AXIS_Y=new THREE.Vector3(0,1,0);
 function geoPos(lat,lonDeg,r=EARTH_R){
   const la=lat*Math.PI/180,lo=lonDeg*Math.PI/180;
-  return new THREE.Vector3(r*Math.cos(la)*Math.cos(lo),r*Math.sin(la),r*Math.cos(la)*Math.sin(lo));
+  return new THREE.Vector3(r*Math.cos(la)*Math.cos(lo),r*Math.sin(la),-r*Math.cos(la)*Math.sin(lo));
 }
 function groundVisible(st,target){return target.clone().sub(st.surface).dot(st.normal)>1e-6;}
 function updateStation(st,earthAngle,target){
@@ -343,28 +346,36 @@ function setLine(line,a,b){
 }
 function updateSatellite(s,angle){
   const a=(s.base*Math.PI/180)+angle;
-  s.pos.set(ORBIT_R*Math.cos(a),0,ORBIT_R*Math.sin(a));s.group.position.copy(s.pos);
+  s.pos.set(ORBIT_R*Math.cos(a),0,-ORBIT_R*Math.sin(a));s.group.position.copy(s.pos);
   s.group.quaternion.setFromUnitVectors(AXIS_X,s.pos.clone().normalize()); // local -X remains Earth-facing
 }
 function updateCoverage(c,angle){
-  const a=(c.base*Math.PI/180)+angle,out=new THREE.Vector3(Math.cos(a),0,Math.sin(a));
+  const a=(c.base*Math.PI/180)+angle,out=new THREE.Vector3(Math.cos(a),0,-Math.sin(a));
   c.group.quaternion.setFromUnitVectors(AXIS_X,out);
 }
 
 // One clock and one communication system. The second view only changes inspection scale.
 const tiangong=createTiangongModel();scene.add(tiangong.group);
-Object.assign(state,{view:'system',link:'ground',frame:'space',focus:'system',selected:'all',visitors:true,explosion:0,solarAngle:0,stationPaused:false,direct:true});
+Object.assign(state,{view:'system',link:'ground',frame:'space',focus:'system',selected:'all',visitors:true,explosion:0,solarAngle:0,stationPaused:false,direct:true,sourceSite:0,destinationSite:1});
 let needsRender=true,simulationTime=0,lastTime=0,currentEarthAngle=0;
 const EARTH_RATE=.03,LEO_PERIOD=92,SIDEREAL_MINUTES=1436.068,LEO_R=3.4,INCLINATION=41.5*Math.PI/180;
 const viewport=document.getElementById('viewport'),stationLabels=document.getElementById('stationLabels'),leaderSVG=document.getElementById('stationLeaders');
 const labels=tiangong.anchors.map(([id,anchor])=>{const el=document.createElement('button');el.className='station-label';el.textContent=tiangong.parts[id].name;el.onclick=()=>selectPart(id);stationLabels.appendChild(el);const line=document.createElementNS('http://www.w3.org/2000/svg','line');line.setAttribute('stroke','#9eb6c4');line.setAttribute('stroke-width','1');leaderSVG.appendChild(line);return {id,anchor,el,line};});
-const leoG=new THREE.Group();root.add(leoG);const leoPoints=[];for(let i=0;i<=240;i++){const a=i/240*Math.PI*2;leoPoints.push(new THREE.Vector3(LEO_R*Math.cos(a),LEO_R*Math.sin(a)*Math.sin(INCLINATION),LEO_R*Math.sin(a)*Math.cos(INCLINATION)));}leoG.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(leoPoints),new THREE.LineBasicMaterial({color:0x8bbaf8,transparent:true,opacity:.7})));
+const leoG=new THREE.Group();root.add(leoG);const leoPoints=[];for(let i=0;i<=240;i++){const a=i/240*Math.PI*2;leoPoints.push(new THREE.Vector3(LEO_R*Math.cos(a),LEO_R*Math.sin(a)*Math.sin(INCLINATION),-LEO_R*Math.sin(a)*Math.cos(INCLINATION)));}leoG.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(leoPoints),new THREE.LineBasicMaterial({color:0x8bbaf8,transparent:true,opacity:.7})));
 const communicationLabels=new THREE.Group();root.add(communicationLabels);
 const spaceLabel=label('天宫空间站（放大）','#e4f3ff',.38,new THREE.Vector3(),communicationLabels),relayLabel=label('GEO 通信 / 中继','#f6cd73',.39,new THREE.Vector3(),communicationLabels);
 const directG=new THREE.Group();root.add(directG);const directLine=new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(),new THREE.Vector3()]),new THREE.LineBasicMaterial({color:0x70d9bd,transparent:true,opacity:.9}));directG.add(directLine);const directArrows=[];const directGeo=new THREE.ConeGeometry(.045,.16,8);directGeo.rotateZ(-Math.PI/2);for(let i=0;i<6;i++){const o=new THREE.Mesh(directGeo,new THREE.MeshBasicMaterial({color:0x70d9bd}));o.userData.phase=i/6;directG.add(o);directArrows.push(o);}
 const rotationArrow=new THREE.ArrowHelper(new THREE.Vector3(0,0,1),new THREE.Vector3(EARTH_R*1.09,0,0),.60,0x80c7ff,.18,.09);root.add(rotationArrow);
 const earthAxis=new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0,-3.2,0),new THREE.Vector3(0,3.5,0)]),new THREE.LineDashedMaterial({color:0x79a8cb,dashSize:.10,gapSize:.08,transparent:true,opacity:.6}));earthAxis.computeLineDistances();root.add(earthAxis);
 const pointingArrow=new THREE.ArrowHelper(AXIS_Y,new THREE.Vector3(),.65,0xfbd38b,.12,.055);root.add(pointingArrow);pointingArrow.visible=false;
+const sourceSite=document.getElementById('sourceSite'),destinationSite=document.getElementById('destinationSite');
+for(const [i,st] of stations.entries()){for(const select of [sourceSite,destinationSite]){const o=document.createElement('option');o.value=i;o.textContent=st.name;select.appendChild(o);}}sourceSite.value=state.sourceSite;destinationSite.value=state.destinationSite;
+function changeSites(which,value){state[which]=+value;if(state.sourceSite===state.destinationSite){const other=which==='sourceSite'?'destinationSite':'sourceSite';state[other]=(state[which]+1)%stations.length;}sourceSite.value=state.sourceSite;destinationSite.value=state.destinationSite;resetTopicView();needsRender=true;}
+sourceSite.onchange=()=>changeSites('sourceSite',sourceSite.value);destinationSite.onchange=()=>changeSites('destinationSite',destinationSite.value);
+const crosslinkG=new THREE.Group();root.add(crosslinkG);const crosslinkLine=new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(),new THREE.Vector3()]),new THREE.LineBasicMaterial({color:0xc59bff,transparent:true,opacity:.92}));crosslinkG.add(crosslinkLine);const crosslinkArrows=[];for(let i=0;i<8;i++){const o=new THREE.Mesh(directGeo,new THREE.MeshBasicMaterial({color:0xc59bff}));o.userData.phase=i/8;crosslinkG.add(o);crosslinkArrows.push(o);}
+const geoLabels=sats.map((sat,i)=>label('GEO '+(i+1),'#f6cd73',.30,new THREE.Vector3(),communicationLabels));relayLabel.visible=false;
+function nearestVisible(st,available){return available.filter(s=>groundVisible(st,s.pos)).sort((a,b)=>b.pos.clone().sub(st.surface).normalize().dot(st.normal)-a.pos.clone().sub(st.surface).normalize().dot(st.normal))[0];}
+function relayPair(available,canUpload,canDownload){let best=null,cost=Infinity;for(const up of available){if(!canUpload(up))continue;for(const down of available){if(!canDownload(down)||(up!==down&&!clearEarth(up.pos,down.pos)))continue;const c=up===down?0:up.pos.distanceTo(down.pos);if(c<cost){cost=c;best={up,down};}}}return best;}
 const partButtons=document.getElementById('stationParts');for(const [id,p] of Object.entries(tiangong.parts)){if(id==='coreSolar')continue;const b=document.createElement('button');b.dataset.part=id;b.textContent=p.name;b.onclick=()=>selectPart(id);partButtons.appendChild(b);}
 function selectPart(id){state.selected=id;tiangong.select(id);document.querySelectorAll('[data-part]').forEach(b=>b.classList.toggle('active',b.dataset.part===id));document.getElementById('partTitle').textContent=id==='all'?'三舱 T 字基本构型':tiangong.parts[id].name;document.getElementById('partDescription').textContent=id==='all'?'天和居中，问天与梦天永久连接节点舱两侧。点击部件名称或模型表面，查看功能；“放大所选”可近看舱门、太阳翼和机械臂。':tiangong.parts[id].description;document.getElementById('btnFocusPart').disabled=id==='all';needsRender=true;}
 function fitStation(id='all'){tiangong.group.updateMatrixWorld(true);const box=tiangong.getBounds(id),sphere=box.getBoundingSphere(new THREE.Sphere());view.target.copy(sphere.center);view.dist=view.distTarget=clamp(sphere.radius/Math.sin(camera.fov*Math.PI/360)*1.16/Math.min(1,camera.aspect),8,230);needsRender=true;}
@@ -381,7 +392,7 @@ function setView(v){state.view=v;document.querySelectorAll('[data-view]').forEac
 document.getElementById('viewSeg').onclick=e=>{const b=e.target.closest('[data-view]');if(b)setView(b.dataset.view);};
 document.getElementById('linkSeg').onclick=e=>{const b=e.target.closest('[data-link]');if(!b)return;state.link=b.dataset.link;document.querySelectorAll('[data-link]').forEach(x=>x.classList.toggle('active',x===b));document.getElementById('routeTitle').textContent=state.link==='ground'?'地面站 A → 同步卫星 → 地面站 B':'空间站 → GEO 中继 → 地面站 A';document.getElementById('directReadout').hidden=state.link!=='space';if(state.focus==='ground')resetTopicView();needsRender=true;};
 document.getElementById('btnEarthFrame').onclick=function(){state.frame=state.frame==='space'?'earth':'space';this.classList.toggle('active',state.frame==='earth');this.textContent=state.frame==='earth'?'从太空观察':'随地球观察';document.getElementById('frameNote').textContent=state.frame==='earth'?'随地球观察：同步卫星相对地面近似静止，空间站仍快速掠过。':'从太空观察：地球与地面站一起自转，同步卫星同向、同周期公转；空间站绕行更快。';needsRender=true;};
-document.getElementById('btnGroundFocus').onclick=()=>{state.focus='ground';const st=stations[state.link==='space'?1:0],look=st.axis.clone().multiplyScalar(.6).addScaledVector(st.normal,.4).add(new THREE.Vector3(-st.axis.z,0,st.axis.x).multiplyScalar(.48)).normalize();view.target.copy(st.dish.position);view.theta=Math.atan2(look.x,look.z)+currentEarthAngle;view.phi=Math.acos(clamp(look.y,-1,1));view.dist=view.distTarget=2.3;needsRender=true;if(innerWidth<=760)setPanel(false);};
+document.getElementById('btnGroundFocus').onclick=()=>{state.focus='ground';const st=stations[state.link==='space'?state.destinationSite:state.sourceSite],look=st.axis.clone().multiplyScalar(.6).addScaledVector(st.normal,.4).add(new THREE.Vector3(-st.axis.z,0,st.axis.x).multiplyScalar(.48)).normalize();view.target.copy(st.dish.position);view.theta=Math.atan2(look.x,look.z)-currentEarthAngle;view.phi=Math.acos(clamp(look.y,-1,1));view.dist=view.distTarget=2.3;needsRender=true;if(innerWidth<=760)setPanel(false);};
 document.getElementById('btnFocusPart').onclick=()=>{fitStation(state.selected);if(innerWidth<=760)setPanel(false);};document.getElementById('btnWholeStation').onclick=()=>{selectPart('all');resetTopicView();};document.getElementById('btnTopStation').onclick=()=>{view.theta=0;view.phi=.10;fitStation();};
 document.getElementById('explodeRange').oninput=function(){state.explosion=+this.value/100;document.getElementById('explodeValue').textContent=this.value+'%';tiangong.setExplosion(state.explosion);needsRender=true;};document.getElementById('solarAngleRange').oninput=function(){state.solarAngle=+this.value;document.getElementById('solarAngleValue').textContent=this.value+'°';tiangong.setSolarAngle(state.solarAngle*Math.PI/180);needsRender=true;};
 document.getElementById('btnVisitors').onclick=function(){state.visitors=!state.visitors;this.classList.toggle('active',state.visitors);tiangong.setVisitors(state.visitors);if(!state.visitors&&state.selected==='ships')selectPart('all');needsRender=true;};document.getElementById('btnStationLabels').onclick=()=>{state.labels=!state.labels;syncVisibility();};
@@ -396,43 +407,44 @@ function clearEarth(a,b){const d=b.clone().sub(a),u=clamp(-a.dot(d)/d.lengthSq()
 let commStatus={direct:false,relay:false,relayIndex:-1},spacePosition=new THREE.Vector3();
 function animateArrows(arrows,a,b,t){const d=b.clone().sub(a).normalize();for(const o of arrows){o.position.copy(a).lerp(b,(o.userData.phase+t*.22)%1);o.quaternion.setFromUnitVectors(AXIS_X,d);}}
 function updateSystem(t){currentEarthAngle=t*EARTH_RATE;const angle=currentEarthAngle,satAngle=angle*(state.mode==='drift'?1.3:1);
- earthMesh.rotation.y=-angle;gridG.rotation.y=-angle;cloudG.rotation.y=-angle*.965;
+ earthMesh.rotation.y=angle;gridG.rotation.y=angle;cloudG.rotation.y=angle*.965;
  sats.forEach(s=>updateSatellite(s,satAngle));covers.forEach(c=>updateCoverage(c,satAngle));
- const a=angle*(SIDEREAL_MINUTES/LEO_PERIOD)+.72;spacePosition.set(LEO_R*Math.cos(a),LEO_R*Math.sin(a)*Math.sin(INCLINATION),LEO_R*Math.sin(a)*Math.cos(INCLINATION));
- // Set surface positions before horizon tests; visual antenna size does not extend the horizon.
+ const a=angle*(SIDEREAL_MINUTES/LEO_PERIOD)+.72;spacePosition.set(LEO_R*Math.cos(a),LEO_R*Math.sin(a)*Math.sin(INCLINATION),-LEO_R*Math.sin(a)*Math.cos(INCLINATION));
  for(const st of stations){st.surface.copy(geoPos(st.lat,st.lon+angle*180/Math.PI));st.normal.copy(st.surface).normalize();}
- const available=sats.filter((s,i)=>i===0||state.three);
- const relaySat=available.find(s=>groundVisible(stations[0],s.pos)&&(state.link==='ground'?groundVisible(stations[1],s.pos):clearEarth(spacePosition,s.pos)));
- const target=(relaySat||available[0]).pos;
- if(state.view!=='structure'){tiangong.group.position.copy(spacePosition);tiangong.group.quaternion.setFromUnitVectors(AXIS_Y,spacePosition.clone().normalize());tiangong.group.updateMatrixWorld(true);tiangong.pointAntenna(target);}
+ const available=sats.filter((s,i)=>i===0||state.three),siteA=stations[state.sourceSite],siteB=stations[state.destinationSite];
+ let pair;if(state.link==='ground'){const up=nearestVisible(siteA,available),down=nearestVisible(siteB,available);pair=up&&down&&(up===down||clearEarth(up.pos,down.pos))?{up,down}:null;}else pair=relayPair(available,s=>clearEarth(spacePosition,s.pos),s=>groundVisible(siteA,s.pos));
+ const upSat=pair?pair.up:available[0],downSat=pair?pair.down:upSat;
+ if(state.view!=='structure'){tiangong.group.position.copy(spacePosition);tiangong.group.quaternion.setFromUnitVectors(AXIS_Y,spacePosition.clone().normalize());tiangong.group.updateMatrixWorld(true);tiangong.pointAntenna(upSat.pos);}
  const antenna=state.view==='structure'?spacePosition.clone():tiangong.getAntennaPosition();
- updateStation(stations[0],angle,target);updateStation(stations[1],angle,state.link==='ground'?target:spacePosition);
- const upA=state.link==='ground'?stations[0].feed:antenna,downB=state.link==='ground'?stations[1].feed:stations[0].feed;
- const relayVisible=!!relaySat&&clearEarth(upA,target)&&clearEarth(target,downB);
- const directVisible=groundVisible(stations[1],spacePosition)&&clearEarth(spacePosition,stations[1].feed);
- relayG.visible=state.relay&&relayVisible;setLine(uplinkLine,upA,target);setLine(downlinkLine,target,downB);
- animateArrows(relayArrows.filter(o=>o.userData.kind==='up'),upA,target,t);animateArrows(relayArrows.filter(o=>o.userData.kind==='down'),target,downB,t);
- directG.visible=state.link==='space'&&state.direct&&directVisible;setLine(directLine,spacePosition,stations[1].feed);animateArrows(directArrows,spacePosition,stations[1].feed,t);
- spaceLabel.position.copy(spacePosition).add(new THREE.Vector3(0,.56,0));relayLabel.position.copy(target).add(new THREE.Vector3(0,.66,0));
- // Hide labels for objects behind the globe as well as geometry hidden by depth testing.
+ for(const st of stations){let target=(nearestVisible(st,available)||available[0]).pos;if(st===siteA&&pair)target=(state.link==='ground'?upSat:downSat).pos;if(st===siteB)target=state.link==='space'?spacePosition:downSat.pos;updateStation(st,angle,target);}
+ const upA=state.link==='ground'?siteA.feed:antenna,downB=state.link==='ground'?siteB.feed:siteA.feed;
+ const relayVisible=!!pair&&clearEarth(upA,upSat.pos)&&clearEarth(downSat.pos,downB);
+ const directVisible=groundVisible(siteB,spacePosition)&&clearEarth(spacePosition,siteB.feed);
+ relayG.visible=state.relay&&relayVisible;setLine(uplinkLine,upA,upSat.pos);setLine(downlinkLine,downSat.pos,downB);
+ animateArrows(relayArrows.filter(o=>o.userData.kind==='up'),upA,upSat.pos,t);animateArrows(relayArrows.filter(o=>o.userData.kind==='down'),downSat.pos,downB,t);
+ crosslinkG.visible=state.relay&&relayVisible&&upSat!==downSat;setLine(crosslinkLine,upSat.pos,downSat.pos);animateArrows(crosslinkArrows,upSat.pos,downSat.pos,t);
+ directG.visible=state.link==='space'&&state.direct&&directVisible;setLine(directLine,spacePosition,siteB.feed);animateArrows(directArrows,spacePosition,siteB.feed,t);
+ spaceLabel.position.copy(spacePosition).add(new THREE.Vector3(0,1.0,0));
  const labelVisible=p=>{const q=p.clone().project(camera);return q.z>-1&&q.z<1&&clearEarth(camera.position,p);};
- spaceLabel.visible=labelVisible(spacePosition);relayLabel.visible=labelVisible(target);stations.forEach(st=>st.label.visible=labelVisible(st.pos));
- rotationArrow.position.set(EARTH_R*1.09*Math.cos(angle),0,EARTH_R*1.09*Math.sin(angle));rotationArrow.setDirection(new THREE.Vector3(-Math.sin(angle),0,Math.cos(angle)));
- const relayText=relayVisible?(state.link==='ground'?'当前两站均可见同一颗卫星，链路连通':'当前存在空间站 → 中继卫星 → 地面站通路'):'地平线或地球遮挡，当前没有可用中继通路';document.getElementById('relayStatus').textContent=state.relay?relayText:'中继链路显示已关闭；'+relayText;
- document.getElementById('directStatus').textContent=directVisible?'空间站在地平线以上，可直接通信':'空间站在地平线以下，当前无法直连';
- document.getElementById('pointingStatus').textContent=state.link==='ground'?(state.mode==='sync'?'A、B 的凹面开口朝向 GEO；相对地面的指向固定。':'A、B 追踪漂移中的 GEO；相对地面的指向改变。'):'A 跟踪 GEO 中继；B 跟踪空间站，不可见时向上待机。';
- const nearGround=state.focus==='ground'&&state.view==='system';communicationLabels.visible=state.labels&&!nearGround;labelG.visible=state.labels&&!nearGround;relayArrows.forEach(o=>o.scale.setScalar(nearGround?.16:1));directArrows.forEach(o=>o.scale.setScalar(nearGround?.2:1));
- if(nearGround){const st=stations[state.link==='space'?1:0];view.target.copy(st.dish.position).addScaledVector(st.axis,.08);pointingArrow.position.copy(st.feed);pointingArrow.setDirection(st.axis);pointingArrow.visible=true;}else pointingArrow.visible=false;
- commStatus={direct:directVisible,relay:relayVisible,relayIndex:relaySat?sats.indexOf(relaySat):-1};
- const deg=((angle*180/Math.PI)%360).toFixed(1);document.getElementById('motionBadge').textContent=state.view==='structure'?'空间站结构近看 · 返回整体通信查看运行':state.focus==='ground'?'地面天线近看 · 金色箭头为凹面开口方向':'地球自转 '+deg+'° · GEO '+(state.mode==='sync'?'同向同周期':'周期不同')+' · 空间站约 15.6 圈 / 恒星日';
+ spaceLabel.visible=labelVisible(spacePosition);relayLabel.visible=false;geoLabels.forEach((lbl,i)=>{lbl.position.copy(sats[i].pos).add(new THREE.Vector3(0,.65,0));lbl.visible=(i===0||state.three)&&labelVisible(sats[i].pos);});stations.forEach(st=>st.label.visible=labelVisible(st.pos));
+ rotationArrow.position.set(EARTH_R*1.09*Math.cos(angle),0,-EARTH_R*1.09*Math.sin(angle));rotationArrow.setDirection(new THREE.Vector3(-Math.sin(angle),0,-Math.cos(angle)));
+ const path=pair?[state.link==='ground'?siteA.name:'天宫','GEO '+(sats.indexOf(upSat)+1),...(upSat!==downSat?['GEO '+(sats.indexOf(downSat)+1)]:[]),state.link==='ground'?siteB.name:siteA.name]:[];
+ document.getElementById('routeTitle').textContent=path.length?path.join(' → '):'当前路径未连通';
+ document.getElementById('relayStatus').textContent=state.relay?(relayVisible?(upSat===downSat?'经一颗卫星转发，链路连通。':'经星间链路跨区转发，全球中继路径连通。'):'地平线或地球遮挡，当前没有可用中继通路。'):'中继链路显示已关闭。';
+ document.getElementById('directStatus').textContent=siteB.name+'：'+(directVisible?'空间站在地平线以上，可直接通信':'空间站在地平线以下，当前无法直连');
+ document.getElementById('pointingStatus').textContent=state.link==='ground'?(state.mode==='sync'?'各站的凹口对准当地可见的 GEO，相对地面的指向固定。':'各站追踪漂移中的 GEO，相对地面的指向改变。'):siteA.name+'跟踪 GEO 中继；'+siteB.name+'跟踪空间站，不可见时向上待机。';
+ const nearGround=state.focus==='ground'&&state.view==='system';communicationLabels.visible=state.labels&&!nearGround;labelG.visible=state.labels&&!nearGround;relayArrows.forEach(o=>o.scale.setScalar(nearGround?.16:1));directArrows.forEach(o=>o.scale.setScalar(nearGround?.2:1));crosslinkArrows.forEach(o=>o.scale.setScalar(nearGround?.2:1));
+ if(nearGround){const st=state.link==='space'?siteB:siteA;view.target.copy(st.dish.position).addScaledVector(st.axis,.08);pointingArrow.position.copy(st.feed);pointingArrow.setDirection(st.axis);pointingArrow.visible=true;}else pointingArrow.visible=false;
+ commStatus={direct:directVisible,relay:relayVisible,relayIndex:pair?sats.indexOf(upSat):-1,downlinkIndex:pair?sats.indexOf(downSat):-1,path,interSatellite:relayVisible&&upSat!==downSat};
+ const deg=((angle*180/Math.PI)%360).toFixed(1);document.getElementById('motionBadge').textContent=state.view==='structure'?'空间站结构近看 · 返回整体通信查看运行':nearGround?'地面天线近看 · 金色箭头为凹面开口方向':'地球向东自转 '+deg+'° · 6 地面站 · 紫色为星间中继';
 }
 const groundLabels=document.getElementById('groundLabels'),groundLeaders=document.getElementById('groundLeaders');
 const groundCallouts=Array.from(groundLabels.querySelectorAll('[data-ground-label]')).map(el=>{const line=document.createElementNS('http://www.w3.org/2000/svg','line');line.setAttribute('stroke','#bdd6e9');line.setAttribute('stroke-width','1.2');groundLeaders.appendChild(line);return {el,line};});
-function updateGroundLabels(){const show=state.focus==='ground'&&state.view==='system'&&state.labels;groundLabels.hidden=!show;groundLeaders.hidden=!show;if(!show)return;const st=stations[state.link==='space'?1:0],r=viewport.getBoundingClientRect();groundLeaders.setAttribute('viewBox','0 0 '+r.width+' '+r.height);st.dish.updateMatrixWorld(true);const points=[st.feed.clone(),st.dish.localToWorld(new THREE.Vector3(-.25,.065,0))];groundCallouts.forEach((x,i)=>{const p=points[i].project(camera),sx=(p.x*.5+.5)*r.width,sy=(-p.y*.5+.5)*r.height,w=x.el.offsetWidth||150,xx=clamp(sx+(i===0?55:-w-60),8,r.width-w-8),yy=clamp(sy+(i===0?-65:55),75,r.height-115);x.el.style.transform='translate('+xx+'px,'+yy+'px)';x.line.setAttribute('x1',sx);x.line.setAttribute('y1',sy);x.line.setAttribute('x2',xx+(i===0?0:w));x.line.setAttribute('y2',yy+14);});}
+function updateGroundLabels(){const show=state.focus==='ground'&&state.view==='system'&&state.labels;groundLabels.hidden=!show;groundLeaders.hidden=!show;if(!show)return;const st=stations[state.link==='space'?state.destinationSite:state.sourceSite],r=viewport.getBoundingClientRect();groundLeaders.setAttribute('viewBox','0 0 '+r.width+' '+r.height);st.dish.updateMatrixWorld(true);const points=[st.feed.clone(),st.dish.localToWorld(new THREE.Vector3(-.25,.065,0))];groundCallouts.forEach((x,i)=>{const p=points[i].project(camera),sx=(p.x*.5+.5)*r.width,sy=(-p.y*.5+.5)*r.height,w=x.el.offsetWidth||150,xx=clamp(sx+(i===0?55:-w-60),8,r.width-w-8),yy=clamp(sy+(i===0?-65:55),75,r.height-115);x.el.style.transform='translate('+xx+'px,'+yy+'px)';x.line.setAttribute('x1',sx);x.line.setAttribute('y1',sy);x.line.setAttribute('x2',xx+(i===0?0:w));x.line.setAttribute('y2',yy+14);});}
 function setPanel(open){document.querySelector('.panel').classList.toggle('collapsed',!open);document.getElementById('btnOpenPanel').hidden=open;}document.getElementById('btnOpenPanel').onclick=()=>setPanel(true);document.getElementById('btnClosePanel').onclick=()=>setPanel(false);setPanel(innerWidth>760);
 document.querySelector('.panel').addEventListener('click',()=>needsRender=true);document.querySelector('.panel').addEventListener('input',()=>needsRender=true);
 selectPart('all');syncVisibility();resetTopicView();
-window.SpaceDemo={getState:()=>({...state,simulationTime,earthAngle:currentEarthAngle,earthMeshAngle:earthMesh.rotation.y,model:tiangong.getStatus(),communication:commStatus,camera:{theta:view.theta,phi:view.phi,distance:view.dist},drawCalls:renderer.info.render.calls,objects:{earth:root.visible,spaceStation:tiangong.group.visible,geo:sats.filter(s=>s.group.visible).length}}),selectPart,focusPart:()=>fitStation(state.selected),setSimulationTime:t=>{simulationTime=t;needsRender=true;},getLinkData:()=>({earthRadius:EARTH_R,relayVisible:root.visible&&relayG.visible,directVisible:root.visible&&directG.visible,relay:Array.from(uplinkLine.geometry.attributes.position.array),downlink:Array.from(downlinkLine.geometry.attributes.position.array),direct:Array.from(directLine.geometry.attributes.position.array),stations:stations.map(st=>({position:st.pos.toArray(),surface:st.surface.toArray(),normal:st.normal.toArray(),dishPosition:st.dish.position.toArray(),axis:st.axis.toArray(),feed:st.feed.toArray(),visible:st.visible,focus:st.focus,scale:st.scale})),satellites:sats.map(s=>s.pos.toArray()),spaceStation:spacePosition.toArray()})};
+window.SpaceDemo={getState:()=>({...state,simulationTime,earthAngle:currentEarthAngle,earthMeshAngle:earthMesh.rotation.y,groundStationCount:stations.length,model:tiangong.getStatus(),communication:commStatus,camera:{theta:view.theta,phi:view.phi,distance:view.dist},drawCalls:renderer.info.render.calls,objects:{earth:root.visible,spaceStation:tiangong.group.visible,geo:sats.filter(s=>s.group.visible).length}}),selectPart,focusPart:()=>fitStation(state.selected),setSimulationTime:t=>{simulationTime=t;needsRender=true;},getLinkData:()=>({earthRadius:EARTH_R,relayVisible:root.visible&&relayG.visible,directVisible:root.visible&&directG.visible,crosslinkVisible:root.visible&&crosslinkG.visible,crosslink:Array.from(crosslinkLine.geometry.attributes.position.array),relay:Array.from(uplinkLine.geometry.attributes.position.array),downlink:Array.from(downlinkLine.geometry.attributes.position.array),direct:Array.from(directLine.geometry.attributes.position.array),stations:stations.map(st=>({name:st.name,latitude:st.lat,longitude:st.lon,position:st.pos.toArray(),surface:st.surface.toArray(),normal:st.normal.toArray(),dishPosition:st.dish.position.toArray(),axis:st.axis.toArray(),feed:st.feed.toArray(),visible:st.visible,focus:st.focus,scale:st.scale})),satellites:sats.map(s=>s.pos.toArray()),spaceStation:spacePosition.toArray()})};
 function animate(ms){requestAnimationFrame(animate);const dt=lastTime?Math.min((ms-lastTime)*.001,.1):0;lastTime=ms;const running=state.speed>0&&!state.stationPaused;if(running)simulationTime+=dt*state.speed;const movingCamera=Math.abs(view.distTarget-view.dist)>.001;view.dist+=(view.distTarget-view.dist)*.11;updateSystem(simulationTime);applyCamera();if((running&&state.view==='system')||needsRender||movingCamera){renderer.render(scene,camera);if(state.view==='structure')updateStationLabels();updateGroundLabels();needsRender=false;}}
 requestAnimationFrame(animate);
 

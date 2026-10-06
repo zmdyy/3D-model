@@ -1,6 +1,7 @@
 window.MODEL_CATALOG = [
   {
     "id": "battery-box",
+    "cover": "assets/covers/battery-box.png?v=20261006",
     "title": "2×AA 电池盒",
     "subtitle": "外壳、底座与串联结构",
     "category": "电学元件",
@@ -16,6 +17,7 @@ window.MODEL_CATALOG = [
   },
   {
     "id": "potentiometer",
+    "cover": "assets/covers/potentiometer.png?v=20261006",
     "title": "电位器",
     "subtitle": "旋钮、滑片与分压结构",
     "category": "电学元件",
@@ -31,6 +33,7 @@ window.MODEL_CATALOG = [
   },
   {
     "id": "rheostat",
+    "cover": "assets/covers/rheostat.png?v=20261006",
     "title": "滑动变阻器",
     "subtitle": "接线、滑片与电流方向",
     "category": "电学元件",
@@ -46,6 +49,7 @@ window.MODEL_CATALOG = [
   },
   {
     "id": "e27-bulb",
+    "cover": "assets/covers/e27-bulb.png?v=20261006",
     "title": "螺口灯泡装配与接线",
     "subtitle": "E27 灯泡、灯座与家庭电路",
     "category": "家庭电路",
@@ -61,6 +65,7 @@ window.MODEL_CATALOG = [
   },
   {
     "id": "fuel-gauge",
+    "cover": "assets/covers/fuel-gauge.png?v=20261006",
     "title": "油量测量装置",
     "subtitle": "浮子—滑杆—变阻器联动",
     "category": "综合应用",
@@ -76,6 +81,7 @@ window.MODEL_CATALOG = [
   },
   {
     "id": "museum-alarm",
+    "cover": "assets/covers/museum-alarm.png?v=20261006",
     "title": "文物展台防盗报警装置",
     "subtitle": "弹簧触点、短路旁路与电铃报警",
     "category": "综合应用",
@@ -93,6 +99,7 @@ window.MODEL_CATALOG = [
   },
   {
     "id": "speaker",
+    "cover": "assets/covers/speaker.png?v=20261006",
     "title": "扬声器结构与振动",
     "subtitle": "纸盆、音圈与磁隙的装配关系",
     "category": "声学与电磁",
@@ -112,6 +119,7 @@ window.MODEL_CATALOG = [
   },
   {
     "id": "dynamic-microphone",
+    "cover": "assets/covers/dynamic-microphone.png?v=20261006",
     "title": "动圈式话筒",
     "subtitle": "金属网罩、膜片与动圈拾音单元",
     "category": "声学与电磁",
@@ -131,6 +139,7 @@ window.MODEL_CATALOG = [
   },
   {
     "id": "communication-satellite",
+    "cover": "assets/covers/communication-satellite.png?v=20261006",
     "title": "通信卫星与全球通信",
     "subtitle": "同步卫星、天宫空间站与天地通信",
     "category": "通信与信息",
@@ -153,6 +162,7 @@ window.MODEL_CATALOG = [
   },
   {
     "id": "nuclear-power",
+    "cover": "assets/covers/nuclear-power.png?v=20261006",
     "title": "核能发电",
     "subtitle": "反应堆、汽轮机与发电机",
     "category": "能源与发电",
@@ -171,6 +181,7 @@ window.MODEL_CATALOG = [
   },
   {
     "id": "stopwatch",
+    "cover": "assets/covers/stopwatch.png?v=20261006",
     "title": "机械秒表（停表）",
     "subtitle": "装配、分解与计时机构",
     "category": "精密机械",
@@ -188,6 +199,7 @@ window.MODEL_CATALOG = [
   },
   {
     "id": "solar-tower",
+    "cover": "assets/covers/solar-tower.png?v=20261006",
     "title": "塔式太阳能电站",
     "subtitle": "参照敦煌 100 MW 熔盐塔式光热电站",
     "category": "能源与发电",
@@ -209,6 +221,7 @@ window.MODEL_CATALOG = [
   },
   {
     "id": "mirage",
+    "cover": "assets/covers/mirage.png?v=20261006",
     "title": "海市蜃楼",
     "subtitle": "上蜃、下蜃与弯曲光路",
     "category": "光学现象",
@@ -226,6 +239,7 @@ window.MODEL_CATALOG = [
   },
   {
     "id": "eye-accommodation",
+    "cover": "assets/covers/eye-accommodation.png?v=20261006",
     "title": "眼睛的调节与视角",
     "subtitle": "晶状体调焦、视网膜成像与可辨细节",
     "category": "光与视觉",

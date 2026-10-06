@@ -168,6 +168,7 @@
   grid.addEventListener('keydown', e => { if((e.key==='Enter'||e.key===' ') && e.target.classList.contains('card')){e.preventDefault();openModel(e.target.dataset.id);} });
 
   function modelPath(item,embedded=false){
+    if(item.id==='museum-alarm') return item.path+'?v=20261006-alarm-v2';
     return item.path+(item.id==='eye-accommodation'?'?v=4693abb'+(embedded?'&embedded=1':''):'');
   }
   function openModel(id){

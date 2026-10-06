@@ -80,6 +80,24 @@ window.MODEL_CATALOG = [
     "accent": "green"
   },
   {
+    "id": "pressure-scale",
+    "title": "压力电子秤",
+    "subtitle": "压敏电阻、双电表与称重机构联动",
+    "category": "综合应用",
+    "summary": "按标准端子和七根导线重建压力电子秤。调节压力可观察称重机构压缩、压敏电阻变化、电流表与电压表同步读数，并检查600 N量程边界和超量程状态。",
+    "tags": [
+      "压力电子秤",
+      "压敏电阻",
+      "电流表",
+      "电压表",
+      "传感器",
+      "实物接线"
+    ],
+    "path": "models/pressure-scale.html",
+    "symbol": "⚖",
+    "accent": "green"
+  },
+  {
     "id": "museum-alarm",
     "cover": "assets/covers/museum-alarm.png?v=20261006",
     "title": "文物展台防盗报警装置",

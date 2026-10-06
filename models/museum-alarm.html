@@ -1,781 +1,211 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>文物展台防盗报警装置 · 3D 交互演示</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>文物展台防盗报警装置 · 3D 重建</title>
 <style>
-:root{
-  --bg:#eef3f9;--ink:#1b2430;--ink2:#5a6879;--line:#dde5ef;
-  --brand:#2f7de1;--brand-soft:#e7f0fd;--ok:#13845f;--warn:#d64036;
-  --shadow:0 10px 34px rgba(28,48,78,.13);
-}
-*{box-sizing:border-box}
-html,body{margin:0;height:100%;overflow:hidden}
-body{
-  background:var(--bg);color:var(--ink);
-  font-family:"Segoe UI","PingFang SC","Microsoft YaHei",system-ui,sans-serif;
-  -webkit-font-smoothing:antialiased
-}
-#stage{position:fixed;inset:0}
-#scene{display:block;width:100%;height:100%;touch-action:none}
-.head{
-  position:fixed;left:24px;top:20px;z-index:5;max-width:440px;
-  background:rgba(255,255,255,.88);backdrop-filter:blur(14px);
-  border:1px solid var(--line);border-radius:16px;padding:14px 18px;
-  box-shadow:var(--shadow)
-}
-.head h1{margin:0 0 5px;font-size:18px;font-weight:750}
-.head h1 span{font-weight:500;color:var(--ink2);font-size:13px}
-.head p{margin:0;font-size:12.5px;line-height:1.6;color:var(--ink2)}
-.head p b{color:#15406f}
-.badge{
-  position:fixed;left:50%;top:20px;transform:translateX(-50%);z-index:8;
-  padding:9px 15px;border-radius:999px;font-size:12.5px;font-weight:800;
-  background:#fff;border:1px solid var(--line);box-shadow:var(--shadow);
-  color:#526075;transition:.2s
-}
-.badge.ok{background:#effaf6;border-color:#b9e8d7;color:#117759}
-.badge.warn{background:#fff1f0;border-color:#f1b7b2;color:#c93931;animation:pulse 1s ease-in-out infinite}
-@keyframes pulse{0%,100%{box-shadow:var(--shadow)}50%{box-shadow:0 0 0 7px rgba(214,64,54,.1),var(--shadow)}}
-.panel{
-  position:fixed;right:22px;top:20px;z-index:6;width:310px;
-  background:rgba(255,255,255,.94);backdrop-filter:blur(14px);
-  border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);
-  padding:16px 16px 14px;max-height:calc(100vh - 40px);overflow:auto;
-  transition:transform .3s cubic-bezier(.4,0,.2,1),opacity .3s ease
-}
-.panel.collapsed{transform:translateX(calc(100% + 30px));opacity:0;pointer-events:none}
-.panel::-webkit-scrollbar{width:6px}.panel::-webkit-scrollbar-thumb{background:#cfdae8;border-radius:3px}
-#panelClose{
-  position:absolute;right:10px;top:10px;width:26px;height:26px;border-radius:8px;
-  border:1px solid var(--line);background:#fff;color:var(--ink2);cursor:pointer;font-size:14px
-}
-#panelOpen{
-  position:fixed;right:22px;top:20px;z-index:7;width:36px;height:36px;border-radius:50%;
-  border:1px solid var(--line);background:#fff;color:var(--ink);box-shadow:var(--shadow);
-  cursor:pointer;font-size:17px;display:none
-}
-.panel.collapsed ~ #panelOpen{display:block}
-.grp{margin-bottom:14px}.grp:first-of-type .lbl{padding-right:32px}
-.lbl{
-  font-size:11.5px;font-weight:650;letter-spacing:.45px;color:var(--ink2);
-  margin-bottom:8px;display:flex;align-items:center;gap:6px
-}
-.lbl b{color:var(--brand);font-size:12.5px;font-weight:750;margin-left:auto}
-input[type=range]{
-  -webkit-appearance:none;appearance:none;width:100%;height:5px;border-radius:3px;
-  background:linear-gradient(90deg,var(--brand) 0%,var(--brand) 50%,#e2eaf4 50%,#e2eaf4 100%);
-  outline:none;cursor:pointer
-}
-input[type=range]::-webkit-slider-thumb{
-  -webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#fff;
-  border:2.5px solid var(--brand);box-shadow:0 2px 6px rgba(47,125,225,.35);cursor:grab
-}
-.seg,.toggles{display:flex;gap:6px;flex-wrap:wrap}
-.seg button,.toggles button{
-  flex:1;min-width:72px;padding:8px 6px;font-size:12px;font-weight:650;
-  border:1px solid var(--line);background:#fff;color:var(--ink2);
-  border-radius:10px;cursor:pointer;transition:.18s
-}
-.seg button:hover,.toggles button:hover{border-color:#bfd4ee;color:var(--brand)}
-.seg button.active,.toggles button.active{
-  background:var(--brand);border-color:var(--brand);color:#fff;
-  box-shadow:0 3px 10px rgba(47,125,225,.26)
-}
-.mini{font-size:11px;color:#8794a6;margin-top:7px;line-height:1.5}
-.readout,.chain,.tip,.answer{
-  margin-top:8px;padding:10px 12px;border-radius:12px;border:1px solid #e2ecf8;
-  background:linear-gradient(180deg,#f8fbff,#f0f6fe)
-}
-.rv{display:flex;align-items:baseline;justify-content:space-between;font-size:12px;color:var(--ink2)}
-.rv+.rv{margin-top:6px}
-.rv b{font-size:14px;color:#15406f;font-variant-numeric:tabular-nums}
-.rv i{font-style:normal;font-size:10.5px;color:#8794a6;margin-left:3px}
-.rv b.ok{color:var(--ok)}.rv b.warn{color:var(--warn)}
-.chain{font-size:11.5px;line-height:1.85;color:var(--ink2)}
-.chain b{color:#15406f}.chain .ok{color:var(--ok);font-weight:750}.chain .warn{color:var(--warn);font-weight:750}
-.tip{font-size:11.5px;line-height:1.7;color:var(--ink2);display:flex;flex-direction:column;gap:2px}
-.tip b,.answer b{color:#15406f}
-.tip i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px}
-.tip i.wood{background:#b47a42}.tip i.metal{background:#bbc5d0}.tip i.copper{background:#c18442}
-.tip i.red{background:#e8372a}.tip i.gold{background:#b68b36}
-.answer{border-style:dashed;border-color:#b9d0ee;font-size:11.5px;line-height:1.75;color:#506176}
-.hint{
-  position:fixed;left:24px;bottom:20px;z-index:5;background:rgba(255,255,255,.88);
-  border:1px solid var(--line);border-radius:12px;padding:8px 12px;color:#67758a;
-  font-size:11.5px;box-shadow:var(--shadow);white-space:nowrap
-}
-.hint kbd{background:#eef4fb;border:1px solid #dbe6f4;border-radius:5px;padding:1px 5px;font:inherit;color:#15406f}
-#toast{
-  position:fixed;left:50%;bottom:72px;transform:translate(-50%,12px);z-index:20;
-  background:#1c2430;color:#fff;font-size:13px;padding:9px 18px;border-radius:10px;
-  opacity:0;pointer-events:none;transition:.25s
-}
-#toast.show{opacity:1;transform:translate(-50%,0)}
-@media(max-width:760px){
-  .head{left:12px;top:12px;max-width:calc(100% - 82px);padding:11px 13px}
-  .head p{display:none}.panel{right:10px;top:10px;width:min(300px,calc(100% - 20px));max-height:calc(100vh - 20px)}
-  #panelOpen{right:10px;top:10px}.badge{top:68px}.hint{left:12px;bottom:10px;font-size:10.5px}
-}
+html,body{margin:0;height:100%;overflow:hidden;background:#dce8f0;font-family:"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+canvas{display:block;width:100%;height:100%;touch-action:none}
+.toolbar,.info,.tip{position:fixed;z-index:10;background:rgba(255,255,255,.9);border:1px solid #d3deea;box-shadow:0 8px 26px rgba(35,57,83,.12);backdrop-filter:blur(10px)}
+.toolbar{left:18px;top:18px;padding:11px 12px;border-radius:14px;display:flex;gap:8px}
+.toolbar button{border:0;border-radius:9px;padding:9px 13px;font-weight:700;cursor:pointer;background:#2f7de1;color:white}
+.toolbar button.alt{background:#f2f6fb;color:#35516f;border:1px solid #cfdae7}
+.info{right:18px;top:18px;width:310px;padding:12px 14px;border-radius:14px;font-size:13px;line-height:1.65;color:#40566e}
+.info b{color:#1f3449}.ok{color:#11775a;font-weight:800}.alarm{color:#c53d31;font-weight:800}
+.tip{left:18px;bottom:18px;padding:8px 11px;border-radius:10px;font-size:12px;color:#667b91}
 </style>
 </head>
 <body>
-<div id="stage"><canvas id="scene"></canvas></div>
-
-<div class="head">
-  <h1>文物展台防盗报警装置 <span>· 3D 交互演示</span></h1>
-  <p>展品压住 <b>B</b> 时，B 同时接通 A、C，电铃被低电阻通路旁路；展品被拿走后，弹簧顶起 B，旁路断开，电流经过电铃和干路中的<b>灯泡</b>，触发报警。</p>
+<div class="toolbar">
+<button id="safe">展品在位</button>
+<button id="alarm">取走展品</button>
+<button id="reset" class="alt">恢复视角</button>
 </div>
-
-<div class="badge ok" id="alarmBadge">已布防 · 展品安全</div>
-
-<div class="panel" id="panel">
-  <button id="panelClose" title="收起面板">›</button>
-
-  <div class="grp">
-    <div class="lbl">展品位置 <b id="artifactLabel">在展台上</b></div>
-    <input id="artifactRange" type="range" min="0" max="100" step="1" value="0" />
-    <div class="seg" style="margin-top:8px">
-      <button id="btnRestore" class="active">放回展品</button>
-      <button id="btnRemove">取走展品</button>
-    </div>
-    <div class="mini">也可以直接上下拖动 3D 展品；展品刚离开 B 后，弹簧会把 B 顶起。</div>
-  </div>
-
-  <div class="grp">
-    <div class="lbl">布防开关 <b id="armLabel">闭合 · 已布防</b></div>
-    <div class="seg">
-      <button id="btnArm" class="active">闭合开关</button>
-      <button id="btnDisarm">断开开关</button>
-    </div>
-    <div class="mini">3D 中使用标准刀开关，点击刀开关也可切换布防状态。</div>
-  </div>
-
-  <div class="grp">
-    <div class="lbl">木板透视 <b id="woodLabel">实木 100%</b></div>
-    <input id="woodRange" type="range" min="0" max="100" step="1" value="100" />
-    <div class="toggles" style="margin-top:8px">
-      <button id="btnWoodSolid" class="active">实木</button>
-      <button id="btnWoodGlass">半透明</button>
-      <button id="btnWoodHide">隐藏</button>
-    </div>
-  </div>
-
-  <div class="grp">
-    <div class="lbl">状态读数</div>
-    <div class="readout">
-      <div class="rv"><span>金属片 B</span><b id="vB">压下</b></div>
-      <div class="rv"><span>A—B—C</span><b id="vContact" class="ok">接通</b></div>
-      <div class="rv"><span>电铃支路</span><b id="vBell">0.000<i>A</i></b></div>
-      <div class="rv"><span>报警状态</span><b id="vAlarm" class="ok">不响</b></div>
-    </div>
-    <div class="mini">教学示意：单个 3 V 电源盒，仅一对正负极；灯泡始终位于干路中，兼有限流保护作用。</div>
-  </div>
-
-  <div class="grp">
-    <div class="lbl">推理链</div>
-    <div class="chain">
-      <div>展品：<b id="c1">压在 B 上</b></div>
-      <div>弹簧：<b id="c2">被压缩</b></div>
-      <div>A—B—C：<span id="c3" class="ok">接通</span></div>
-      <div>电铃：<span id="c4" class="ok">被旁路，不响</span></div>
-      <div>主电流：<b id="c5">电源 → 开关 → C → B → A → 灯泡 → 电源</b></div>
-    </div>
-  </div>
-
-  <div class="grp">
-    <div class="lbl">显示选项</div>
-    <div class="toggles">
-      <button id="btnLabels" class="active">部件标签</button>
-      <button id="btnFlow" class="active">电流箭头</button>
-      <button id="btnFocus">聚焦触点</button>
-      <button id="btnReset">恢复视图</button>
-    </div>
-  </div>
-
-  <div class="tip">
-    <b>结构对照</b>
-    <span><i class="gold"></i>青铜色器物＝展品</span>
-    <span><i class="metal"></i>银色长片＝活动金属片 B</span>
-    <span><i class="copper"></i>铜色片＝固定金属片 A、C</span>
-    <span><i class="wood"></i>木色结构＝展台木板和弹簧槽</span>
-    <span><i class="red"></i>红色箭头＝常规电流方向</span>
-  </div>
-
-  <div class="answer">
-    <b>核心：</b>教材没有另设保护电阻，干路中的灯泡本身有限流作用。展品在位时 B 把电铃旁路；展品拿走后，电流改经电铃，电铃报警。
-  </div>
-</div>
-<button id="panelOpen" title="展开面板">‹</button>
-
-<div class="hint">拖拽空白处旋转 · 滚轮缩放 · <kbd>Shift</kbd>+拖拽平移 · 拖动展品 · 点击刀开关</div>
-<div id="toast"></div>
-
+<div class="info"><b>文物展台防盗报警装置 · 3D 重建版</b><br>当前状态：<span id="state" class="ok">展品在位，电铃不响</span><br>元件位置、外形和接线按确认图重建。</div>
+<div class="tip">拖拽旋转 · Shift/右键拖拽平移 · 滚轮缩放</div>
+<canvas id="c"></canvas>
 <script src="../shared/vendor/three-r144.min.js"></script>
-<script src="../shared/current-flow-style.js"></script>
 <script>
 (function(){
 'use strict';
+if(THREE.ColorManagement) THREE.ColorManagement.legacyMode=false;
+const canvas=document.getElementById('c');
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));
+renderer.outputEncoding=THREE.sRGBEncoding;
+renderer.shadowMap.enabled=true;
+renderer.shadowMap.type=THREE.PCFSoftShadowMap;
 
-if (THREE.ColorManagement) THREE.ColorManagement.legacyMode = false;
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0xdce8f0);
+const camera=new THREE.PerspectiveCamera(35,1,.1,100);
 
-const canvas = document.getElementById('scene');
-const renderer = new THREE.WebGLRenderer({canvas:canvas,antialias:true,preserveDrawingBuffer:true});
-renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
-renderer.outputEncoding = THREE.sRGBEncoding;
-renderer.toneMapping = THREE.LinearToneMapping;
-renderer.toneMappingExposure = 1;
-renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+scene.add(new THREE.HemisphereLight(0xffffff,0xaec2d5,.92));
+const key=new THREE.DirectionalLight(0xffffff,1.15);key.position.set(9,18,10);key.castShadow=true;key.shadow.mapSize.set(2048,2048);scene.add(key);
+const fill=new THREE.DirectionalLight(0xdbeaff,.35);fill.position.set(-10,8,-8);scene.add(fill);
 
-const scene = new THREE.Scene();
-scene.background = new THREE.Color(0xeef3f9);
-scene.fog = new THREE.Fog(0xeef3f9,30,80);
-const camera = new THREE.PerspectiveCamera(38,1,.1,180);
-
-(function buildEnvironment(){
-  const c=document.createElement('canvas');c.width=128;c.height=512;
-  const x=c.getContext('2d'),g=x.createLinearGradient(0,0,0,512);
-  g.addColorStop(0,'#ffffff');g.addColorStop(.4,'#f3f7fc');g.addColorStop(.62,'#cbd5e1');g.addColorStop(1,'#737e8a');
-  x.fillStyle=g;x.fillRect(0,0,128,512);
-  const tex=new THREE.CanvasTexture(c);tex.encoding=THREE.sRGBEncoding;tex.mapping=THREE.EquirectangularReflectionMapping;
-  const pm=new THREE.PMREMGenerator(renderer);scene.environment=pm.fromEquirectangular(tex).texture;pm.dispose();tex.dispose();
-})();
-
-scene.add(new THREE.HemisphereLight(0xffffff,0xafbfd0,.44));
-const key=new THREE.DirectionalLight(0xffffff,.76);key.position.set(10,16,11);key.castShadow=true;
-key.shadow.mapSize.set(2048,2048);key.shadow.camera.left=-16;key.shadow.camera.right=16;key.shadow.camera.top=14;key.shadow.camera.bottom=-12;
-key.shadow.camera.near=1;key.shadow.camera.far=60;scene.add(key);
-const rim=new THREE.DirectionalLight(0xdceaff,.28);rim.position.set(-10,8,-10);scene.add(rim);
-
-const ground=new THREE.Mesh(new THREE.CircleGeometry(38,80),new THREE.MeshStandardMaterial({color:0xdde6f0,roughness:.98}));
-ground.rotation.x=-Math.PI/2;ground.position.y=-.20;ground.receiveShadow=true;scene.add(ground);
-const grid=new THREE.GridHelper(38,38,0xc4d0df,0xd9e1eb);grid.position.y=-.19;grid.material.transparent=true;grid.material.opacity=.38;scene.add(grid);
-
-function makeWoodTexture(){
-  const c=document.createElement('canvas');c.width=512;c.height=256;const x=c.getContext('2d');
-  const g=x.createLinearGradient(0,0,512,256);g.addColorStop(0,'#c99a66');g.addColorStop(.5,'#b9814b');g.addColorStop(1,'#c18b56');
-  x.fillStyle=g;x.fillRect(0,0,512,256);x.strokeStyle='rgba(92,55,28,.22)';x.lineWidth=2;
-  for(let i=0;i<20;i++){x.beginPath();const yy=10+i*12;for(let px=0;px<=512;px+=10){const py=yy+Math.sin(px*.045+i*.72)*2.2;if(px===0)x.moveTo(px,py);else x.lineTo(px,py)}x.stroke()}
-  const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(1.8,1.1);t.encoding=THREE.sRGBEncoding;return t;
+function woodTex(){
+ const c=document.createElement('canvas');c.width=512;c.height=256;const x=c.getContext('2d');
+ const g=x.createLinearGradient(0,0,512,256);g.addColorStop(0,'#ddb17a');g.addColorStop(.5,'#bf8148');g.addColorStop(1,'#d19a62');x.fillStyle=g;x.fillRect(0,0,512,256);
+ x.strokeStyle='rgba(94,56,27,.24)';x.lineWidth=2;
+ for(let i=0;i<24;i++){x.beginPath();const y=9+i*10;for(let px=0;px<=512;px+=8){const py=y+Math.sin(px*.04+i*.7)*2.2;if(px===0)x.moveTo(px,py);else x.lineTo(px,py)}x.stroke()}
+ const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(1.8,1.2);t.encoding=THREE.sRGBEncoding;return t;
 }
 const M={
-  base:new THREE.MeshStandardMaterial({color:0xaebed1,roughness:.65,metalness:.04}),
-  edge:new THREE.MeshStandardMaterial({color:0x7f92aa,roughness:.65,metalness:.05}),
-  wood:new THREE.MeshStandardMaterial({color:0xb9844e,map:makeWoodTexture(),roughness:.72}),
-  cavity:new THREE.MeshStandardMaterial({color:0x60402c,roughness:.84}),
-  metal:new THREE.MeshStandardMaterial({color:0xc8d0d9,roughness:.23,metalness:.95,envMapIntensity:1}),
-  steel:new THREE.MeshStandardMaterial({color:0x8c969f,roughness:.27,metalness:.95}),
-  copper:new THREE.MeshStandardMaterial({color:0xb87436,roughness:.3,metalness:.86}),
-  brass:new THREE.MeshStandardMaterial({color:0xc69a45,roughness:.28,metalness:.9}),
-  black:new THREE.MeshStandardMaterial({color:0x30363d,roughness:.58,metalness:.14}),
-  red:new THREE.MeshStandardMaterial({color:0xc63e34,roughness:.5,metalness:.12}),
-  blue:new THREE.MeshStandardMaterial({color:0x2f6aa8,roughness:.5,metalness:.1}),
-  bronze:new THREE.MeshStandardMaterial({color:0x9b7437,roughness:.4,metalness:.72}),
-  wire:new THREE.MeshStandardMaterial({color:0x414a55,roughness:.48,metalness:.4}),
-  wireRed:new THREE.MeshStandardMaterial({color:0xa34138,roughness:.48,metalness:.28}),
-  glass:new THREE.MeshPhysicalMaterial({color:0xeaf8ff,roughness:.08,metalness:0,transparent:true,opacity:.34,transmission:.58,depthWrite:false}),
-  yellow:new THREE.MeshBasicMaterial({color:0xffb22f})
+ board:new THREE.MeshStandardMaterial({color:0xd5dfeb,roughness:.72}),
+ edge:new THREE.MeshStandardMaterial({color:0xb7c6d6,roughness:.76}),
+ wood:new THREE.MeshStandardMaterial({color:0xc78a51,map:woodTex(),roughness:.64}),
+ plate:new THREE.MeshStandardMaterial({color:0xc7ccd3,roughness:.23,metalness:.95}),
+ steel:new THREE.MeshStandardMaterial({color:0xb8c2cf,roughness:.2,metalness:1}),
+ dark:new THREE.MeshStandardMaterial({color:0x41464e,roughness:.3,metalness:.8}),
+ brass:new THREE.MeshStandardMaterial({color:0xc7973f,roughness:.25,metalness:.92}),
+ red:new THREE.MeshStandardMaterial({color:0xd92520,roughness:.4,metalness:.14}),
+ black:new THREE.MeshStandardMaterial({color:0x2e3238,roughness:.55,metalness:.18}),
+ blue:new THREE.MeshStandardMaterial({color:0x96acc6,roughness:.55}),
+ wire:new THREE.MeshStandardMaterial({color:0xe12622,roughness:.36,metalness:.16}),
+ bronze:new THREE.MeshStandardMaterial({color:0x91601f,roughness:.42,metalness:.88}),
+ glass:new THREE.MeshPhysicalMaterial({color:0xf4fbff,roughness:.06,transparent:true,opacity:.34,transmission:.68,depthWrite:false})
 };
-
-function box(sx,sy,sz,x,y,z,mat,name){
-  const m=new THREE.Mesh(new THREE.BoxGeometry(sx,sy,sz),mat);m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;if(name)m.name=name;return m;
+function box(w,h,d,m){const o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);o.castShadow=true;o.receiveShadow=true;return o}
+function cyl(r1,r2,h,m,n=32){const o=new THREE.Mesh(new THREE.CylinderGeometry(r1,r2,h,n),m);o.castShadow=true;o.receiveShadow=true;return o}
+function sph(r,m){const o=new THREE.Mesh(new THREE.SphereGeometry(r,32,22),m);o.castShadow=true;return o}
+function post(red=true){const g=new THREE.Group();let o=cyl(.15,.17,.10,M.brass,24);o.position.y=.05;g.add(o);o=cyl(.12,.12,.29,red?M.red:M.black,24);o.position.y=.24;g.add(o);o=cyl(.17,.17,.10,red?M.red:M.black,24);o.position.y=.44;g.add(o);return g}
+function label(text,s=1){
+ const c=document.createElement('canvas');c.width=320;c.height=96;const x=c.getContext('2d');
+ x.fillStyle='rgba(249,250,252,.98)';x.strokeStyle='rgba(140,155,174,.75)';x.lineWidth=2;x.beginPath();x.roundRect(3,3,314,90,12);x.fill();x.stroke();
+ x.fillStyle='#1c2d3d';x.font='700 34px Microsoft YaHei';x.textAlign='center';x.textBaseline='middle';x.fillText(text,160,49);
+ const t=new THREE.CanvasTexture(c);t.encoding=THREE.sRGBEncoding;const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:t,transparent:true,depthTest:false}));sp.scale.set(1.85*s,.56*s,1);sp.renderOrder=20;return sp
 }
-function cylinder(r1,r2,h,x,y,z,mat,seg){
-  const m=new THREE.Mesh(new THREE.CylinderGeometry(r1,r2,h,seg||32),mat);m.position.set(x,y,z);m.castShadow=true;return m;
-}
-function sphere(r,x,y,z,mat){
-  const m=new THREE.Mesh(new THREE.SphereGeometry(r,32,22),mat);m.position.set(x,y,z);m.castShadow=true;return m;
-}
-function tube(points,mat,r){
-  const curve=new THREE.CatmullRomCurve3(points,false,'catmullrom',.06);
-  const mesh=new THREE.Mesh(new THREE.TubeGeometry(curve,Math.max(24,points.length*14),r||.048,8,false),mat||M.wire);
-  mesh.castShadow=true;return mesh;
-}
-function terminal(group,x,z,color){
-  const g=new THREE.Group();g.position.set(x,0,z);group.add(g);
-  const foot=cylinder(.17,.20,.11,0,.10,0,M.black,24);g.add(foot);
-  const body=cylinder(.14,.14,.34,0,.30,0,color==='red'?M.red:M.black,24);g.add(body);
-  const cap=cylinder(.18,.18,.08,0,.50,0,color==='red'?M.red:M.black,24);g.add(cap);
-  return g;
-}
-function makeTextSprite(text,color,scaleX){
-  const c=document.createElement('canvas');c.width=384;c.height=96;const x=c.getContext('2d');
-  x.fillStyle='rgba(255,255,255,.94)';x.strokeStyle='rgba(186,199,217,.94)';x.lineWidth=3;
-  x.beginPath();x.moveTo(18,3);x.lineTo(366,3);x.quadraticCurveTo(381,3,381,18);x.lineTo(381,78);x.quadraticCurveTo(381,93,366,93);
-  x.lineTo(18,93);x.quadraticCurveTo(3,93,3,78);x.lineTo(3,18);x.quadraticCurveTo(3,3,18,3);x.closePath();x.fill();x.stroke();
-  x.fillStyle=color||'#23354d';x.font='700 34px "Microsoft YaHei",sans-serif';x.textAlign='center';x.textBaseline='middle';x.fillText(text,192,49);
-  const tex=new THREE.CanvasTexture(c);tex.encoding=THREE.sRGBEncoding;
-  const s=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,depthTest:false}));
-  s.scale.set(scaleX||2.2,.56,1);s.renderOrder=20;return s;
-}
+function wire(points,r=.078){const curve=new THREE.CatmullRomCurve3(points,false,'catmullrom',.06);const m=new THREE.Mesh(new THREE.TubeGeometry(curve,Math.max(48,points.length*18),r,10,false),M.wire);m.castShadow=true;return m}
 
-const ROOT=new THREE.Group();scene.add(ROOT);
+const root=new THREE.Group();scene.add(root);
+const board=box(21.4,.52,12.0,M.board);board.position.y=.26;root.add(board);
+const edge=box(21.6,.18,12.2,M.edge);edge.position.y=.09;root.add(edge);
 
-/* 实验板：所有器件与导线都落在同一平面 */
-const board=box(21.6,.34,13.4,0,0,0,M.base,'experiment-board');board.position.y=0;ROOT.add(board);
-const boardEdge=box(21.72,.16,13.52,0,-.17,0,M.edge);ROOT.add(boardEdge);
-const PLANE_Y=.32;
-grid.visible=false;
+/* 文物台 */
+const museum=new THREE.Group();museum.position.set(-7.15,.52,-2.55);root.add(museum);
+const wood=box(5.55,1.36,3.18,M.wood);wood.position.y=.68;museum.add(wood);
+const slot=box(2.05,.92,1.28,new THREE.MeshStandardMaterial({color:0x624027,roughness:.9}));slot.position.set(0,.88,0);museum.add(slot);
+const A=box(.62,.12,1.95,M.plate);A.position.set(-2.02,1.43,0);museum.add(A);
+const C=box(.62,.12,1.95,M.plate);C.position.set(2.02,1.43,0);museum.add(C);
+const B=box(2.10,.12,1.08,M.plate);B.position.set(0,1.47,0);museum.add(B);
+const pA=post(true);pA.position.set(-2.42,1.35,1.03);museum.add(pA);
+const pC=post(true);pC.position.set(2.42,1.35,1.03);museum.add(pC);
+const lA=label('A',.62);lA.position.set(-1.98,1.18,1.22);museum.add(lA);
+const lB=label('B',.62);lB.position.set(.02,1.44,.92);museum.add(lB);
+const lC=label('C',.62);lC.position.set(1.98,1.18,1.22);museum.add(lC);
+const lS=label('弹簧',.82);lS.position.set(-.75,.84,1.35);museum.add(lS);
+const pts=[];for(let i=0;i<=180;i++){const t=i/180,a=t*Math.PI*2*6;pts.push(new THREE.Vector3(Math.cos(a)*.24,t-.5,Math.sin(a)*.24))}
+const spring=new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts),180,.05,10,false),M.dark);spring.position.set(0,1.02,0);spring.scale.y=.95;museum.add(spring);
+let q=box(.12,.58,.12,M.dark);q.position.set(-.68,1.12,0);museum.add(q);q=box(.12,.58,.12,M.dark);q.position.set(.68,1.12,0);museum.add(q);
 
-/* 文物展台 */
-const mech=new THREE.Group();mech.position.set(-6.45,.18,-2.45);ROOT.add(mech);
-const WT=1.12;
-const woodGroup=new THREE.Group();mech.add(woodGroup);
-woodGroup.add(box(2.75,WT,4.25,-2.15,WT/2,0,M.wood));
-woodGroup.add(box(2.75,WT,4.25,2.15,WT/2,0,M.wood));
-woodGroup.add(box(1.55,WT,1.00,0,WT/2,-1.63,M.wood));
-woodGroup.add(box(1.60,.14,3.02,0,.12,.32,M.cavity));
-woodGroup.add(box(1.58,.88,.10,0,.55,-1.15,M.cavity));
+const vessel=new THREE.Group();vessel.position.set(0,1.62,0);museum.add(vessel);
+const lp=[new THREE.Vector2(.38,0),new THREE.Vector2(.50,.05),new THREE.Vector2(.58,.22),new THREE.Vector2(.68,.52),new THREE.Vector2(.72,.82),new THREE.Vector2(.67,1.0),new THREE.Vector2(.55,1.08),new THREE.Vector2(.48,1.20)];
+const vb=new THREE.Mesh(new THREE.LatheGeometry(lp,56),M.bronze);vb.castShadow=true;vessel.add(vb);
+const rim=new THREE.Mesh(new THREE.TorusGeometry(.72,.06,12,48),M.brass);rim.rotation.x=Math.PI/2;rim.position.y=1.18;vessel.add(rim);
+for(const s of [-1,1]){const e=new THREE.Mesh(new THREE.TorusGeometry(.18,.035,10,24,Math.PI),M.brass);e.rotation.z=Math.PI/2;e.position.set(.66*s,1.12,0);vessel.add(e)}
+for(let i=0;i<3;i++){const a=i*Math.PI*2/3+Math.PI/6;const leg=cyl(.08,.06,.54,M.bronze,14);leg.position.set(Math.cos(a)*.38,-.20,Math.sin(a)*.16);vessel.add(leg)}
 
-const A=box(1.18,.10,2.12,-1.42,WT+.05,.25,M.copper,'A');mech.add(A);
-const C=box(1.18,.10,2.12,1.42,WT+.05,.25,M.copper,'C');mech.add(C);
-const B_PRESSED=WT+.17,B_RELEASED=WT+.80,B_H=.13;
-const B=box(4.05,B_H,1.66,0,B_PRESSED,.25,M.metal,'B');mech.add(B);
+/* 刀开关 */
+const sw=new THREE.Group();sw.position.set(6.45,.52,-3.28);root.add(sw);
+const swBase=box(3.55,.38,1.0,M.blue);swBase.position.y=.19;sw.add(swBase);
+const swL=post(true);swL.position.set(-1.25,.38,0);sw.add(swL);const swR=post(true);swR.position.set(1.25,.38,0);sw.add(swR);
+q=box(.22,.78,.34,M.steel);q.position.set(-.95,.72,0);sw.add(q);q=box(.22,.60,.34,M.steel);q.position.set(.35,.63,0);sw.add(q);
+const bladePivot=new THREE.Group();bladePivot.position.set(-.95,1.05,0);sw.add(bladePivot);
+const blade=box(2.10,.16,.28,M.plate);blade.position.x=1.03;bladePivot.add(blade);
+const handle=cyl(.18,.18,.72,new THREE.MeshStandardMaterial({color:0xa8c6e4,roughness:.32,metalness:.28}),22);handle.rotation.z=Math.PI/2;handle.position.set(2.20,.04,0);bladePivot.add(handle);
+const collar=cyl(.15,.15,.18,M.steel,18);collar.rotation.z=Math.PI/2;collar.position.set(1.75,.04,0);bladePivot.add(collar);
+const swLab=label('刀开关',.9);swLab.position.set(0,.47,.56);sw.add(swLab);
 
-const springBase=.24;
-const springPts=[];
-for(let i=0;i<=180;i++){const t=i/180,a=t*Math.PI*2*9;springPts.push(new THREE.Vector3(Math.cos(a)*.42,t-.5,Math.sin(a)*.42))}
-const springCurve=new THREE.CatmullRomCurve3(springPts);
-const spring=new THREE.Mesh(new THREE.TubeGeometry(springCurve,180,.052,8,false),M.steel);spring.position.set(0,springBase,.25);spring.castShadow=true;mech.add(spring);
-const springSeat=cylinder(.58,.64,.10,0,.25,.25,M.steel,36);mech.add(springSeat);
+/* 电铃 */
+const bell=new THREE.Group();bell.position.set(-.65,.52,-.10);root.add(bell);
+const bellBase=box(2.30,.56,1.42,M.blue);bellBase.position.y=.28;bell.add(bellBase);
+const bt=post(true);bt.position.set(-.72,.55,-.58);bell.add(bt);const bb=post(true);bb.position.set(-1.05,.55,.48);bell.add(bb);
+q=box(.92,.38,.58,M.black);q.position.set(-.02,.42,0);bell.add(q);
+const domeMat=new THREE.MeshStandardMaterial({color:0xdfe5ee,roughness:.10,metalness:1});
+const bellDome=new THREE.Mesh(new THREE.SphereGeometry(1.05,44,28,0,Math.PI*2,0,Math.PI*.52),domeMat);bellDome.scale.y=.78;bellDome.position.set(0,1.28,0);bellDome.castShadow=true;bell.add(bellDome);
+const cap=sph(.10,M.brass);cap.position.set(0,1.63,0);bell.add(cap);
+const bellLab=label('电铃',.86);bellLab.position.set(0,.42,.78);bell.add(bellLab);
 
-const artifact=new THREE.Group();artifact.name='artifact';mech.add(artifact);
-const vasePts=[
-  new THREE.Vector2(.38,0),new THREE.Vector2(.48,.12),new THREE.Vector2(.54,.34),new THREE.Vector2(.62,.64),
-  new THREE.Vector2(.67,.98),new THREE.Vector2(.60,1.28),new THREE.Vector2(.46,1.50),new THREE.Vector2(.34,1.77),
-  new THREE.Vector2(.40,1.94),new THREE.Vector2(.39,2.08)
-];
-const vaseBody=new THREE.Mesh(new THREE.LatheGeometry(vasePts,48),M.bronze);vaseBody.castShadow=true;artifact.add(vaseBody);
-artifact.add(cylinder(.34,.34,.24,0,2.18,0,M.bronze,36));
-const vrim=new THREE.Mesh(new THREE.TorusGeometry(.40,.055,10,40),M.bronze);vrim.rotation.x=Math.PI/2;vrim.position.y=2.34;artifact.add(vrim);
-artifact.add(cylinder(.55,.61,.16,0,-.06,0,M.steel,40));
+/* 灯泡 */
+const lamp=new THREE.Group();lamp.position.set(1.75,.52,3.10);root.add(lamp);
+const lampBase=box(2.60,.36,.95,M.blue);lampBase.position.y=.18;lamp.add(lampBase);
+const lpL=post(true);lpL.position.set(-.88,.36,0);lamp.add(lpL);const lpR=post(true);lpR.position.set(.88,.36,0);lamp.add(lpR);
+const holder=cyl(.36,.42,.72,new THREE.MeshStandardMaterial({color:0xb8c8d8,roughness:.4,metalness:.3}),32);holder.position.set(0,.56,0);lamp.add(holder);
+const socket=cyl(.22,.27,.36,M.steel,30);socket.position.set(0,.98,0);lamp.add(socket);
+const bulb=sph(.48,M.glass);bulb.scale.y=1.15;bulb.position.set(0,1.52,0);lamp.add(bulb);
+const glow=sph(.18,new THREE.MeshBasicMaterial({color:0xffc84c}));glow.position.set(0,1.30,0);lamp.add(glow);
+const lampLab=label('灯泡',.86);lampLab.position.set(0,.36,.68);lamp.add(lampLab);
 
-const contactL=cylinder(.085,.085,.15,-.93,B_PRESSED+.01,.25,M.brass,18);contactL.rotation.x=Math.PI/2;mech.add(contactL);
-const contactR=cylinder(.085,.085,.15,.93,B_PRESSED+.01,.25,M.brass,18);contactR.rotation.x=Math.PI/2;mech.add(contactR);
-const termA=terminal(mech,-2.32,.34,'red');termA.position.y=WT;
-const termC=terminal(mech, 2.32,.34,'red');termC.position.y=WT;
+/* 电源 */
+const battery=new THREE.Group();battery.position.set(8.05,.52,2.55);root.add(battery);
+const batBody=box(3.30,1.20,1.70,new THREE.MeshStandardMaterial({color:0x90a7c3,roughness:.52}));batBody.position.y=.60;battery.add(batBody);
+const batTop=box(3.30,.18,1.70,new THREE.MeshStandardMaterial({color:0xb9c7d5,roughness:.55}));batTop.position.y=1.29;battery.add(batTop);
+const neg=post(false);neg.position.set(-.85,1.12,-.50);battery.add(neg);const pos=post(true);pos.position.set(1.20,1.12,-.50);battery.add(pos);
+const minus=label('−',.65);minus.position.set(-1.18,.66,.92);battery.add(minus);
+const power=label('电源',.86);power.position.set(0,.66,.92);battery.add(power);
+const plus=label('+',.65);plus.position.set(1.15,.66,.92);battery.add(plus);
 
-/* 单个电源盒，仅一对正负极 */
-const battery=new THREE.Group();battery.position.set(7.35,.34,3.50);ROOT.add(battery);
-battery.add(box(3.25,1.35,2.05,0,.68,0,M.edge));
-battery.add(box(3.25,.28,2.05,0,1.49,0,M.base));
-const batNeg=terminal(battery,-1.05,.15,'black');
-const batPos=terminal(battery,1.05,.15,'red');
-const pNeg=makeTextSprite('−', '#2f6aa8',.62);pNeg.position.set(-1.05,1.22,-1.08);battery.add(pNeg);
-const pPos=makeTextSprite('+', '#c63e34',.62);pPos.position.set(1.05,1.22,-1.08);battery.add(pPos);
-const pPower=makeTextSprite('电 源','#60758f',1.80);pPower.position.set(0,.72,-1.09);battery.add(pPower);
-
-/* 灯泡：底板 + 接线柱 + 灯座 + 玻璃泡壳 + 灯丝 */
-const lamp=new THREE.Group();lamp.position.set(1.95,.34,3.55);ROOT.add(lamp);
-lamp.add(box(3.45,.28,2.15,0,.14,0,M.base));
-const lampL=terminal(lamp,-1.20,0,'red'), lampR=terminal(lamp,1.20,0,'red');
-const pedestal=cylinder(.66,.82,.70,0,.62,0,M.base,42);lamp.add(pedestal);
-const socket=cylinder(.46,.50,.52,0,1.12,0,M.steel,36);lamp.add(socket);
-const socketRing=cylinder(.57,.57,.11,0,1.38,0,M.black,36);lamp.add(socketRing);
-const bulbGlass=sphere(.68,0,2.02,0,M.glass);bulbGlass.scale.y=1.12;lamp.add(bulbGlass);
-const neck=cylinder(.31,.36,.46,0,1.55,0,M.glass,30);lamp.add(neck);
-const lead1=tube([new THREE.Vector3(-.12,1.42,0),new THREE.Vector3(-.10,1.82,0)],M.steel,.018);lamp.add(lead1);
-const lead2=tube([new THREE.Vector3(.12,1.42,0),new THREE.Vector3(.10,1.82,0)],M.steel,.018);lamp.add(lead2);
-const filamentCurve=new THREE.CatmullRomCurve3([
-  new THREE.Vector3(-.10,1.82,0),new THREE.Vector3(-.06,1.90,0),new THREE.Vector3(-.02,1.82,0),
-  new THREE.Vector3(.02,1.90,0),new THREE.Vector3(.06,1.82,0),new THREE.Vector3(.10,1.82,0)
-]);
-const filament=new THREE.Mesh(new THREE.TubeGeometry(filamentCurve,30,.022,8,false),M.yellow);lamp.add(filament);
-
-/* 标准刀开关 */
-const sw=new THREE.Group();sw.name='switch';sw.position.set(6.35,.34,-3.35);ROOT.add(sw);
-sw.add(box(3.65,.28,2.0,0,.14,0,M.base));
-const swL=terminal(sw,-1.28,0,'red'),swR=terminal(sw,1.28,0,'red');
-const supportL=box(.36,.76,.50,-.78,.66,0,M.steel);sw.add(supportL);
-const supportR=box(.36,.76,.50,.78,.66,0,M.steel);sw.add(supportR);
-const pivotPin=cylinder(.10,.10,.58,-.78,1.05,0,M.brass,18);pivotPin.rotation.x=Math.PI/2;sw.add(pivotPin);
-const bladePivot=new THREE.Group();bladePivot.position.set(-.78,1.06,0);sw.add(bladePivot);
-const blade=box(1.60,.11,.26,.80,0,0,M.metal,'switch-blade');bladePivot.add(blade);
-const handle=box(.62,.20,.34,-.18,.05,0,M.steel);bladePivot.add(handle);
-const bladeTip=sphere(.12,1.60,0,0,M.brass);bladePivot.add(bladeTip);
-
-/* 电铃：整体固定在平面底座上 */
-const bell=new THREE.Group();bell.position.set(-1.70,.34,-.20);ROOT.add(bell);
-bell.add(box(3.55,.30,2.55,0,.15,0,M.base));
-const bellT1=terminal(bell,0,-.95,'red'),bellT2=terminal(bell,-1.20,.67,'red');
-const bellPed=cylinder(.62,.72,.42,0,.46,-.15,M.black,36);bell.add(bellPed);
-const bellDome=new THREE.Mesh(new THREE.SphereGeometry(.78,42,22,0,Math.PI*2,0,Math.PI*.56),M.brass);
-bellDome.scale.y=.78;bellDome.position.set(0,1.22,-.15);bellDome.castShadow=true;bell.add(bellDome);
-const coil=box(.78,.48,.48,-.65,.54,-.15,M.copper);bell.add(coil);
-const hammerPivot=new THREE.Group();hammerPivot.position.set(-.78,.92,-.15);bell.add(hammerPivot);
-hammerPivot.add(box(.74,.075,.075,.37,0,0,M.steel));
-hammerPivot.add(sphere(.12,.76,0,0,M.steel));
-
-/* 标签 */
-const labels=new THREE.Group();ROOT.add(labels);
-const labBattery=makeTextSprite('电源','#4d5e73',1.45);labBattery.position.set(7.35,2.35,3.50);labels.add(labBattery);
-const labLamp=makeTextSprite('灯泡','#8e5b23',1.35);labLamp.position.set(1.95,2.92,3.55);labels.add(labLamp);
-const labSwitch=makeTextSprite('刀开关','#4d5e73',1.65);labSwitch.position.set(6.35,2.24,-3.35);labels.add(labSwitch);
-const labBell=makeTextSprite('电铃','#765b22',1.30);labBell.position.set(-1.70,2.40,-.20);labels.add(labBell);
-const labA=makeTextSprite('A','#9b5c25',.62);labA.position.set(-8.77,2.05,-2.10);labels.add(labA);
-const labB=makeTextSprite('B','#425165',.62);labels.add(labB);
-const labC=makeTextSprite('C','#9b5c25',.62);labC.position.set(-4.13,2.05,-2.10);labels.add(labC);
-const labSpring=makeTextSprite('弹簧','#536071',1.22);labSpring.position.set(-6.45,1.04,-.96);labels.add(labSpring);
-
-/* 平面接线坐标：严格按确认图的元件位置与单线路径布置 */
-function wp(x,z,y){return new THREE.Vector3(x,y===undefined?PLANE_Y:y,z)}
-
-const A_TERM=wp(-8.77,-2.11,1.80);
-const C_TERM=wp(-4.13,-2.11,1.80);
-
-const TOP_NODE=wp(-1.70,-2.11,.48);
-const LOW_NODE=wp(-2.90,3.34,.48);
-
-const SW_IN=wp(5.07,-3.35,.84);
-const SW_OUT=wp(7.63,-3.35,.84);
-
-const BELL_TOP=wp(-1.70,-1.15,.84);
-const BELL_BOTTOM=wp(-2.90,.47,.84);
-
-const LAMP_IN=wp(.75,3.55,.84);
-const LAMP_OUT=wp(3.15,3.55,.84);
-
-const BAT_NEG=wp(6.30,3.65,.84);
-const BAT_POS=wp(8.40,3.65,.84);
-
-/* 导线全部沿实验板表面走线，只连接可见接线柱，不从器件内部穿出 */
-const wires=new THREE.Group();ROOT.add(wires);
-
-wires.add(tube([
-  A_TERM,
-  wp(-8.77,3.34,.48),
-  LOW_NODE
-],M.wireRed,.050));
-
-wires.add(tube([
-  C_TERM,
-  wp(-4.13,-2.11,.48),
-  TOP_NODE,
-  wp(4.50,-2.11,.48),
-  wp(4.50,-3.35,.48),
-  SW_IN
-],M.wireRed,.050));
-
-wires.add(tube([
-  TOP_NODE,
-  wp(-1.70,-.85,.48),
-  BELL_TOP
-],M.wireRed,.050));
-
-wires.add(tube([
-  BELL_BOTTOM,
-  wp(-2.90,3.34,.48),
-  LOW_NODE
-],M.wireRed,.050));
-
-wires.add(tube([
-  LOW_NODE,
-  wp(.20,3.34,.48),
-  LAMP_IN
-],M.wireRed,.050));
-
-wires.add(tube([
-  LAMP_OUT,
-  wp(5.55,3.55,.48),
-  wp(5.55,3.65,.48),
-  BAT_NEG
-],M.wireRed,.050));
-
-wires.add(tube([
-  BAT_POS,
-  wp(9.25,3.65,.48),
-  wp(9.25,-3.35,.48),
-  SW_OUT
-],M.wireRed,.050));
-
-/* 电流箭头 */
-const flowStyle=window.CurrentFlowStyle||{
-  count:26,speed:3,color:0xe8372a,
-  createGeometry:function(T){const g=new T.ConeGeometry(.062,.20,8);g.rotateZ(-Math.PI/2);return g},
-  createMaterial:function(T){return new T.MeshBasicMaterial({color:0xe8372a})},
-  createAxis:function(T){return new T.Vector3(1,0,0)}
+/* 导线：严格按确认图 */
+const wy=.98;
+const P={
+ A:new THREE.Vector3(-9.57,wy,-1.52), corner:new THREE.Vector3(-9.57,wy,3.65), bottom:new THREE.Vector3(-3.45,wy,3.65),
+ lampL:new THREE.Vector3(.87,wy,3.65), lampR:new THREE.Vector3(2.63,wy,3.65),
+ batN:new THREE.Vector3(7.20,wy,3.45), batP:new THREE.Vector3(9.25,wy,3.45),
+ swR:new THREE.Vector3(7.70,wy,-3.25), swL:new THREE.Vector3(5.20,wy,-3.25),
+ top:new THREE.Vector3(-1.10,wy,-2.50), C:new THREE.Vector3(-4.73,wy,-2.50),
+ bellT:new THREE.Vector3(-1.37,wy,-.67), bellB:new THREE.Vector3(-1.70,wy,.45)
 };
-const flowGroup=new THREE.Group();ROOT.add(flowGroup);
-const flowGeom=flowStyle.createGeometry(THREE),flowMat=flowStyle.createMaterial(THREE),flowAxis=flowStyle.createAxis(THREE);
-const arrows=[];
-for(let i=0;i<flowStyle.count;i++){const a=new THREE.Mesh(flowGeom,flowMat);flowGroup.add(a);arrows.push(a)}
-let flowCurve=null,flowLen=0,flowMode='';
-function setFlow(mode){
-  flowMode=mode;
-  if(mode==='off'){flowCurve=null;flowLen=0;flowGroup.visible=false;return}
-  flowGroup.visible=true;
-  let pts;
-  if(mode==='bridge'){
-    const by=B.position.y+.03;
-    pts=[
-      BAT_POS,wp(9.25,3.65,.48),wp(9.25,-3.35,.48),SW_OUT,SW_IN,
-      wp(4.50,-3.35,.48),wp(4.50,-2.11,.48),TOP_NODE,
-      C_TERM,
-      wp(-4.13,-2.11,by),
-      wp(-6.45,-2.11,by),
-      wp(-8.77,-2.11,by),
-      A_TERM,
-      wp(-8.77,3.34,.48),LOW_NODE,
-      wp(.20,3.34,.48),LAMP_IN,LAMP_OUT,
-      wp(5.55,3.55,.48),wp(5.55,3.65,.48),BAT_NEG
-    ];
-  }else{
-    pts=[
-      BAT_POS,wp(9.25,3.65,.48),wp(9.25,-3.35,.48),SW_OUT,SW_IN,
-      wp(4.50,-3.35,.48),wp(4.50,-2.11,.48),TOP_NODE,
-      wp(-1.70,-.85,.48),BELL_TOP,BELL_BOTTOM,
-      wp(-2.90,3.34,.48),LOW_NODE,
-      wp(.20,3.34,.48),LAMP_IN,LAMP_OUT,
-      wp(5.55,3.55,.48),wp(5.55,3.65,.48),BAT_NEG
-    ];
-  }
-  flowCurve=new THREE.CatmullRomCurve3(pts,false,'catmullrom',.055);
-  flowLen=flowCurve.getLength();
-}
-function updateFlow(t){
-  if(!state.showFlow||!flowCurve||flowLen<=0){flowGroup.visible=false;return}
-  flowGroup.visible=true;
-  for(let i=0;i<arrows.length;i++){
-    const u=((i/arrows.length)+(t*flowStyle.speed/flowLen))%1;
-    const p=flowCurve.getPointAt(u),tan=flowCurve.getTangentAt(u).normalize();
-    arrows[i].position.copy(p);arrows[i].quaternion.setFromUnitVectors(flowAxis,tan);
-  }
-}
+const wires=new THREE.Group();root.add(wires);
+wires.add(wire([P.A,P.corner,P.bottom]));
+wires.add(wire([P.bottom,new THREE.Vector3(-1.95,wy,3.65),P.lampL]));
+wires.add(wire([P.lampR,new THREE.Vector3(5.55,wy,3.65),new THREE.Vector3(5.55,wy,3.45),P.batN]));
+wires.add(wire([P.batP,new THREE.Vector3(9.90,wy,3.45),new THREE.Vector3(9.90,wy,-3.25),P.swR]));
+wires.add(wire([P.swL,new THREE.Vector3(4.45,wy,-3.25),new THREE.Vector3(4.45,wy,-2.50),P.top,P.C]));
+wires.add(wire([P.top,new THREE.Vector3(-1.10,wy,-.82),P.bellT]));
+wires.add(wire([P.bellB,new THREE.Vector3(-1.70,wy,2.70),new THREE.Vector3(-2.45,wy,3.65),P.bottom]));
+function joint(v){const j=sph(.12,M.red);j.position.copy(v);root.add(j)}joint(P.top);joint(P.bottom);
 
-const state={
-  lift:0,liftTarget:0,armed:true,contact:true,alarm:false,
-  showLabels:true,showFlow:true,woodOpacity:1,dragging:'none'
-};
+/* 状态 */
+let alarm=false;
+const st=document.getElementById('state');
+function setAlarm(v){
+ alarm=v;
+ B.position.y=v?1.78:1.47;
+ spring.scale.y=v?1.22:.95;
+ spring.position.y=v?1.12:1.02;
+ vessel.position.y=v?1.93:1.62;
+ st.textContent=v?'展品被取走，电铃报警':'展品在位，电铃不响';
+ st.className=v?'alarm':'ok';
+ glow.scale.setScalar(v?.80:1.00);
+}
+document.getElementById('safe').onclick=()=>setAlarm(false);
+document.getElementById('alarm').onclick=()=>setAlarm(true);
+
+/* 相机控制：与油量测量装置一致 */
+const view={theta:.50,phi:1.03,dist:24.3,distTarget:24.3,target:new THREE.Vector3(-.2,2.55,.35)};
+const DEF={theta:.50,phi:1.03,dist:24.3,target:[-.2,2.55,.35]};
 function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
-function smooth(a,b,x){const t=clamp((x-a)/(b-a),0,1);return t*t*(3-2*t)}
-function rangeBg(el,p){el.style.background='linear-gradient(90deg,var(--brand) 0%,var(--brand) '+p+'%,#e2eaf4 '+p+'%,#e2eaf4 100%)'}
+function applyCamera(){const sp=Math.sin(view.phi),cp=Math.cos(view.phi);camera.position.set(view.target.x+view.dist*sp*Math.sin(view.theta),view.target.y+view.dist*cp,view.target.z+view.dist*sp*Math.cos(view.theta));camera.lookAt(view.target)}
+let drag=null;
+canvas.oncontextmenu=e=>e.preventDefault();
+canvas.addEventListener('pointerdown',e=>{canvas.setPointerCapture(e.pointerId);drag={x:e.clientX,y:e.clientY,theta:view.theta,phi:view.phi,tx:view.target.x,ty:view.target.y,tz:view.target.z,pan:e.shiftKey||e.button===2};canvas.style.cursor='grabbing'});
+canvas.addEventListener('pointermove',e=>{if(!drag)return;const dx=e.clientX-drag.x,dy=e.clientY-drag.y;if(!drag.pan){view.theta=drag.theta-dx*.0065;view.phi=clamp(drag.phi-dy*.0055,.20,Math.PI/2-.02)}else{const s=view.dist*.00155;view.target.x=drag.tx-dx*Math.cos(view.theta)*s;view.target.z=drag.tz+dx*Math.sin(view.theta)*s;view.target.y=drag.ty+dy*s*.62}});
+function end(){drag=null;canvas.style.cursor='grab'}canvas.addEventListener('pointerup',end);canvas.addEventListener('pointercancel',end);
+canvas.addEventListener('wheel',e=>{e.preventDefault();view.distTarget=clamp(view.distTarget*(1+Math.sign(e.deltaY)*.08),10,38)},{passive:false});
+document.getElementById('reset').onclick=()=>{view.theta=DEF.theta;view.phi=DEF.phi;view.distTarget=DEF.dist;view.target.set(...DEF.target)};
+canvas.style.cursor='grab';
 
-const elArtifactRange=document.getElementById('artifactRange');
-const elArtifactLabel=document.getElementById('artifactLabel');
-const elArmLabel=document.getElementById('armLabel');
-const elWoodRange=document.getElementById('woodRange');
-const elWoodLabel=document.getElementById('woodLabel');
-const vB=document.getElementById('vB');
-const vContact=document.getElementById('vContact');
-const vBell=document.getElementById('vBell');
-const vAlarm=document.getElementById('vAlarm');
-const badge=document.getElementById('alarmBadge');
+function resize(){const w=innerWidth,h=innerHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix()}addEventListener('resize',resize);resize();
 
-function applyWood(op){
-  state.woodOpacity=op;
-  const hidden=op<.03,solid=op>.985;
-  woodGroup.visible=!hidden;
-  M.wood.opacity=hidden?0:op;M.wood.transparent=!solid;M.wood.depthWrite=solid;
-  M.cavity.opacity=hidden?0:Math.max(.18,op);M.cavity.transparent=!solid;M.cavity.depthWrite=solid;
-  elWoodRange.value=String(Math.round(op*100));rangeBg(elWoodRange,Math.round(op*100));
-  elWoodLabel.textContent=hidden?'已隐藏':(solid?'实木 100%':'半透明 '+Math.round(op*100)+'%');
-  document.getElementById('btnWoodSolid').classList.toggle('active',solid);
-  document.getElementById('btnWoodGlass').classList.toggle('active',!hidden&&!solid);
-  document.getElementById('btnWoodHide').classList.toggle('active',hidden);
+let t=0,last=performance.now();
+function loop(now){
+ const dt=Math.min(.05,(now-last)/1000);last=now;t+=dt;
+ if(alarm){bellDome.rotation.z=Math.sin(t*22)*.015}else bellDome.rotation.z*=.85;
+ view.dist+=(view.distTarget-view.dist)*.14;applyCamera();renderer.render(scene,camera);requestAnimationFrame(loop)
 }
-
-function applyState(){
-  const unload=smooth(.04,.22,state.lift);
-  const by=B_PRESSED+(B_RELEASED-B_PRESSED)*unload;
-  B.position.y=by;
-  const springH=Math.max(.34,(by-B_H/2)-springBase);
-  spring.scale.y=springH;spring.position.y=springBase+springH/2;
-
-  const move=smooth(0,1,state.lift);
-  artifact.position.set(-.70*smooth(.52,1,state.lift),by+B_H/2+.14+3.05*move,.15+.55*smooth(.52,1,state.lift));
-  artifact.rotation.z=-.12*smooth(.58,1,state.lift);
-
-  state.contact=by<=B_PRESSED+.055;
-  state.alarm=state.armed&&!state.contact;
-
-  contactL.position.y=(WT+.08+by)/2;
-  contactR.position.y=(WT+.08+by)/2;
-  const contactColor=state.contact?0x2aa477:0xd35d4f;
-  contactL.material.color.setHex(contactColor);contactR.material.color.setHex(contactColor);
-
-  bladePivot.rotation.z=state.armed?0:.52;
-
-  labB.position.set(-6.45,by+.43,-2.20);
-  labels.visible=state.showLabels;
-
-  const bellI=(state.armed&&!state.contact)?.188:0;
-  filament.material.color.setHex(state.armed?0xffa62a:0x7a674f);
-  if(state.armed&&state.contact) filament.material.color.setHex(0xffd15a);
-  if(state.armed&&!state.contact) filament.material.color.setHex(0xffad38);
-
-  vB.textContent=state.contact?'压下':'弹起';
-  vContact.textContent=state.contact?'接通':'断开';vContact.className=state.contact?'ok':'warn';
-  vBell.innerHTML=bellI.toFixed(3)+'<i>A</i>';
-  vAlarm.textContent=state.alarm?'响铃报警':'不响';vAlarm.className=state.alarm?'warn':'ok';
-
-  elArtifactLabel.textContent=state.lift<.18?'在展台上':(state.lift>.82?'已取走':'正在移开');
-  elArtifactRange.value=String(Math.round(state.lift*100));rangeBg(elArtifactRange,Math.round(state.lift*100));
-  document.getElementById('btnRestore').classList.toggle('active',state.lift<.1);
-  document.getElementById('btnRemove').classList.toggle('active',state.lift>.9);
-
-  elArmLabel.textContent=state.armed?'闭合 · 已布防':'断开 · 未布防';
-  document.getElementById('btnArm').classList.toggle('active',state.armed);
-  document.getElementById('btnDisarm').classList.toggle('active',!state.armed);
-
-  document.getElementById('c1').textContent=state.lift<.18?'压在 B 上':'离开 B';
-  document.getElementById('c2').textContent=state.contact?'被压缩':'伸长';
-  const c3=document.getElementById('c3');c3.textContent=state.contact?'接通':'断开';c3.className=state.contact?'ok':'warn';
-  const c4=document.getElementById('c4');
-  c4.textContent=!state.armed?'无电流':(state.contact?'被旁路，不响':'有电流，响铃');c4.className=state.alarm?'warn':'ok';
-  document.getElementById('c5').textContent=!state.armed?'无电流（布防开关断开）':
-    (state.contact?'电源 → 开关 → C → B → A → 灯泡 → 电源':'电源 → 开关 → 电铃 → 灯泡 → 电源');
-
-  if(!state.armed){badge.textContent='未布防 · 开关断开';badge.className='badge'}
-  else if(state.alarm){badge.textContent='报警中 · 展品已离开展台';badge.className='badge warn'}
-  else{badge.textContent='已布防 · 展品安全';badge.className='badge ok'}
-
-  const mode=!state.armed?'off':(state.contact?'bridge':'alarm');
-  if(mode!==flowMode)setFlow(mode);
-}
-
-function setLift(v,animate){
-  state.liftTarget=clamp(v,0,1);
-  if(!animate){state.lift=state.liftTarget;applyState()}
-}
-function setArmed(on){
-  state.armed=!!on;applyState();toast(state.armed?'刀开关已闭合，系统布防':'刀开关已断开，系统未布防');
-}
-
-/* 相机控制：直接按油量测量装置的旋转/平移/缩放逻辑 */
-const view={
-  theta:0.50,phi:1.08,dist:26.2,distTarget:26.2,
-  target:new THREE.Vector3(-.15,1.45,.10)
-};
-const DEF={theta:0.50,phi:1.08,dist:26.2,target:[-.15,1.45,.10]};
-function applyCamera(){
-  const sp=Math.sin(view.phi),cp=Math.cos(view.phi);
-  camera.position.set(
-    view.target.x+view.dist*sp*Math.sin(view.theta),
-    view.target.y+view.dist*cp,
-    view.target.z+view.dist*sp*Math.cos(view.theta)
-  );
-  camera.lookAt(view.target);
-}
-function resize(){
-  const w=window.innerWidth,h=window.innerHeight;
-  renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix()
-}
-window.addEventListener('resize',resize);resize();
-
-const raycaster=new THREE.Raycaster();
-let dragCam=null,dragStartY=0,dragBaseLift=0;
-function pointerNDC(e){
-  const r=canvas.getBoundingClientRect();
-  return new THREE.Vector2(((e.clientX-r.left)/r.width)*2-1,-((e.clientY-r.top)/r.height)*2+1)
-}
-function hitObject(e,obj){
-  raycaster.setFromCamera(pointerNDC(e),camera);
-  return raycaster.intersectObject(obj,true).length>0
-}
-
-canvas.addEventListener('pointerdown',function(e){
-  canvas.setPointerCapture(e.pointerId);
-  if(hitObject(e,artifact)){
-    state.dragging='artifact';dragStartY=e.clientY;dragBaseLift=state.lift;state.liftTarget=state.lift;
-  }else if(hitObject(e,sw)){
-    state.dragging='switch';setArmed(!state.armed);
-  }else{
-    state.dragging='cam';
-    dragCam={x:e.clientX,y:e.clientY,theta:view.theta,phi:view.phi,shift:e.shiftKey};
-  }
-  canvas.style.cursor='grabbing';
-});
-
-canvas.addEventListener('pointermove',function(e){
-  if(state.dragging==='artifact'){
-    state.lift=clamp(dragBaseLift+(dragStartY-e.clientY)*.0045,0,1);
-    state.liftTarget=state.lift;applyState();return;
-  }
-  if(state.dragging==='cam'&&dragCam){
-    const dx=e.clientX-dragCam.x,dy=e.clientY-dragCam.y;
-    if(dragCam.shift){
-      const s=view.dist*.0016;
-      view.target.x-=(dx*Math.cos(view.theta)-dy*Math.sin(view.theta))*s*1.2;
-      view.target.z+=(dx*Math.sin(view.theta)+dy*Math.cos(view.theta))*s*1.2;
-    }else{
-      view.theta=dragCam.theta-dx*.007;
-      view.phi=clamp(dragCam.phi-dy*.006,.16,Math.PI/2-.02);
-    }
-    return;
-  }
-  const over=hitObject(e,artifact)||hitObject(e,sw);
-  canvas.style.cursor=over?'grab':'move';
-});
-function endDrag(){
-  if(state.dragging!=='none'){state.dragging='none';dragCam=null;canvas.style.cursor='move'}
-}
-canvas.addEventListener('pointerup',endDrag);
-canvas.addEventListener('pointercancel',endDrag);
-canvas.addEventListener('wheel',function(e){
-  e.preventDefault();
-  view.distTarget=clamp(view.distTarget*(1+Math.sign(e.deltaY)*.09),8,46);
-},{passive:false});
-
-/* UI */
-elArtifactRange.addEventListener('input',function(){state.lift=Number(this.value)/100;state.liftTarget=state.lift;applyState()});
-document.getElementById('btnRestore').onclick=function(){setLift(0,true);toast('展品放回 B 上')};
-document.getElementById('btnRemove').onclick=function(){setLift(1,true);toast('正在取走展品')};
-document.getElementById('btnArm').onclick=function(){setArmed(true)};
-document.getElementById('btnDisarm').onclick=function(){setArmed(false)};
-elWoodRange.addEventListener('input',function(){applyWood(Number(this.value)/100)});
-document.getElementById('btnWoodSolid').onclick=function(){applyWood(1)};
-document.getElementById('btnWoodGlass').onclick=function(){applyWood(.38)};
-document.getElementById('btnWoodHide').onclick=function(){applyWood(0)};
-document.getElementById('btnLabels').onclick=function(){
-  state.showLabels=!state.showLabels;this.classList.toggle('active',state.showLabels);labels.visible=state.showLabels;
-};
-document.getElementById('btnFlow').onclick=function(){
-  state.showFlow=!state.showFlow;this.classList.toggle('active',state.showFlow);flowGroup.visible=state.showFlow&&state.armed;
-};
-document.getElementById('btnFocus').onclick=function(){
-  view.target.set(-6.45,1.28,-2.20);view.distTarget=9.2;toast('已聚焦 A—B—C 与弹簧');
-};
-document.getElementById('btnReset').onclick=function(){
-  view.theta=DEF.theta;view.phi=DEF.phi;view.distTarget=DEF.dist;view.target.set(DEF.target[0],DEF.target[1],DEF.target[2]);toast('已恢复整体视图');
-};
-document.getElementById('panelClose').onclick=function(){document.getElementById('panel').classList.add('collapsed')};
-document.getElementById('panelOpen').onclick=function(){document.getElementById('panel').classList.remove('collapsed')};
-
-let toastTimer=0;
-function toast(t){
-  const el=document.getElementById('toast');el.textContent=t;el.classList.add('show');
-  clearTimeout(toastTimer);toastTimer=setTimeout(function(){el.classList.remove('show')},1500);
-}
-
-let last=performance.now(),clock=0;
-function tick(now){
-  const dt=Math.min(.05,(now-last)/1000);last=now;clock+=dt;
-  if(state.dragging!=='artifact'&&Math.abs(state.liftTarget-state.lift)>.001){
-    const step=Math.min(1,dt*2.5);state.lift+=(state.liftTarget-state.lift)*step;applyState();
-  }
-  if(state.alarm){
-    hammerPivot.rotation.z=Math.sin(clock*34)*.24;
-    bellDome.rotation.z=Math.sin(clock*25)*.012;
-  }else{
-    hammerPivot.rotation.z*=.78;bellDome.rotation.z*=.78;
-  }
-  updateFlow(clock);
-  view.dist+=(view.distTarget-view.dist)*.16;
-  applyCamera();
-  renderer.render(scene,camera);
-  requestAnimationFrame(tick);
-}
-
-applyWood(1);applyState();tick(last);
-
-window.__dbg={
-  state:state,view:view,
-  setLift:function(v){state.lift=state.liftTarget=clamp(v,0,1);applyState();return this.info()},
-  setArmed:function(v){setArmed(v);return this.info()},
-  info:function(){return {lift:+state.lift.toFixed(3),contact:state.contact,armed:state.armed,alarm:state.alarm,flowMode:flowMode,theta:+view.theta.toFixed(3),phi:+view.phi.toFixed(3),dist:+view.dist.toFixed(2)}}
-};
+setAlarm(false);requestAnimationFrame(loop);
 })();
 </script>
 </body>

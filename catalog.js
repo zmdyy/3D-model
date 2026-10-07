@@ -152,6 +152,26 @@ window.MODEL_CATALOG = [
     "accent": "violet"
   },
   {
+    "id": "motor-principles",
+    "cover": "assets/covers/motor-principles.png?v=20261007",
+    "title": "电动机原理 · 四个3D实验",
+    "subtitle": "导体受力、手动换向、刮漆与换向器",
+    "category": "声学与电磁",
+    "summary": "先观察通电导体棒在磁场中运动，再手动调换电流让线圈连续转动；比较五种转轴刮漆方式，观察引线缠绕与换向器自动换向。四个实验共用清晰的3D模型、电流及受力箭头。",
+    "tags": [
+      "电动机",
+      "通电导体受力",
+      "手动换向",
+      "自制电动机",
+      "绝缘皮",
+      "换向器",
+      "磁感线"
+    ],
+    "path": "models/motor-principles.html",
+    "symbol": "↻",
+    "accent": "blue"
+  },
+  {
     "id": "speaker",
     "cover": "assets/covers/speaker.png?v=20261006",
     "title": "扬声器结构与振动",

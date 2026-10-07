@@ -643,8 +643,9 @@
 
   // 底部绝缘（黑色胶木）—— 底面中央做一圈浅凹（0.54），让中心锡点从下方露出来
   put(gBulbCore, lathe([
-    [0.00, 0.54], [0.28, 0.54], [0.66, 0.49], [0.98, 0.49],
-    [INSUL_R, 0.62], [INSUL_R, 0.84], [0.00, 0.84]
+    [0.55, 0.54], [0.66, 0.49], [0.98, 0.49],
+    [INSUL_R, 0.62], [INSUL_R, 0.84], [0.24, 0.84],
+    [0.31, 0.82], [0.50, 0.66], [0.55, 0.54]
   ], 48), M.insul);
 
   // 中心锡点（焊锡疙瘩：底面 R0.55，圆顶到 0.88；最低点严格 = SN_BOT = 中心触点顶面）
@@ -659,12 +660,15 @@
   ], 0.045, 80, 7), M.lead);
   put(gBulbCore, new THREE.SphereGeometry(0.10, 14, 10), M.tin, [0, 1.55, -1.12]);   // 焊点
 
-  // 导丝②：中心锡点 → 沿轴向上 → 绕到外侧上升 → 折回接灯丝上端
-  put(gBulbCore, tube([
-    [0.00, 0.72, 0.00], [0.00, 0.64, 0.30], [0.00, 0.64, 0.62],
+  // 导丝②直接焊在中心锡点的内侧顶端，转弯位于绝缘盘上方。
+  // 黑色绝缘盘为环形，中心留出锡点，不再让导丝穿过绝缘材料。
+  const TIN_LEAD_POINTS = [
+    [0.00, 0.875, 0.00], [0.00, 1.08, 0.00], [0.00, 1.36, 0.62],
     [0.00, 3.80, 0.62], [0.00, 6.85, 0.62], [0.00, 7.10, 0.62],
-    [0.00, 7.10, 0.26], [0.00, 6.65, 0.26]
-  ], 0.045, 150, 7), M.lead);
+    [0.00, 7.10, 0.26], [0.00, COIL_Y1, 0.26]
+  ];
+  put(gBulbCore, tube(TIN_LEAD_POINTS, 0.045, 150, 7), M.lead);
+  put(gBulbCore, new THREE.SphereGeometry(0.095, 18, 12), M.tin, TIN_LEAD_POINTS[0]);
 
   // 螺旋灯丝（钨丝）
   (function filament() {
@@ -761,10 +765,8 @@
     P(0.60, -0.20, 0.00); P(0.00, -0.16, 0.00);
     // 中心触点
     P(0.00, 0.10, 0.00); P(0.00, 0.44, 0.00);
-    // 锡点 → 导丝②
-    P(0.00, 0.62, 0.10); P(0.00, 0.64, 0.40); P(0.00, 0.64, 0.62);
-    P(0.00, 3.60, 0.62); P(0.00, 6.85, 0.62);
-    P(0.00, 7.10, 0.62); P(0.00, 7.10, 0.26);
+    // 锡点 → 导丝②：与真实导丝共用路径，直接从锡点顶端进入导丝。
+    TIN_LEAD_POINTS.slice(0, -1).forEach(function (p) { P(p[0], p[1], p[2]); });
     // 灯丝螺旋（自顶端向下）
     for (let i = 0; i <= 46; i++) {
       const t = 1 - i / 46, a = -Math.PI / 2 + Math.PI * 2 * COIL_TURNS * t;
@@ -834,7 +836,7 @@
   addLabel('家庭电路 220 V～', '#1b2430', 0.50, [6.95, 3.40, -0.60]);
 
   addMark('导丝①→螺纹壳内壁', '#1a7f5a', 0.44, [-3.60, 2.35, -1.30], [0.00, 1.55, -1.12], bulbMarkG);
-  addMark('导丝②→中心锡点', '#1a7f5a', 0.44, [-3.35, -0.20, 1.35], [0.00, 0.62, 0.20], bulbMarkG);
+  addMark('导丝②→中心锡点', '#1a7f5a', 0.44, [-3.35, -0.20, 1.35], TIN_LEAD_POINTS[0], bulbMarkG);
   addMark('零线→螺纹套', '#2f6fd0', 0.44, [-3.45, 0.75, -0.30], NEUTRAL_CONTACT);
 
   /* =========================================================
@@ -1274,6 +1276,7 @@
       const p = new THREE.Vector3(0, COIL_Y0 + gBulb.position.y + 0.85, 0).project(camera);
       return [(p.x * 0.5 + 0.5) * window.innerWidth, (-p.y * 0.5 + 0.5) * window.innerHeight];
     },
+    tinLead: function () { return { points: TIN_LEAD_POINTS.map(function (p) { return p.slice(); }), insulationTop: 0.84, openingRadius: 0.24 }; },
     neutralContact: function () {
       const p = new THREE.Vector3().fromArray(NEUTRAL_CONTACT);
       return { position: NEUTRAL_CONTACT.slice(), sleeveRadius: SLEEVE_I,

@@ -98,6 +98,24 @@ window.MODEL_CATALOG = [
     "accent": "green"
   },
   {
+    "id": "height-weight-meter",
+    "cover": "assets/covers/height-weight-meter.png?v=20261007",
+    "title": "身高体重测量仪",
+    "subtitle": "测高、称重双支路与电表示数",
+    "category": "综合应用",
+    "summary": "调节身高和压力，观察滑片、接入电阻、电流表与电压表联动。浅色电路板展示色环电阻、清晰共用接头和实物接线，支持开关操作、电流方向与投影模式。",
+    "tags": [
+      "身高测量",
+      "压敏电阻",
+      "变阻器",
+      "欧姆定律",
+      "实物接线"
+    ],
+    "path": "models/height-weight-meter.html",
+    "symbol": "↕",
+    "accent": "green"
+  },
+  {
     "id": "museum-alarm",
     "cover": "assets/covers/museum-alarm.png?v=20261006",
     "title": "文物展台防盗报警装置",

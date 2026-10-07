@@ -250,7 +250,7 @@
   <div class="hint">拖拽旋转 · 滚轮缩放 · <kbd>Shift</kbd>+拖拽平移 · 直接拖动滑片 P</div>
   <div id="toast"></div>
 
-  <script src="https://cdn.jsdelivr.net/npm/three@0.144.0/build/three.min.js"></script>
+  <script src="../shared/vendor/three-r144.min.js"></script>
   <script src="../shared/current-flow-style.js"></script>
   <script>
 /* =========================================================
@@ -884,6 +884,7 @@
     f.curve = curveOf(pts);
     f.length = f.curve.getLength();
     f.displayLength = f.length;
+    f.surfaceRadius = LEAD_R;
     const lead = new THREE.Mesh(new THREE.TubeGeometry(f.curve, 72, LEAD_R, 10, false), leadMat);
     lead.castShadow = true;
     lead.receiveShadow = true;
@@ -1179,6 +1180,7 @@
   }
 
   // 每帧推进箭头（按弧长匀速，方向随接线端与“正/反”切换）
+  const leadCamera = new THREE.Vector3(), leadNormal = new THREE.Vector3();
   function updateArrowPositions() {
     for (let k = 0; k < FLOW_ALL.length; k++) {
       const f = FLOW_ALL[k];
@@ -1187,12 +1189,25 @@
       if (!n) continue;
       const sgn = f.sign * state.dir;
       const base = travel * sgn / f.length;
+      if (f.surfaceRadius) {
+        // 相机转到哪一侧，就在导线朝向观察者的表面显示；不被导线实体吞掉。
+        f.group.updateWorldMatrix(true, false);
+        f.group.worldToLocal(leadCamera.copy(camera.position));
+      }
       for (let i = 0; i < n; i++) {
         let u = base + i / n;
         u -= Math.floor(u);
         const m = f.arrows[i];
         m.position.copy(flowPoint(f, u));
         const tangent = flowTangent(f, u).clone().multiplyScalar(sgn);
+        if (f.surfaceRadius) {
+          leadNormal.subVectors(leadCamera, m.position);
+          leadNormal.addScaledVector(tangent, -leadNormal.dot(tangent));
+          if (leadNormal.lengthSq() > 1e-8) {
+            m.userData.surfaceOffset = f.surfaceRadius + FLOW_STYLE.radius + 0.012;
+            m.position.addScaledVector(leadNormal.normalize(), m.userData.surfaceOffset);
+          }
+        }
         if (tangent.lengthSq() > 1e-8) {
           tangent.normalize();
           m.quaternion.setFromUnitVectors(FLOW_AXIS, tangent);
@@ -1504,10 +1519,9 @@
     }
 
     travel += dt * FLOW_SPEED;
+    applyCamera();
     updateFlows();
     updateArrowPositions();
-
-    applyCamera();
     renderer.render(scene, camera);
     requestAnimationFrame(tick);
   }
@@ -1575,6 +1589,8 @@
         return {
           id: f.id, on: f.on, vis: f.group.visible,
           n: f.arrows.length, len: +f.length.toFixed(2), sign: f.sign, head: head,
+          surfaceRadius: f.surfaceRadius || 0,
+          surfaceOffsets: f.arrows.map(function (m) { return m.userData.surfaceOffset || 0; }),
           dirVec: [+dv.x.toFixed(3), +dv.y.toFixed(3), +dv.z.toFixed(3)],
           xs: f.arrows.map(function (m) { return +m.position.x.toFixed(4); }),
           pos: f.arrows.length ? [

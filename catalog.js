@@ -134,6 +134,24 @@ window.MODEL_CATALOG = [
     "accent": "orange"
   },
   {
+    "id": "ampere-rule",
+    "cover": "assets/covers/ampere-rule.png?v=20261007",
+    "title": "安培定则",
+    "subtitle": "机器人右手握持与螺线管磁极判断",
+    "category": "声学与电磁",
+    "summary": "用机器人右手对应螺线管中的电流方向与 N 极。改变电流方向，观察四指、拇指和磁极同步切换；可显示磁感线、调节手部透明度，并从两端观察。",
+    "tags": [
+      "安培定则",
+      "右手螺旋定则",
+      "通电螺线管",
+      "电生磁",
+      "磁感线"
+    ],
+    "path": "models/ampere-rule.html",
+    "symbol": "N",
+    "accent": "violet"
+  },
+  {
     "id": "speaker",
     "cover": "assets/covers/speaker.png?v=20261006",
     "title": "扬声器结构与振动",

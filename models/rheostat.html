@@ -162,10 +162,65 @@
     opacity:0;pointer-events:none;transition:all .25s ease;z-index:20;
   }
   #toast.show{opacity:1;transform:translate(-50%,0);}
+  /* 原理图与模型各有独立区域，避免遮住导线和滑片。 */
+  #stage{right:352px;bottom:264px;}
+  .head{max-width:550px;padding:10px 15px;}
+  .head p{display:none;}
+  .head h1{margin:0;}
+  .schematic-card{position:fixed;left:22px;right:352px;bottom:20px;height:230px;
+    z-index:5;background:#fff;border:1px solid var(--line);border-radius:16px;
+    box-shadow:var(--shadow);padding:12px 18px;}
+  .schematic-heading{display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:17px;font-weight:700;}
+  #schematicRoute{color:#c0392b;font-size:17px;}
+  #schematicSvg{display:block;width:100%;height:180px;touch-action:none;user-select:none;}
+  #schematicSvg .conductor{fill:none;stroke:#272a30;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;}
+  #schematicSvg text{font:700 27px Georgia,'Times New Roman',serif;fill:#20242b;}
+  #schematicSvg .port{fill:white;stroke:#272a30;stroke-width:3;}
+  #schematicSvg .port.connected{stroke:#e8372a;stroke-width:4;}
+  #schematicSvg .external{stroke:#9ca6b4;stroke-width:3;fill:none;}
+  #schematicSvg .path-current{fill:none;stroke:#e8372a;stroke-width:5;opacity:.45;stroke-linejoin:round;stroke-linecap:round;}
+  #schematicSvg .current-arrow{fill:#e8372a;stroke:white;stroke-width:.65;}
+  #schematicCurrent,#schematicArrows{pointer-events:none;}
+  #schematicSlider{cursor:ew-resize;}
+  .hint{bottom:264px;padding:5px 12px;font-size:11px;left:calc((100% - 352px)/2);}
+  body.controls-hidden #stage,body.controls-hidden .schematic-card{right:22px;}
+  body.controls-hidden .hint{left:50%;}
+  @media(max-height:780px){#stage{bottom:240px;}.schematic-card{height:206px;}#schematicSvg{height:158px;}.hint{bottom:240px;}}
+  @media(max-width:900px){#stage,.schematic-card{right:300px;}.panel{width:260px;right:18px;padding:12px;}.hint{left:calc((100% - 300px)/2);}}
+  @media(max-width:680px){#stage,body.controls-hidden #stage{right:0;bottom:222px;}
+    .schematic-card,body.controls-hidden .schematic-card{left:10px;right:10px;bottom:10px;height:202px;padding:10px;}
+    #schematicSvg{height:154px;}.schematic-heading,#schematicRoute{font-size:14px;}
+    .head{left:10px;top:10px;max-width:calc(100% - 64px);}.head p{display:none;}
+    .panel{top:58px;right:10px;width:240px;max-height:calc(100vh - 284px);}
+    #panelOpen{right:10px;top:12px;}.hint{display:none;}}
 </style>
 </head>
 <body>
   <div id="stage"><canvas id="scene"></canvas></div>
+  <section class="schematic-card" aria-label="滑动变阻器同步原理图">
+    <div class="schematic-heading"><span>原理图 · 滑片 P 可拖动</span><span id="schematicRoute" aria-live="polite">A → P → C</span></div>
+    <svg id="schematicSvg" viewBox="0 0 600 220" role="img" aria-labelledby="schematicTitle schematicDesc">
+      <title id="schematicTitle">滑动变阻器原理图</title>
+      <desc id="schematicDesc">上方为滑杆 C、D，下方为电阻丝 A、B，箭头 P 指向滑片接触点。红色表示实际电流路径。</desc>
+      <path class="external" d="M28 27 L75 55 M525 55 L572 27 M28 193 L75 165 M525 165 L572 193"/>
+      <path class="conductor" d="M75 55 H525 M75 165 H135 M465 165 H525"/>
+      <path id="schematicResistance" class="conductor"/>
+      <g id="schematicSlider">
+        <path id="schematicStem" class="conductor"/>
+        <path id="schematicTip" fill="#272a30"/>
+        <text id="schematicPLabel">P</text>
+        <rect id="schematicSliderHit" fill="transparent" width="44" height="133" y="40"/>
+      </g>
+      <path id="schematicCurrent" class="path-current"/>
+      <g id="schematicArrows"/>
+      <circle id="schematicPortA" class="port" cx="75" cy="165" r="11"/>
+      <circle id="schematicPortB" class="port" cx="525" cy="165" r="11"/>
+      <circle id="schematicPortC" class="port" cx="75" cy="55" r="11"/>
+      <circle id="schematicPortD" class="port" cx="525" cy="55" r="11"/>
+      <text x="42" y="172">A</text><text x="544" y="172">B</text>
+      <text x="42" y="63">C</text><text x="544" y="63">D</text>
+    </svg>
+  </section>
 
   <div class="head">
     <h1>滑动变阻器 <span>· 3D 交互演示</span></h1>
@@ -1010,6 +1065,78 @@
     dragging: false
   };
 
+  /* ================= 同步原理图 ================= */
+  const schematicSvg = document.getElementById('schematicSvg');
+  const schematicPath = document.getElementById('schematicCurrent');
+  const schematicArrows = document.getElementById('schematicArrows');
+  const schematicNodes = [];
+  const SVG_NS = 'http://www.w3.org/2000/svg';
+  let schematicKey = '', schematicLength = 1, schematicPhase = 0;
+  function diagramWaveY(x) { return 165 - 9 * Math.sin((x - 135) / 330 * Math.PI * 14); }
+  function diagramWave(a, b) {
+    const n = Math.max(1, Math.ceil(Math.abs(b - a) * 1.5)), pts = [];
+    for (let i = 0; i <= n; i++) {
+      const x = a + (b - a) * i / n;
+      pts.push([x, diagramWaveY(x)]);
+    }
+    return pts;
+  }
+  function diagramPath(points) { return points.map(function (p, i) { return (i ? 'L' : 'M') + p[0].toFixed(2) + ' ' + p[1].toFixed(2); }).join(' '); }
+  document.getElementById('schematicResistance').setAttribute('d', diagramPath(diagramWave(135, 465)));
+  for (let i = 0; i < 9; i++) {
+    const arrow = document.createElementNS(SVG_NS, 'path');
+    arrow.setAttribute('d', 'M-7 -4.7 L7 0 L-7 4.7 Z');
+    arrow.setAttribute('class', 'current-arrow');
+    schematicArrows.appendChild(arrow);schematicNodes.push(arrow);
+  }
+  function updateSchematic(dt) {
+    const fraction = clamp((state.pShown - COIL_X0) / COIL_L, 0, 1);
+    const px = 135 + fraction * 330, py = diagramWaveY(px);
+    const key = [px.toFixed(3), state.wire, state.dir, state.showFlow].join('|');
+    if (key !== schematicKey) {
+      schematicKey = key;
+      document.getElementById('schematicStem').setAttribute('d', 'M'+px+' 55 V'+(py-13));
+      document.getElementById('schematicTip').setAttribute('d', 'M'+(px-11)+' '+(py-23)+' L'+px+' '+(py-2)+' L'+(px+11)+' '+(py-23)+' Z');
+      const label = document.getElementById('schematicPLabel');label.setAttribute('x', px+18);label.setAttribute('y', 118);
+      document.getElementById('schematicSliderHit').setAttribute('x', px-22);
+      let points, route;
+      switch(state.wire) {
+        case 'BC': points = [[572,193],[525,165],[465,165]].concat(diagramWave(465,px),[[px,55],[75,55],[28,27]]);route=['B','P','C'];break;
+        case 'AB': points = [[28,193],[75,165],[135,165]].concat(diagramWave(135,465),[[525,165],[572,193]]);route=['A','B'];break;
+        case 'CD': points = [[28,27],[75,55],[525,55],[572,27]];route=['C','D'];break;
+        default: points = [[28,193],[75,165],[135,165]].concat(diagramWave(135,px),[[px,55],[75,55],[28,27]]);route=['A','P','C'];
+      }
+      if (state.dir < 0) { points.reverse();route.reverse(); }
+      schematicPath.setAttribute('d', diagramPath(points));
+      schematicPath.dataset.connection = state.wire;schematicPath.dataset.direction = String(state.dir);
+      schematicPath.dataset.sliderFraction = fraction.toFixed(5);
+      schematicLength = Math.max(1, schematicPath.getTotalLength());
+      document.getElementById('schematicRoute').textContent = route.join(' → ');
+      document.getElementById('schematicRoute').style.color = state.showFlow ? '#c0392b' : '#5a6879';
+      ['A','B','C','D'].forEach(function (port) { document.getElementById('schematicPort'+port).classList.toggle('connected', state.wire.indexOf(port)>=0); });
+      schematicPath.style.display = state.showFlow ? '' : 'none';
+      schematicArrows.style.display = state.showFlow ? '' : 'none';
+    }
+    schematicPhase = (schematicPhase + dt * 65) % schematicLength;
+    if (state.showFlow) schematicNodes.forEach(function (arrow, i) {
+      const d = (schematicPhase + i / schematicNodes.length * schematicLength) % schematicLength;
+      const p = schematicPath.getPointAtLength(d), a = schematicPath.getPointAtLength(Math.max(0,d-1)), b = schematicPath.getPointAtLength(Math.min(schematicLength,d+1));
+      arrow.setAttribute('transform','translate('+p.x+' '+p.y+') rotate('+(Math.atan2(b.y-a.y,b.x-a.x)*180/Math.PI)+')');
+    });
+  }
+  // 原理图滑片与 3D 滑片使用同一个位置状态。
+  let schematicDragging = false;
+  function moveSchematicSlider(e) {
+    const point = schematicSvg.createSVGPoint();point.x=e.clientX;point.y=e.clientY;
+    const p = point.matrixTransform(schematicSvg.getScreenCTM().inverse());
+    setSliderP(COIL_X0 + clamp((p.x-135)/330,0,1)*COIL_L);
+  }
+  document.getElementById('schematicSlider').addEventListener('pointerdown', function (e) {
+    e.preventDefault();schematicDragging=true;schematicSvg.setPointerCapture(e.pointerId);moveSchematicSlider(e);
+  });
+  schematicSvg.addEventListener('pointermove', function(e){if(schematicDragging)moveSchematicSlider(e);});
+  ['pointerup','pointercancel','lostpointercapture'].forEach(function(type){schematicSvg.addEventListener(type,function(){schematicDragging=false;});});
+
   /* ================= 爆炸位移 ================= */
   const EX = {
     coil: 1.80,
@@ -1232,16 +1359,18 @@
 
   /* ================= 相机控制 ================= */
   const view = {
-    theta: 0.56, phi: 1.16, dist: 26.5, distTarget: 26.5, baseDist: 26.5,
+    theta: 0.56, phi: 1.16, dist: 20.5, distTarget: 20.5, baseDist: 20.5,
     target: new THREE.Vector3(0.35, 3.90, 0)
   };
 
   function applyCamera() {
     const v = view;
+    const fit = Math.max(1, 20 / (2 * Math.tan(19 * Math.PI / 180) * camera.aspect * v.baseDist));
+    const dist = v.dist * fit;
     camera.position.set(
-      v.target.x + v.dist * Math.sin(v.phi) * Math.sin(v.theta),
-      v.target.y + v.dist * Math.cos(v.phi),
-      v.target.z + v.dist * Math.sin(v.phi) * Math.cos(v.theta)
+      v.target.x + dist * Math.sin(v.phi) * Math.sin(v.theta),
+      v.target.y + dist * Math.cos(v.phi),
+      v.target.z + dist * Math.sin(v.phi) * Math.cos(v.theta)
     );
     camera.lookAt(v.target);
   }
@@ -1476,14 +1605,17 @@
 
   document.getElementById('panelClose').addEventListener('click', function () {
     el.panel.classList.add('collapsed');
+    document.body.classList.add('controls-hidden');resize();
   });
   document.getElementById('panelOpen').addEventListener('click', function () {
     el.panel.classList.remove('collapsed');
+    document.body.classList.remove('controls-hidden');resize();
   });
 
   /* ================= 尺寸 ================= */
   function resize() {
-    const w = window.innerWidth, h = window.innerHeight;
+    const stage = document.getElementById('stage');
+    const w = stage.clientWidth, h = stage.clientHeight;
     renderer.setSize(w, h, false);
     camera.aspect = w / h;
     camera.updateProjectionMatrix();
@@ -1522,6 +1654,7 @@
     applyCamera();
     updateFlows();
     updateArrowPositions();
+    updateSchematic(dt);
     renderer.render(scene, camera);
     requestAnimationFrame(tick);
   }
@@ -1603,9 +1736,10 @@
     },
     screenOf: function (x, y, z) {
       const v = new THREE.Vector3(x, y, z).project(camera);
+      const rect = canvas.getBoundingClientRect();
       return {
-        x: Math.round((v.x * 0.5 + 0.5) * window.innerWidth),
-        y: Math.round((-v.y * 0.5 + 0.5) * window.innerHeight)
+        x: Math.round(rect.left + (v.x * 0.5 + 0.5) * rect.width),
+        y: Math.round(rect.top + (-v.y * 0.5 + 0.5) * rect.height)
       };
     },
     sliderScreen: function () {

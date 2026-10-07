@@ -112,7 +112,7 @@
   </div>
 </section>
 
-<script src="catalog.js?v=20261007-motor-principles"></script>
+<script src="catalog.js?v=20261008-rheostat-schematic"></script>
 <script>
 (() => {
   const data = Array.isArray(window.MODEL_CATALOG) ? window.MODEL_CATALOG : [];
@@ -172,7 +172,8 @@
 
   function modelPath(item,embedded=false){
     if(item.id==='museum-alarm') return item.path+'?v=20261006-alarm-v2';
-    if(item.id==='rheostat'||item.id==='e27-bulb') return item.path+'?v=20261008-visible-current';
+    if(item.id==='rheostat') return item.path+'?v=20261008-schematic';
+    if(item.id==='e27-bulb') return item.path+'?v=20261008-visible-current';
     return item.path+(item.id==='eye-accommodation'?'?v=4693abb'+(embedded?'&embedded=1':''):'');
   }
   function openModel(id){

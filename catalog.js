@@ -33,11 +33,11 @@ window.MODEL_CATALOG = [
   },
   {
     "id": "rheostat",
-    "cover": "assets/covers/rheostat.png?v=20261006",
+    "cover": "assets/covers/rheostat.png?v=20261008-schematic",
     "title": "滑动变阻器",
     "subtitle": "接线、滑片与电流方向",
     "category": "电学元件",
-    "summary": "可拖动滑片 P、切换接线柱组合、观察接入电阻与电流方向，并使用爆炸视图理解内部结构。",
+    "summary": "3D 实物与原理图同步显示：拖动任一图中的滑片 P，观察接入电阻、电流路径和方向共同变化；可切换接线组合，并使用爆炸视图理解内部结构。",
     "tags": [
       "变阻器",
       "接线",

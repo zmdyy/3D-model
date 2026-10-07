@@ -552,14 +552,9 @@
     SOCK_THREAD_MESH = put(gSock, new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), N * 2, 0.055, 6, false), sockThreadMat);
   })();
 
-  // 中心弹性触点：立柱 + 顶盘 + 拱形弹片（顶盘 R0.36，顶面严格 = CT_TOP = 0.44）
+  // 中心触点：接触圆片和导电立柱，火线直接连接立柱（顶面 = CT_TOP = 0.44）
   put(gSock, new THREE.CylinderGeometry(0.24, 0.26, 0.76, 24), M.brassSoft, [0, 0.02, 0]);
   put(gSock, new THREE.CylinderGeometry(0.36, 0.36, 0.09, 28), M.brass, [0, 0.395, 0]);
-  put(gSock, tube([[-0.74, -0.10, 0], [-0.40, 0.13, 0], [0, 0.23, 0], [0.40, 0.13, 0], [0.74, -0.10, 0]], 0.058, 60, 7), M.brassSoft);
-  // 弹片支撑（两侧小立柱）
-  [-1, 1].forEach(function (s) {
-    put(gSock, new THREE.CylinderGeometry(0.058, 0.058, 0.30, 10), M.brassSoft, [s * 0.74, -0.24, 0]);
-  });
 
   // 端子（螺柱 + 六角螺帽 + 彩色绝缘座）
   function terminal(pos, dx, colorMat, label) {

@@ -112,7 +112,7 @@
   </div>
 </section>
 
-<script src="catalog.js?v=20261008-optics"></script>
+<script src="catalog.js?v=20261008-water-alarm"></script>
 <script>
 (() => {
   const data = Array.isArray(window.MODEL_CATALOG) ? window.MODEL_CATALOG : [];
@@ -171,6 +171,7 @@
   grid.addEventListener('keydown', e => { if((e.key==='Enter'||e.key===' ') && e.target.classList.contains('card')){e.preventDefault();openModel(e.target.dataset.id);} });
 
   function modelPath(item,embedded=false){
+    if(item.id==='water-level-alarm') return item.path+'?v=20261008-water-alarm';
     if(item.id==='reflection-refraction') return item.path+'?v=20261008-optics';
     if(item.id==='museum-alarm') return item.path+'?v=20261006-alarm-v2';
     if(item.id==='rheostat') return item.path+'?v=20261008-schematic';

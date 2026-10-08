@@ -134,6 +134,24 @@ window.MODEL_CATALOG = [
     "accent": "orange"
   },
   {
+    "id": "water-level-alarm",
+    "cover": "assets/covers/water-level-alarm.png?v=20261008",
+    "title": "水位自动报警器",
+    "subtitle": "水位、继电器与红绿信号灯联动",
+    "category": "综合应用",
+    "summary": "调节水位观察金属块 A、B、控制电路、电磁铁、衔铁触点与红绿信号灯联动；支持自动演示、电流方向、局部视角和 PNG 导出。",
+    "tags": [
+      "水位报警",
+      "电磁继电器",
+      "自动控制",
+      "控制电路",
+      "工作电路"
+    ],
+    "path": "models/water-level-alarm.html",
+    "symbol": "≈",
+    "accent": "blue"
+  },
+  {
     "id": "ampere-rule",
     "cover": "assets/covers/ampere-rule.png?v=20261007",
     "title": "安培定则",

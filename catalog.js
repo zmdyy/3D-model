@@ -294,6 +294,24 @@ window.MODEL_CATALOG = [
     "accent": "orange"
   },
   {
+    "id": "reflection-refraction",
+    "cover": "assets/covers/reflection-refraction.svg?v=20261008",
+    "title": "光的反射与折射",
+    "subtitle": "平面实验、光路可逆与空间拓展",
+    "category": "光学现象",
+    "summary": "调节入射角与发光端，观察平面镜、半圆透明块、全反射和空间光路；翻折刻度盘验证三线共面，记录数据并导出 SVG。",
+    "tags": [
+      "光的反射",
+      "光的折射",
+      "全反射",
+      "光路可逆",
+      "三线共面"
+    ],
+    "path": "models/reflection-refraction.html",
+    "symbol": "↗",
+    "accent": "green"
+  },
+  {
     "id": "mirage",
     "cover": "assets/covers/mirage.png?v=20261006",
     "title": "海市蜃楼",

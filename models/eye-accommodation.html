@@ -335,9 +335,6 @@ const imageArrow=makeImageArrow();imageArrow.position.set(2.14,0,0);imageArrow.s
 
 // rays
 M.rayDash=new THREE.LineDashedMaterial({color:0xd50072,dashSize:.09,gapSize:.07,depthTest:false,depthWrite:false,toneMapped:false});
- // Grey dashed: how the incoming ray would continue without the corrective lens.
- M.correctionGuide=new THREE.LineDashedMaterial({color:0x697b8d,dashSize:.13,gapSize:.09,transparent:true,opacity:.72,depthTest:false,depthWrite:false,toneMapped:false});
- const correctionAperture=1.08*.94, pupilAperture=.325;
 const rayMeshes=[];
 function clearRays(){while(rayG.children.length){const o=rayG.children[0];rayG.remove(o);o.traverse(x=>{if(x.geometry)x.geometry.dispose()});}rayMeshes.length=0}
 function addRay(points,mat=M.ray){const group=new THREE.Group();rayG.add(group);for(let i=0;i<points.length-1;i++){const a=points[i].clone(),b=points[i+1].clone();a.z=b.z=.075;const d=b.clone().sub(a),len=d.length();if(len<.001)continue;const line=put(group,new THREE.CylinderGeometry(.014,.014,len,8),mat);line.position.copy(a).lerp(b,.5);line.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),d.clone().normalize());line.renderOrder=30;for(const f of (len>2?[.40,.75]:[.55])){if(len<.35)continue;const shape=new THREE.Shape();shape.moveTo(.105,0);shape.lineTo(-.075,.067);shape.lineTo(-.025,0);shape.lineTo(-.075,-.067);shape.closePath();const arrow=put(group,new THREE.ShapeGeometry(shape),mat);arrow.position.copy(a).lerp(b,f);arrow.rotation.z=Math.atan2(d.y,d.x);arrow.renderOrder=31;}}rayMeshes.push(group);return group;}
@@ -391,31 +388,7 @@ function opticalState(){const want=accomNorm(state.distanceCm),have=currentAccom
 // Display distances are compressed. Derive display-lens powers from the solved
 // image plane so all rays from one point converge to that same single image.
 function traceDisplayRay(o,objX,sourceY,eyeY){const ex=-.92,U=ex-objX,d=ex-spectacleX,V=o.focusX-ex,P=1/(o.uncorrectedFocusX-ex)+1/U,q=P-1/V,p=1/(U-d)-q/(1-d*q),withLens=state.correction!=='none'&&state.correctionEnabled;
- const glassY=withLens?(eyeY+d*sourceY/(U-d))/(1+d/(U-d)-d*p):sourceY+(eyeY-sourceY)*(U-d)/U,slopeIn=withLens?(glassY-sourceY)/(U-d)-p*glassY:(eyeY-sourceY)/U,slopeOut=slopeIn-P*eyeY,targetY=eyeY+slopeOut*V,retinaY=eyeY+slopeOut*(retinaX-ex),points=[new THREE.Vector3(objX,sourceY,0)];if(withLens)points.push(new THREE.Vector3(spectacleX,glassY,0));points.push(new THREE.Vector3(ex,eyeY,0));if(o.focusX<=retinaX)points.push(new THREE.Vector3(o.focusX,targetY,0));points.push(new THREE.Vector3(retinaX,retinaY,0));return {points,targetY,retinaY,glassY,slopeIn,slopeOut,eyeY,incidentSlope:withLens?(glassY-sourceY)/(spectacleX-objX):(eyeY-sourceY)/U};}
-// When correction is enabled, only trace rays that actually cross the
-// transparent spectacle aperture and pass through the iris pupil. Select
-// the closest valid eye-entry point; the optical image plane stays fixed.
-function visibleCorrectionRay(o,objX,sourceY,preferredEyeY){
- if(state.correction==='none'||!state.correctionEnabled)return traceDisplayRay(o,objX,sourceY,preferredEyeY);
- let best=null,bestPenalty=Infinity;
- for(let i=0;i<=64;i++){
-  const y=-.32+i*.01,r=traceDisplayRay(o,objX,sourceY,y);
-  const atPupil=y+(-1.67+.92)*r.slopeIn;
-  if(!Number.isFinite(r.glassY)||Math.abs(r.glassY)>correctionAperture||Math.abs(atPupil)>pupilAperture)continue;
-  const penalty=Math.abs(y-preferredEyeY);
-  if(penalty<bestPenalty){best=r;bestPenalty=penalty;}
- }
- return best;
-}
-function showCorrectionGuide(r){
- const endX=Math.min(-.92-.32,spectacleX+1.62);
- const from=new THREE.Vector3(spectacleX+.03,r.glassY+r.incidentSlope*.03,.10);
- const to=new THREE.Vector3(endX,r.glassY+r.incidentSlope*(endX-spectacleX),.10);
- const guide=new THREE.Line(new THREE.BufferGeometry().setFromPoints([from,to]),M.correctionGuide);
- guide.computeLineDistances();guide.renderOrder=29;rayG.add(guide);
- const contact=put(rayG,new THREE.SphereGeometry(.032,10,8),M.ray,[spectacleX,r.glassY,.10]);
- contact.renderOrder=34;
-}
+ const glassY=withLens?(eyeY+d*sourceY/(U-d))/(1+d/(U-d)-d*p):sourceY+(eyeY-sourceY)*(U-d)/U,slopeIn=withLens?(glassY-sourceY)/(U-d)-p*glassY:(eyeY-sourceY)/U,slopeOut=slopeIn-P*eyeY,targetY=eyeY+slopeOut*V,retinaY=eyeY+slopeOut*(retinaX-ex),points=[new THREE.Vector3(objX,sourceY,0)];if(withLens)points.push(new THREE.Vector3(spectacleX,glassY,0));points.push(new THREE.Vector3(ex,eyeY,0));if(o.focusX<=retinaX)points.push(new THREE.Vector3(o.focusX,targetY,0));points.push(new THREE.Vector3(retinaX,retinaY,0));return {points,targetY,retinaY,glassY,slopeIn,slopeOut};}
 function drawFocusDiagram(o){const w=diagram.width,h=diagram.height;dc.clearRect(0,0,w,h);dc.fillStyle='#fff';dc.fillRect(0,0,w,h);const objX=objectArrow.position.x,minX=objX-.3,maxX=Math.max(o.focusX,retinaX)+.7,mapX=x=>25+(x-minX)/(maxX-minX)*550,mapY=y=>135-y*50,rx=mapX(retinaX),fx=mapX(o.focusX),lx=mapX(-.92),gx=mapX(spectacleX);
  dc.strokeStyle='#b4c1d1';dc.lineWidth=1;dc.beginPath();dc.moveTo(20,135);dc.lineTo(580,135);dc.stroke();
  for(const yy of [-.25,0,.25]){const r=traceDisplayRay(o,objX,1.67,yy);dc.strokeStyle='#d50072';dc.lineWidth=3;dc.setLineDash([]);dc.beginPath();r.points.forEach((p,i)=>i?dc.lineTo(mapX(p.x),mapY(p.y)):dc.moveTo(mapX(p.x),mapY(p.y)));dc.stroke();if(o.focusX>retinaX){dc.setLineDash([5,5]);dc.beginPath();dc.moveTo(rx,mapY(r.retinaY));dc.lineTo(fx,mapY(r.targetY));dc.stroke();}dc.setLineDash([]);}
@@ -432,8 +405,7 @@ function applyEye(){
  imageArrow.position.set(focusX,0,.14);imageArrow.scale.set(imageScale,imageScale,imageScale);imageLabel.position.set(focusX+.15,-.99,.18);imageLabel.visible=state.labels&&state.image;focusPlaneLine.position.x=focusX;focusPlaneLine.visible=state.image;
  imageArrow.visible=state.image;M.image.opacity=1;
  clearRays();const tracePoints=[];
- const correctionActive=state.correction!=='none'&&state.correctionEnabled,guideSources=new Set();
- function rayFrom(sourceY,yy,mat){const r=visibleCorrectionRay(o,objX,sourceY,yy);if(!r)return;tracePoints.push({sourceY,eyeY:r.eyeY,targetY:r.targetY,retinaY:r.retinaY,glassY:r.glassY,slopeIn:r.slopeIn,slopeOut:r.slopeOut});addRay(r.points,mat);if(correctionActive&&!guideSources.has(sourceY)){showCorrectionGuide(r);guideSources.add(sourceY);}if(focusX>retinaX){const line=new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(retinaX,r.retinaY,.075),new THREE.Vector3(focusX,r.targetY,.075)]),M.rayDash);line.computeLineDistances();line.renderOrder=32;rayG.add(line);}}
+ function rayFrom(sourceY,yy,mat){const r=traceDisplayRay(o,objX,sourceY,yy);tracePoints.push({sourceY,eyeY:yy,targetY:r.targetY,retinaY:r.retinaY,glassY:r.glassY,slopeIn:r.slopeIn,slopeOut:r.slopeOut});addRay(r.points,mat);if(focusX>retinaX){const line=new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(retinaX,r.retinaY,.075),new THREE.Vector3(focusX,r.targetY,.075)]),M.rayDash);line.computeLineDistances();line.renderOrder=32;rayG.add(line);}}
  [-.25,.18].forEach(yy=>rayFrom(1.67,yy,M.ray));[-.18,.25].forEach(yy=>rayFrom(-.49,yy,M.ray2));state.rayTrace=tracePoints;
  const gapPts=[new THREE.Vector3(focusX,1.06,.18),new THREE.Vector3(retinaX,1.06,.18)];for(const x of [focusX,retinaX])gapPts.push(new THREE.Vector3(x,.97,.18),new THREE.Vector3(x,1.15,.18));gapLine.geometry.dispose();gapLine.geometry=new THREE.BufferGeometry().setFromPoints(gapPts);gapLabel.position.set((focusX+retinaX)/2,1.32,.18);updateSpectacle();updateCorrectionUI(o);
  focusDot.position.set(focusX,imgY,.14);focusDot.material=Math.abs(o.deltaMM)<FOCUS_TOLERANCE_MM?M.focusGood:M.focusBad;focusDot.material.depthTest=false;focusDot.material.depthWrite=false;focusDot.visible=state.rays;drawFocusDiagram(o);
